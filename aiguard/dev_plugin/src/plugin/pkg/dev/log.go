@@ -18,7 +18,7 @@ var (
 )
 
 func InitLogger() {
-	fire, err := os.OpenFile("aiguard_plugin.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	fire, err := os.OpenFile("aiguard_plugin.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
 		log.Fatalln("Faild to open error logger file:", err)
 	}
