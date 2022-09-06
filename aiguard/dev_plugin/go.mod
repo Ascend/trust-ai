@@ -10,6 +10,10 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/grpc v1.41.0
 	k8s.io/kubelet  v0.19.4
+	k8s.io/api v0.19.4
+	k8s.io/apimachinery v0.19.4
+	k8s.io/client-go v0.19.4
+	k8s.io/kubelet v0.19.4
 )
 
 replace (
@@ -17,7 +21,7 @@ replace (
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb17ef4 => golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
 	k8s.io/api => k8s.io/api v0.19.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.4
-	k8s.io/apimachinery => k8s.io/apimashcinery v0.19.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.19.4
 	k8s.io/apiserver => k8s.io/apiserver v0.19.4
 	k8s.io/cli-runtime => k8s.io/cli-runtime v0.19.4
 	k8s.io/client-go => k8s.io/client-go v0.19.4
