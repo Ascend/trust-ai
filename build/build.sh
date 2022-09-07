@@ -15,7 +15,7 @@ export GONOSUMDB="*"
 
 function build_plugin() {
     [ ! -d "${TOP_DIR}/output" ] && mkdir "${TOP_DIR}/output"
-    cd "$TOP_DIR"/src/dev_plugin/src/plugin/cmd/aiguardplugin
+    cd "$TOP_DIR"/aiguard/dev_plugin/src/plugin/cmd/aiguardplugin
     go mod tidy
     export CGO_ENABLED=1
     export CGO_CFLAGS="-fstack-protector-strong -D_FORTIFY_SOURCE=2 -O2 -fPIC -ftrapv"
@@ -33,18 +33,31 @@ function build_plugin() {
 }
 
 function mv_file() {
-    mv "$TOP_DIR/src/dev_plugin/src/plugin/cmd/aiguardplugin/${output_name}"   "${TOP_DIR}"/output
+    mv "$TOP_DIR/aiguard/dev_plugin/src/plugin/cmd/aiguardplugin/${output_name}"   "${TOP_DIR}"/output
 }
 
 function change_mod() {
     chmod 500 "${TOP_DIR}/output/${output_name}"
 }
 
-function
+function zip(){
+    mkdir "$TOP_DIR"/run_plugin/aiguard-plugin
+    mv "${TOP_DIR}"/output "$TOP_DIR"/run_plugin/aiguard-plugin
+    mkdir "$TOP_DIR"/run_plugin/edge_om
+    mv "$TOP_DIR/aiguard/edge_user.json"   "${TOP_DIR}"/run_plugin/edge_om
+    mkdir "$TOP_DIR"/run_plugin/limit_file
+    mv "$TOP_DIR/aiguard/cfs_profile"   "${TOP_DIR}"/run_plugin/limit_file
+    mv "$TOP_DIR/aiguard/sceccomp_profile.json"   "${TOP_DIR}"/run_plugin/limit_file
+    mkdir "$TOP_DIR"/run_plugin/service
+    mv "$TOP_DIR/aiguard/aiguard_plugin.service"   "${TOP_DIR}"/run_plugin/service
+    zip -r Ascend-mindxdl-aiguard_plugin.zip run_plugin/
+}
+
 function main() {
   build_plugin
   mv_file
   change_mod
+  zip
 }
 
 main
