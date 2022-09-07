@@ -47,7 +47,9 @@ function mv_file() {
 }
 
 function change_mod() {
-    #chmod 500 "${TOP_DIR}/output/${output_name}"
+    chmod 600 "${TOP_DIR}/run_plugin/limit_file/sceccomp_profile.json"
+    chmod 600 "${TOP_DIR}/run_plugin/limit_file/cfs_profile"
+    chmod 500 "${TOP_DIR}/run_plugin/aiguard-plugin/${output_name}"
 }
 
 function zip(){
