@@ -20,7 +20,7 @@ run_plugin/
 │   └── edge_user.json
 ├── limit_file
 │   ├── cfs_profile
-│   └── sceccomp_profile.json
+│   └── seccomp_profile.json
 └── service
     └── aiguard_plugin.service
 ```
@@ -48,9 +48,9 @@ edge_user.json为:
     Description=Ascend aiguard device plugin
     
     [Service]
-    ExecStartPre=/bin/bash -c "dos2unix /home/HwHiAiUser/testplugin/run_plugin/limit_file/true_profile"
-    ExecStart=/bin/bash -c "apparmor_parser -r -W /home/HwHiAiUser/testplugin/run_plugin/limit_file/true_profile"
-    ExecStartPre=/bin/bash -c "cp /home/HwHiAiUser/testplugin/run_plugin/limit_file/ceccomp_profile.json /var/lib/kubelet/seccomp/profiles"
+    ExecStartPre=/bin/bash -c "dos2unix /home/HwHiAiUser/testplugin/run_plugin/limit_file/cfs_profile"
+    ExecStart=/bin/bash -c "apparmor_parser -r -W /home/HwHiAiUser/testplugin/run_plugin/limit_file/cfs_profile"
+    ExecStartPre=/bin/bash -c "cp /home/HwHiAiUser/testplugin/run_plugin/limit_file/seccomp_profile.json /var/lib/kubelet/seccomp/profiles"
     ExecStartPost=/bin/bash -c "/home/HwHiAiUser/testplugin/run_plugin/aiguard-plugin/aiguard-plugin"
     Restart=always
     RestartSec=2
