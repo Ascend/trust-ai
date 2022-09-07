@@ -1,39 +1,63 @@
-# TrustAI
+1.下载代码后解压，进入build目录
+2.执行
 
-#### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+```
+dos2unix build.sh
+bash build.sh
+```
+在output目录下生成了Ascend-mindxdl-aiguard_plugin.zip文件，将此文件放到任意目录进行解压（如“/home/HwHiAiUser”）
 
-#### 软件架构
-软件架构说明
+`unzip Ascend-mindxdl-aiguard_plugin.zip`
 
+目录结构如下：
 
-#### 安装教程
+```
+run_plugin/
+├── aiguard-plugin
+│   └── aiguard-plugin
+├── edge_om
+│   └── edge_user.json
+├── limit_file
+│   ├── cfs_profile
+│   └── sceccomp_profile.json
+└── service
+    └── aiguard_plugin.service
+```
+3.修改edge_user.json
+edge_user.json为:
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+    {
+    "changed": 0,
+    "user": "{HwHiAiUser}",
+    "group": "{HwHiAiUser}",
+    "uid": 1000,
+    "gid": 1000
+    }
 
-#### 使用说明
+3.构建dev_plugin为服务自启
+修改aiguard_plugin.service文件放到/etc/systemd/system目录下并执行
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+    systemctl enable /etc/systemd/system/aiguard_plugin.service
+    systemctl start /etc/systemd/system/aiguard_plugin.service
+*aiguard_plugin.service参考文件见附录*
+附录1 aiguard_plugin.service
 
-#### 参与贡献
+```
+    [Unit]
+    Description=Ascend aiguard device plugin
+    
+    [Service]
+    ExecStartPre=/bin/bash -c "dos2unix /home/HwHiAiUser/testplugin/run_plugin/limit_file/true_profile"
+    ExecStart=/bin/bash -c "apparmor_parser -r -W /home/HwHiAiUser/testplugin/run_plugin/limit_file/true_profile"
+    ExecStartPre=/bin/bash -c "cp /home/HwHiAiUser/testplugin/run_plugin/limit_file/ceccomp_profile.json /var/lib/kubelet/seccomp/profiles"
+    ExecStartPost=/bin/bash -c "/home/HwHiAiUser/testplugin/run_plugin/aiguard-plugin/aiguard-plugin"
+    Restart=always
+    RestartSec=2
+    KillMode=process
+    Type=forking
+    
+    [Install]
+    WantedBy=multi-user.target 
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+```
 
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
