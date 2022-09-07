@@ -35,7 +35,7 @@ edge_user.json为:
     "gid": 1000
     }
 
-3.创建log文件路径/var/alog/AtlasEdge_log/aiguard_plugin/
+3.创建log文件路径`/var/alog/AtlasEdge_log/aiguard_plugin/ `seccomp路径`/var/lib/kubelet/seccomp/profiles`
 构建dev_plugin为服务自启
 修改aiguard_plugin.service文件放到/etc/systemd/system目录下并执行
 
