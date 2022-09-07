@@ -52,16 +52,16 @@ function change_mod() {
     chmod 500 "${TOP_DIR}/run_plugin/aiguard-plugin/${output_name}"
 }
 
-function zip(){
-    cd "${TOP_DIR}"/output/
-    zip -r Ascend-mindxdl-aiguard_plugin.zip "$TOP_DIR"/run_plugin/
+function zip_dir(){
+    cd "${TOP_DIR}"/
+    zip -r "${TOP_DIR}"/output/Ascend-mindxdl-aiguard_plugin.zip run_plugin/
 }
 
 function main() {
   build_plugin
   mv_file
   change_mod
-  zip
+  zip_dir
 }
 
 main
