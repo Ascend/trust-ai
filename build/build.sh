@@ -41,13 +41,13 @@ function mv_file() {
     mv "$TOP_DIR/aiguard/edge_user.json"   "${TOP_DIR}"/run_plugin/edge_om
     mkdir "$TOP_DIR"/run_plugin/limit_file
     mv "$TOP_DIR/aiguard/cfs_profile"   "${TOP_DIR}"/run_plugin/limit_file
-    mv "$TOP_DIR/aiguard/sceccomp_profile.json"   "${TOP_DIR}"/run_plugin/limit_file
+    mv "$TOP_DIR/aiguard/seccomp_profile.json"   "${TOP_DIR}"/run_plugin/limit_file
     mkdir "$TOP_DIR"/run_plugin/service
     mv "$TOP_DIR/aiguard/aiguard_plugin.service"   "${TOP_DIR}"/run_plugin/service
 }
 
 function change_mod() {
-    chmod 600 "${TOP_DIR}/run_plugin/limit_file/sceccomp_profile.json"
+    chmod 600 "${TOP_DIR}/run_plugin/limit_file/seccomp_profile.json"
     chmod 600 "${TOP_DIR}/run_plugin/limit_file/cfs_profile"
     chmod 500 "${TOP_DIR}/run_plugin/aiguard-plugin/${output_name}"
 }
