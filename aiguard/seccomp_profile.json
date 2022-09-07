@@ -563,7 +563,7 @@
 			"args": [],
 			"excludes": {}
 		},
-		{
+        {
 			"names": [
 				"clone"
 			],
@@ -688,7 +688,7 @@
 			"names": [
 				"settimeofday",
 				"stime",
-				"clock_settime",
+				"clock_settime"
 			],
 			"action": "SCMP_ACT_ALLOW",
 			"includes": {
