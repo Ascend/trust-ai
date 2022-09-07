@@ -34,13 +34,6 @@ function build_plugin() {
 
 function mv_file() {
     mv "$TOP_DIR/aiguard/dev_plugin/src/plugin/cmd/aiguardplugin/${output_name}"   "${TOP_DIR}"/output
-}
-
-function change_mod() {
-    chmod 500 "${TOP_DIR}/output/${output_name}"
-}
-
-function zip(){
     mkdir "$TOP_DIR"/run_plugin
     mkdir "$TOP_DIR"/run_plugin/aiguard-plugin
     mv "${TOP_DIR}"/output/${output_name} "$TOP_DIR"/run_plugin/aiguard-plugin
@@ -51,6 +44,13 @@ function zip(){
     mv "$TOP_DIR/aiguard/sceccomp_profile.json"   "${TOP_DIR}"/run_plugin/limit_file
     mkdir "$TOP_DIR"/run_plugin/service
     mv "$TOP_DIR/aiguard/aiguard_plugin.service"   "${TOP_DIR}"/run_plugin/service
+}
+
+function change_mod() {
+    #chmod 500 "${TOP_DIR}/output/${output_name}"
+}
+
+function zip(){
     cd "${TOP_DIR}"/output/
     zip -r Ascend-mindxdl-aiguard_plugin.zip "$TOP_DIR"/run_plugin/
 }
