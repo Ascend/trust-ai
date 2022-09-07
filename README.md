@@ -15,14 +15,14 @@ bash build.sh
 ```
 run_plugin/
 ├── aiguard-plugin
-│   └── aiguard-plugin
+│   └── aiguard-plugin //挂载设备文件
 ├── edge_om
-│   └── edge_user.json
+│   └── edge_user.json //运行后降权
 ├── limit_file
-│   ├── cfs_profile
-│   └── seccomp_profile.json
+│   ├── cfs_profile //容器限制
+│   └── seccomp_profile.json //容器限制
 └── service
-    └── aiguard_plugin.service
+    └── aiguard_plugin.service //系统服务文件
 ```
 3.修改edge_user.json
 edge_user.json为:
@@ -35,7 +35,8 @@ edge_user.json为:
     "gid": 1000
     }
 
-3.构建dev_plugin为服务自启
+3.创建log文件路径/var/alog/AtlasEdge_log/aiguard_plugin/
+构建dev_plugin为服务自启
 修改aiguard_plugin.service文件放到/etc/systemd/system目录下并执行
 
     systemctl enable /etc/systemd/system/aiguard_plugin.service
