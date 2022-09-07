@@ -38,7 +38,8 @@ function mv_file() {
     mkdir "$TOP_DIR"/run_plugin/aiguard-plugin
     mv "${TOP_DIR}"/output/${output_name} "$TOP_DIR"/run_plugin/aiguard-plugin
     mkdir "$TOP_DIR"/run_plugin/edge_om
-    mv "$TOP_DIR/aiguard/edge_user.json"   "${TOP_DIR}"/run_plugin/edge_om
+    mkdir "$TOP_DIR"/run_plugin/edge_om/config
+    mv "$TOP_DIR/aiguard/edge_user.json"   "${TOP_DIR}"/run_plugin/edge_om/config
     mkdir "$TOP_DIR"/run_plugin/limit_file
     mv "$TOP_DIR/aiguard/cfs_profile"   "${TOP_DIR}"/run_plugin/limit_file
     mv "$TOP_DIR/aiguard/seccomp_profile.json"   "${TOP_DIR}"/run_plugin/limit_file
