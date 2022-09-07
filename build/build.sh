@@ -51,7 +51,7 @@ function zip(){
     mv "$TOP_DIR/aiguard/sceccomp_profile.json"   "${TOP_DIR}"/run_plugin/limit_file
     mkdir "$TOP_DIR"/run_plugin/service
     mv "$TOP_DIR/aiguard/aiguard_plugin.service"   "${TOP_DIR}"/run_plugin/service
-    cd "${TOP_DIR}/output/
+    cd "${TOP_DIR}"/output/
     zip -r Ascend-mindxdl-aiguard_plugin.zip "$TOP_DIR"/run_plugin/
 }
 
