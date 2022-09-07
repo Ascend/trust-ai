@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-profile cfs_profile flags=((attach_disconnected,mediate_deleted){
+profile cfs_profile flags=(attach_disconnected,mediate_deleted){
 	#include <abstractions/base>
 
 	network,
@@ -25,4 +25,4 @@ profile cfs_profile flags=((attach_disconnected,mediate_deleted){
 	deny /sys/fs/cg[^r]*/** wklx,
 	deny /sys/firmware/** rwklx,
 	deny /sys/kernel/security/** rwklx,
-})
+}
