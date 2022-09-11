@@ -1,7 +1,7 @@
 一、环境依赖
 | 软件名称 | 版本        |
 |------|-----------|
-| go   | >=1.10    |
+| go   | >=1.16.4   |
 | zip  | >=11.6.35 |
 
 二、安装部署
@@ -62,7 +62,7 @@ edge_user.json为:
     ExecStartPre=/bin/bash -c "dos2unix /home/HwHiAiUser/testplugin/run_plugin/limit_file/cfs_profile"
     ExecStart=/bin/bash -c "apparmor_parser -r -W /home/HwHiAiUser/testplugin/run_plugin/limit_file/cfs_profile"
     ExecStartPre=/bin/bash -c "cp /home/HwHiAiUser/testplugin/run_plugin/limit_file/seccomp_profile.json /var/lib/kubelet/seccomp/profiles"
-    ExecStartPost=/bin/bash -c "/home/HwHiAiUser/testplugin/run_plugin/aiguard-plugin/aiguard-plugin"
+    ExecStartPost=/bin/bash -c "/home/HwHiAiUser/testplugin/run_plugin/aiguard-plugin/aiguard-plugin >/dev/null 2>&1 &"
     Restart=always
     RestartSec=2
     KillMode=process
