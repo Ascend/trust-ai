@@ -35,13 +35,13 @@ run_plugin/
 
 
 ```
-3.修改edge_user.json
-edge_user.json为:
+3.修改edge_user.json为系统中用户，aiguard_plugin运行后会自动降权为此用户。
+参考edge_user.json为:
 
     {
     "changed": 0,
-    "user": "{HwHiAiUser}",
-    "group": "{HwHiAiUser}",
+    "user": "HwHiAiUser",
+    "group": "HwHiAiUser",
     "uid": 1000,
     "gid": 1000
     }
