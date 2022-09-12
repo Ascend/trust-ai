@@ -35,18 +35,18 @@ run_plugin/
 
 
 ```
-3.修改edge_user.json
-edge_user.json为:
+3.修改edge_user.json为系统中用户，aiguard_plugin运行后会自动降权为此用户。
+参考edge_user.json为:
 
     {
     "changed": 0,
-    "user": "{HwHiAiUser}",
-    "group": "{HwHiAiUser}",
+    "user": "HwHiAiUser",
+    "group": "HwHiAiUser",
     "uid": 1000,
     "gid": 1000
     }
 
-3.创建log文件路径`/var/alog/AtlasEdge_log/aiguard_plugin/ `. seccomp路径`/var/lib/kubelet/seccomp/profiles`
+3.创建log文件路径`/var/alog/AtlasEdge_log/aiguard_plugin/ `. seccomp路径`/var/lib/kubelet/seccomp/profiles/`
 
 4.构建dev_plugin为服务自启
 修改aiguard_plugin.service文件放到/etc/systemd/system目录下并执行
@@ -61,7 +61,7 @@ edge_user.json为:
     [Service]
     ExecStartPre=/bin/bash -c "dos2unix /home/HwHiAiUser/testplugin/run_plugin/limit_file/cfs_profile"
     ExecStart=/bin/bash -c "apparmor_parser -r -W /home/HwHiAiUser/testplugin/run_plugin/limit_file/cfs_profile"
-    ExecStartPre=/bin/bash -c "cp /home/HwHiAiUser/testplugin/run_plugin/limit_file/seccomp_profile.json /var/lib/kubelet/seccomp/profiles"
+    ExecStartPre=/bin/bash -c "cp /home/HwHiAiUser/testplugin/run_plugin/limit_file/seccomp_profile.json /var/lib/kubelet/seccomp/profiles/"
     ExecStartPost=/bin/bash -c "/home/HwHiAiUser/testplugin/run_plugin/aiguard-plugin/aiguard-plugin >/dev/null 2>&1 &"
     Restart=always
     RestartSec=2
