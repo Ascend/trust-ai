@@ -53,7 +53,7 @@ run_plugin/
 
     systemctl enable /etc/systemd/system/aiguard_plugin.service
     systemctl start /etc/systemd/system/aiguard_plugin.service
-*aiguard_plugin.service参考如下*
+*aiguard_plugin.service参考如下*  注：若系统为centos，参考aiguard_plugin_centos.service
 ```
     [Unit]
     Description=Ascend aiguard device plugin
@@ -62,6 +62,23 @@ run_plugin/
     ExecStartPre=/bin/bash -c "dos2unix /home/HwHiAiUser/testplugin/run_plugin/limit_file/cfs_profile"
     ExecStart=/bin/bash -c "apparmor_parser -r -W /home/HwHiAiUser/testplugin/run_plugin/limit_file/cfs_profile"
     ExecStartPre=/bin/bash -c "cp /home/HwHiAiUser/testplugin/run_plugin/limit_file/seccomp_profile.json /var/lib/kubelet/seccomp/profiles/"
+    ExecStartPost=/bin/bash -c "/home/HwHiAiUser/testplugin/run_plugin/aiguard-plugin/aiguard-plugin >/dev/null 2>&1 &"
+    Restart=always
+    RestartSec=2
+    KillMode=process
+    Type=forking
+    
+    [Install]
+    WantedBy=multi-user.target 
+
+```
+ *aiguard_plugin_centos.service*
+```
+    [Unit]
+    Description=Ascend aiguard device plugin
+    
+    [Service]
+    ExecStart=/bin/bash -c "cp /home/HwHiAiUser/testplugin/run_plugin/limit_file/seccomp_profile.json /var/lib/kubelet/seccomp/profiles/"
     ExecStartPost=/bin/bash -c "/home/HwHiAiUser/testplugin/run_plugin/aiguard-plugin/aiguard-plugin >/dev/null 2>&1 &"
     Restart=always
     RestartSec=2
