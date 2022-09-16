@@ -53,7 +53,7 @@ run_plugin/
 
     systemctl enable /etc/systemd/system/aiguard_plugin.service
     systemctl start /etc/systemd/system/aiguard_plugin.service
-*aiguard_plugin.service参考如下*  注：若系统为centos，参考aiguard_plugin_centos.service
+*aiguard_plugin.service参考如下*  注：centos 系统和A500环境不支持AppArmor， k8s下发容器时可取消apparmor的配置项，参考aiguard_plugin_centos.service
 ```
     [Unit]
     Description=Ascend aiguard device plugin
