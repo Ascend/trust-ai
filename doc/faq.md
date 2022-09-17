@@ -21,5 +21,5 @@
 
 3. 创建一个新目录用于存放下载的依赖（以pylibs为例，创建其他目录时请将pylibs替换为对应目录），在当前目录执行`pip3 download -r requirements.txt -d pylibs`将依赖下载到指定目录。
 4. 进入pylibs目录，执行`tar -cf aiguard_pip.tar *`将下载的python库打包成aiguard_pip.tar文件。
-5. 将aiguard_pip.tar和requirements.txt文件拷贝到无网络环境上相同目录，在aiguard_pip.tar文件所在目录创建一个空目录（以pylibs为例），执行`tar -xf aigruar_pip.tar -C pylibs`解压到pylibs目录。
-6. 进入aiguard_pip.tar所在目录，root用户执行`pip3 install --force-reinstall -r requirements --no-index --find-links pylibs`，非root用户执行`pip3 install --force-reinstall -r requirements --no-index --find-links pylibs --user`
+5. 将aiguard_pip.tar和requirements.txt文件拷贝到无网络环境上相同目录，在aiguard_pip.tar文件所在目录创建一个空目录（以pylibs为例），执行`tar -xf aiguard_pip.tar -C pylibs`解压到pylibs目录。
+6. 进入aiguard_pip.tar所在目录，root用户执行`pip3 install --force-reinstall -r requirements.txt --no-index --find-links pylibs`，非root用户执行`pip3 install --force-reinstall -r requirements.txt --no-index --find-links pylibs --user`
