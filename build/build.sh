@@ -22,6 +22,7 @@ function build_plugin() {
     export CGO_CPPFLAGS="-fstack-protector-strong -D_FORTIFY_SOURCE=2 -O2 -fPIC -ftrapv"
     go build -buildmode=pie -ldflags " -buildid none     \
             -s   \
+            -linkmode=external \
             -extldflags=-Wl,-z,relro,-z,now,-z,noexecstack" \
             -o "${output_name}"  \
             -trimpath
