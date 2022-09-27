@@ -6,6 +6,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -60,9 +61,9 @@ func handleLogFile(filename string) error {
 	if err != nil {
 		if os.IsNotExist(err) {
 			f, _ := os.Create(filename)
-            if err = os.Chmod(filename, LogMode); err != nil {
-			return err
-		}
+			if err = os.Chmod(filename, LogMode); err != nil {
+				return err
+			}
 			defer func() {
 				_ = f.Close()
 			}()
@@ -81,11 +82,11 @@ func handleLogFile(filename string) error {
 
 func create(filename string) *zap.SugaredLogger {
 	if err := handleLogFolder(LogFolder); err != nil {
-		RunLog.Errorf("handle log folder(%s) failed:%s", LogFolder, err.Error())
+		log.Printf("handle log folder(%s) failed:%s", LogFolder, err.Error())
 		return nil
 	}
 	if err := handleLogFile(filename); err != nil {
-		RunLog.Errorf("handle log file(%s) failed: %s", filename, err.Error())
+		log.Printf("handle log file(%s) failed: %s", filename, err.Error())
 		return nil
 	}
 
