@@ -27,7 +27,7 @@ var (
 	OpLog          *zap.SugaredLogger
 	HomePath       = getHomePath()
 	RootPath       = filepath.Join(HomePath, ".aiguard_plugin")
-	LogFolder      = filepath.Join(RootPath, "AtlasEdge_log")
+	LogFolder      = filepath.Join(RootPath, "aiguard_plugin_log")
 	RunLogFile     = filepath.Join(LogFolder, "aiguard_plugin_run.log")
 	OperateLogFile = filepath.Join(LogFolder, "aiguard_plugin_operate.log")
 	IsCompress     bool
