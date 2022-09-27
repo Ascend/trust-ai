@@ -35,12 +35,12 @@ func getSelfExePath() (string, error) {
 func getUserName(configPath string) (string, error) {
 	exePath, err := getSelfExePath()
 	if err != nil {
-		Error.Printf("Get aiguard-plugin exec file failed. %s \n", err.Error())
+		RunLog.Errorf("Get aiguard-plugin exec file failed. %s ", err.Error())
 		return "", err
 	}
 	exeAbsPath, err := filepath.Abs(exePath)
 	if err != nil {
-		Error.Printf("Get  aiguard-plugin exec file absolute path failed. %s \n", err.Error())
+		RunLog.Errorf("Get  aiguard-plugin exec file absolute path failed. %s ", err.Error())
 		return "", err
 	}
 	var edgeWorkDir = path.Dir(path.Dir(exeAbsPath))
@@ -51,17 +51,17 @@ func getUserName(configPath string) (string, error) {
 	}
 	confByte, err := ioutil.ReadFile(realPath)
 	if err != nil {
-		Error.Printf("Load user Config err: %s.\n", err.Error())
+		RunLog.Errorf("Load user Config err: %s.", err.Error())
 		return "", err
 	}
 	if len(confByte) == 0 {
-		Error.Println("user Config file is empty")
+		RunLog.Errorln("user Config file is empty")
 		return "", errors.New("config is empty")
 	}
 	var userConfig EdgeUserConfig
 	err = json.Unmarshal(confByte, &userConfig)
 	if err != nil {
-		Error.Printf("LoadDeviceConfig Unmarshal config file err: %v.\n", err)
+		RunLog.Errorf("LoadDeviceConfig Unmarshal config file err: %v.", err)
 		return "", err
 	}
 	userName := userConfig.User
@@ -72,12 +72,12 @@ func getUserName(configPath string) (string, error) {
 func SetEdgeUserID() error {
 	userName, err := getUserName(EdgeUserConfigPath)
 	if err != nil || len(userName) == 0 {
-		Error.Printf("get user Name error: %v. \n", err)
+		RunLog.Errorf("get user Name error: %v. ", err)
 		return err
 	}
 	edgeUser, err := user.Lookup(userName)
 	if err != nil {
-		Error.Printf("invalid user %s \n", userName)
+		RunLog.Errorf("invalid user %s ", userName)
 		return err
 	}
 	const decimalBase = 10
@@ -87,7 +87,7 @@ func SetEdgeUserID() error {
 		return err
 	}
 	if err := syscall.Setgid(int(gid)); err != nil {
-		Error.Printf("Set gid for user %s error: %s \n", userName, err.Error())
+		RunLog.Errorf("Set gid for user %s error: %s ", userName, err.Error())
 		return err
 	}
 	uid, err := strconv.ParseInt(edgeUser.Uid, decimalBase, bit32Size)
@@ -95,7 +95,7 @@ func SetEdgeUserID() error {
 		return err
 	}
 	if err := syscall.Setuid(int(uid)); err != nil {
-		Error.Printf("Set uid for user %s error: %s \n", userName, err.Error())
+		RunLog.Errorf("Set uid for user %s error: %s ", userName, err.Error())
 		return err
 	}
 	return nil

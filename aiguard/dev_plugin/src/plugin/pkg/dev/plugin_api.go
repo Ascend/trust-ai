@@ -33,7 +33,7 @@ type FuseDevicePlugin struct {
 func CreateFuseDevPlugin(devConf *Conf) (*FuseDevicePlugin, error) {
 	var devices []*v1beta1.Device
 	SharedNum := devConf.sharedNum
-	Info.Printf("FuseDevicePlugin ShareNum is : %d .\n", SharedNum)
+	RunLog.Infof("FuseDevicePlugin ShareNum is : %d .", SharedNum)
 	for i := 0; i < SharedNum; i++ {
 		devices = append(devices, &v1beta1.Device{
 			ID:     fmt.Sprintf("%s-%d", devConf.name, i),
@@ -56,7 +56,7 @@ func (d *FuseDevicePlugin) FuseDevPluginRegister() error {
 		return net.DialTimeout("unix", addr, timeout)
 	}))
 	if err != nil {
-		Error.Printf("connect to kubelet failed, err: %s.\n", err.Error())
+		RunLog.Errorf("connect to kubelet failed, err: %s.", err.Error())
 		return err
 	}
 	defer conn.Close()
@@ -70,51 +70,51 @@ func (d *FuseDevicePlugin) FuseDevPluginRegister() error {
 	_, err = client.Register(context.Background(), r)
 	if err != nil {
 		d.IsRegistered = false
-		Error.Printf("FuseDevicePlugin Register %s error: %v\n", d.Name, err)
+		RunLog.Errorf("FuseDevicePlugin Register %s error: %v", d.Name, err)
 		return err
 	}
 	d.IsRegistered = true
-	Info.Printf("FuseDevicePlugin Register success: %v.\n", d.Name)
+	RunLog.Infof("FuseDevicePlugin Register success: %v.", d.Name)
 	return nil
 }
 
 func (d *FuseDevicePlugin) createNetListen(pluginSocketPath string) (net.Listener, error) {
-	Info.Println("createNetListen")
+	RunLog.Infoln("createNetListen")
 	if _, err := os.Stat(pluginSocketPath); err == nil {
-		Warn.Printf("Found exist sock file, sockName is: %s, now remove it.\n", path.Base(pluginSocketPath))
+		RunLog.Warnf("Found exist sock file, sockName is: %s, now remove it.", path.Base(pluginSocketPath))
 		err := os.Remove(pluginSocketPath)
 		if err != nil {
-			Error.Printf("remove sock %s err:\n", d.SockName, err.Error())
+			RunLog.Errorf("remove sock %s err:%s", d.SockName, err.Error())
 			return nil, err
 		}
-		Info.Printf("remove sock file %s successfully\n", d.SockName)
+		RunLog.Infof("remove sock file %s successfully", d.SockName)
 	}
 	netListen, err := net.Listen("unix", pluginSocketPath)
 	if err != nil {
-		Error.Printf("device plugin start failed, err: %s.\n", err.Error())
+		RunLog.Errorf("device plugin start failed, err: %s.", err.Error())
 		return nil, err
 	}
 	err = os.Chmod(pluginSocketPath, socketChmod)
 	if err != nil {
-		Error.Printf("change file: %s mode error.\n", path.Base(pluginSocketPath))
+		RunLog.Errorf("change file: %s mode error.", path.Base(pluginSocketPath))
 	}
 	return netListen, err
 }
 
 // FuseDevPluginRegAndServe start device plugin register Serve
 func (d *FuseDevicePlugin) FuseDevPluginRegAndServe() error {
-	Info.Println("start DevicePlugin RegAndServe.")
+	RunLog.Infoln("start DevicePlugin RegAndServe.")
 	pluginSocketPath := v1beta1.DevicePluginPath + d.SockName
-	Info.Printf("pluginSocketPath: %s.\n", d.SockName)
+	RunLog.Infof("pluginSocketPath: %s.", d.SockName)
 	netListen, err := d.createNetListen(pluginSocketPath)
 	if err != nil {
-		Error.Printf("FuseDevPluginRegAndServe createNetListen err: %v .\n", err)
+		RunLog.Errorf("FuseDevPluginRegAndServe createNetListen err: %v .", err)
 		return err
 	}
 	d.GrpcServer = grpc.NewServer([]grpc.ServerOption{}...)
 	v1beta1.RegisterDevicePluginServer(d.GrpcServer, d)
 	go d.GrpcServer.Serve(netListen)
-	Info.Printf("DevicePluginRegAndServe(%s) success.\n", d.Name)
+	RunLog.Infof("DevicePluginRegAndServe(%s) success.", d.Name)
 	return nil
 }
 
@@ -132,14 +132,14 @@ func (d *FuseDevicePlugin) FuseDevPluginTearDown() {
 func (d *FuseDevicePlugin) ListAndWatch(_ *v1beta1.Empty, s v1beta1.DevicePlugin_ListAndWatchServer) error {
 	err := s.Send(&v1beta1.ListAndWatchResponse{Devices: d.Devices})
 	if err != nil {
-		Error.Printf("listAndWatch: send device info failed: %v .\n", err)
+		RunLog.Errorf("listAndWatch: send device info failed: %v .", err)
 		return err
 	}
-	Info.Println("ListAndWatch ...")
+	RunLog.Infoln("ListAndWatch ...")
 	for {
 		select {
 		case <-d.closeCh:
-			Warn.Println("FuseDevicePlugin ListAndWatch receive close chan, return.")
+			RunLog.Warnln("FuseDevicePlugin ListAndWatch receive close chan, return.")
 			return nil
 		}
 	}
@@ -147,9 +147,9 @@ func (d *FuseDevicePlugin) ListAndWatch(_ *v1beta1.Empty, s v1beta1.DevicePlugin
 
 // Allocate is called by kubelet to mount device to k8s pod.
 func (d *FuseDevicePlugin) Allocate(ctx context.Context, requests *v1beta1.AllocateRequest) (*v1beta1.AllocateResponse, error) {
-	Info.Printf("AllocateRequest: %#v .\n", *requests)
+	RunLog.Infof("AllocateRequest: %#v .", *requests)
 	for _, n := range (*requests).ContainerRequests {
-		Info.Printf("Allocate ContainerRequests: %#v .\n", *n)
+		RunLog.Infof("Allocate ContainerRequests: %#v .", *n)
 	}
 	var response v1beta1.AllocateResponse
 	devSpec := v1beta1.DeviceSpec{
@@ -163,7 +163,7 @@ func (d *FuseDevicePlugin) Allocate(ctx context.Context, requests *v1beta1.Alloc
 		Mounts:  nil,
 	})
 	response.ContainerResponses = devicesList
-	Info.Printf("Allocate Responses devSpec: %#v .\n", devSpec)
+	RunLog.Infof("Allocate Responses devSpec: %#v .", devSpec)
 	return &response, nil
 }
 

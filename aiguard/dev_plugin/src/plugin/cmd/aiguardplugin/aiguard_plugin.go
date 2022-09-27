@@ -11,11 +11,7 @@ import (
 )
 
 var (
-	sharedNum     = dev.MaxSharedNum
-	logLevel      = dev.Loglevel
-	logMaxAge     = dev.MaxAge
-	logFile       = dev.LogPath
-	logMaxBackups = dev.MaxBackups
+	sharedNum = dev.MaxSharedNum
 )
 
 func main() {
