@@ -105,7 +105,7 @@ func (d *FuseDevicePlugin) createNetListen(pluginSocketPath string) (net.Listene
 func (d *FuseDevicePlugin) FuseDevPluginRegAndServe() error {
 	RunLog.Infoln("start DevicePlugin RegAndServe.")
 	pluginSocketPath := v1beta1.DevicePluginPath + d.SockName
-	RunLog.Info("pluginSocketPath: %s.", d.SockName)
+	RunLog.Infof("pluginSocketPath: %s.", d.SockName)
 	netListen, err := d.createNetListen(pluginSocketPath)
 	if err != nil {
 		RunLog.Errorf("FuseDevPluginRegAndServe createNetListen err: %v .", err)
