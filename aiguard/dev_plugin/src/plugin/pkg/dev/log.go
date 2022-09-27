@@ -60,6 +60,9 @@ func handleLogFile(filename string) error {
 	if err != nil {
 		if os.IsNotExist(err) {
 			f, _ := os.Create(filename)
+            if err = os.Chmod(filename, LogMode); err != nil {
+			return err
+		}
 			defer func() {
 				_ = f.Close()
 			}()
