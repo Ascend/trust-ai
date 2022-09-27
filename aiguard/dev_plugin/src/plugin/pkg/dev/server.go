@@ -16,7 +16,7 @@ func CreateFuseDevPluginManager(allDevs []*Conf) (*FuseDevicePluginManager, erro
 	for _, devConf := range allDevs {
 		devPlugin, err := CreateFuseDevPlugin(devConf)
 		if err != nil {
-			Error.Printf("CreateDevicePluginManager CreateDevicePlugin err: %v .\n", err)
+			RunLog.Errorf("CreateDevicePluginManager CreateDevicePlugin err: %v .", err)
 			return nil, err
 		}
 		pm.DevicePlugin = devPlugin
@@ -28,10 +28,10 @@ func CreateFuseDevPluginManager(allDevs []*Conf) (*FuseDevicePluginManager, erro
 func (d *FuseDevicePluginManager) FuseDevPluginRegister(isForce bool) error {
 	devicePlugin := d.DevicePlugin
 	if devicePlugin.IsRegistered && !isForce {
-		Info.Println("FuseDevicePluginManager already Registered")
+		RunLog.Infoln("FuseDevicePluginManager already Registered")
 		return nil
 	}
-	Info.Println("start Register FuseDevicePluginManager.")
+	RunLog.Infoln("start Register FuseDevicePluginManager.")
 	return devicePlugin.FuseDevPluginRegister()
 }
 
