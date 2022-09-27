@@ -51,23 +51,23 @@ func newSignWatcher(osSigns ...os.Signal) chan os.Signal {
 }
 
 func signNotify(sigs chan os.Signal) error {
-	Info.Println("(Press CTRL+C to quit).")
+	RunLog.Infoln("(Press CTRL+C to quit).")
 	if sigs == nil {
-		Info.Println("no sigs.")
+		RunLog.Infoln("no sigs.")
 		return errors.New("sigs is nil")
 	}
 	select {
 	case s, signEnd := <-sigs:
 		if signEnd == false {
-			Info.Println("no watcher sign event, channel closed.")
+			RunLog.Infoln("no watcher sign event, channel closed.")
 			return errors.New("no watcher sign event, channel closed")
 		}
 		switch s {
 		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL:
-			Info.Println("Received exit signal, shutting down.")
+			RunLog.Infoln("Received exit signal, shutting down.")
 			return nil
 		default:
-			Info.Printf("Received unknown signal: %s, shutting down.\n", s.String())
+			RunLog.Infof("Received unknown signal: %s, shutting down.", s.String())
 			return errors.New("received unknown signal, shutting down")
 		}
 	}
