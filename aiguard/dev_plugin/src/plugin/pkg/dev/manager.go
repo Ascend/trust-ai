@@ -32,10 +32,6 @@ const (
 	MaxBackups = 30
 	// MaxSharedNum Maximum device shared num
 	MaxSharedNum = 32
-	// LogPath plugin run log path
-	LogPath = "/var/alog/AtlasEdge_log/aiguard_plugin/aiguard_plugin_run.log"
-	// Loglevel Log level, -1-debug, 0-info:default, 1-warning, 2-error, 3-dpanic , 4-panic, 5-fatal
-	Loglevel = 0
 	// EdgeUserConfigPath edge user config file path
 	EdgeUserConfigPath = "edge_om/config/edge_user.json"
 	// SelfExeLink The current execution file soft link
@@ -75,12 +71,12 @@ func NewHwDevManager(sharedNum int) *HwDevManager {
 func (hdm *HwDevManager) checkDev(name string) error {
 	fileInfo, err := os.Stat(name)
 	if err != nil {
-		Error.Printf("device: %s not exist.\n", name)
+		RunLog.Errorf("device: %s not exist.", name)
 		return err
 
 	}
 	if fileInfo.Mode()&os.ModeDevice != os.ModeDevice {
-		Error.Printf("file:%s is not a device file.\n", name)
+		RunLog.Errorf("file:%s is not a device file.", name)
 		return err
 	}
 	return nil
@@ -88,11 +84,11 @@ func (hdm *HwDevManager) checkDev(name string) error {
 
 func (hdm *HwDevManager) start(pm *FuseDevicePluginManager, isForce bool) error {
 	if err := pm.FuseDevPluginRegister(isForce); err != nil {
-		Error.Printf("Register error: %v.\n", err)
+		RunLog.Errorf("Register error: %v.", err)
 		return err
 	}
 	if err := pm.FuseDevPluginRegAndServe(); err != nil {
-		Error.Printf("RegisterDeviceAndServe error: %v.\n", err)
+		RunLog.Errorf("RegisterDeviceAndServe error: %v.", err)
 		return err
 	}
 	return nil
@@ -100,7 +96,7 @@ func (hdm *HwDevManager) start(pm *FuseDevicePluginManager, isForce bool) error 
 
 // Serve start grpc server
 func (hdm *HwDevManager) Serve() error {
-	Info.Println("Starting OS signs watcher.")
+	RunLog.Infoln("Starting OS signs watcher.")
 	osSignChan := newSignWatcher(syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL)
 	if err := hdm.checkDev(Name); err != nil {
 		return signNotify(osSignChan)
@@ -112,23 +108,23 @@ func (hdm *HwDevManager) Serve() error {
 	}
 	pluginSocket := fmt.Sprintf("%s.sock", resourceName)
 	pluginSockPath := path.Join(realDevSockPath, pluginSocket)
-	Info.Println("Starting socket path watcher")
+	RunLog.Infoln("Starting socket path watcher")
 	watcher := NewFileWatch()
 	if err := watcher.watchFile(realDevSockPath); err != nil {
-		Error.Printf("failed to create file watcher, err:%s.\n", err.Error())
+		RunLog.Errorf("failed to create file watcher, err:%s.", err.Error())
 		return signNotify(osSignChan)
 	}
 	defer watcher.fileWatcher.Close()
 	pm, err := CreateFuseDevPluginManager(hdm.allDevs)
 	if err != nil {
-		Error.Printf("Create DevicePlugin Manager error: %v.\n", err)
+		RunLog.Errorf("Create DevicePlugin Manager error: %v.", err)
 		return signNotify(osSignChan)
 	}
 	if err := hdm.start(pm, false); err != nil {
-		Error.Printf("start register server error: %v.\n", err)
+		RunLog.Errorf("start register server error: %v.", err)
 	}
 	if err := SetEdgeUserID(); err != nil {
-		Error.Printf("Set uid error :%s \n", err.Error())
+		RunLog.Errorf("Set uid error :%s ", err.Error())
 		pm.FuseDevPluginTearDown()
 		return signNotify(osSignChan)
 	}
@@ -147,33 +143,33 @@ func (hdm *HwDevManager) Serve() error {
 
 func (hdm *HwDevManager) signalWatch(watcher *fsnotify.Watcher, sigs chan os.Signal, pluginSockPath string) bool {
 	if sigs == nil {
-		Info.Println("no sigs.")
+		RunLog.Infoln("no sigs.")
 		return true
 	}
 	select {
 	case event, signEnd := <-watcher.Events:
 		if signEnd == false {
-			Info.Println("no watcher event, channel closed.")
+			RunLog.Infoln("no watcher event, channel closed.")
 			return true
 		}
 		if event.Name == pluginSockPath && event.Op&fsnotify.Remove == fsnotify.Remove {
-			Warn.Println("notify: sock file deleted, plese check!")
+			RunLog.Warnln("notify: sock file deleted, plese check!")
 		}
 		if event.Name == v1beta1.KubeletSocket && event.Op&fsnotify.Create == fsnotify.Create {
-			Info.Println("notify:kubelet.sock file created, Reboot required")
+			RunLog.Infoln("notify:kubelet.sock file created, Reboot required")
 			return true
 		}
 	case s, signEnd := <-sigs:
 		if signEnd == false {
-			Info.Println("no watcher sign event, channel closed.")
+			RunLog.Infoln("no watcher sign event, channel closed.")
 			return true
 		}
 		switch s {
 		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL:
-			Info.Println("Received exit signal, shutting down.")
+			RunLog.Infoln("Received exit signal, shutting down.")
 			return true
 		default:
-			Info.Printf("Received unknown signal: %s, shutting down.\n", s.String())
+			RunLog.Infof("Received unknown signal: %s, shutting down.", s.String())
 			return true
 		}
 	}
