@@ -1,14 +1,26 @@
+
+
 #include <tunables/global>
 
+
 profile cfs_profile flags=(attach_disconnected,mediate_deleted) {
+
   #include <abstractions/base>
+
 
   network,
   capability,
   file,
   umount,
-  mount,
-  ptrace,
+  mount fstype=fuse.crypto_fs -> /home/**,
+
+  # Host (privileged) processes may send signals to container processes.
+  signal (receive) peer=unconfined,
+  # dockerd may send signals to container processes (for "docker kill").
+  signal (receive) peer=unconfined,
+  # Container processes may send signals amongst themselves.
+  signal (send,receive) peer=cfs_profile,
+
 
   deny @{PROC}/* w,   # deny write for all files directly in /proc (not in a subdir)
   # deny write to files not in /proc/<number>/** or /proc/sys/**
@@ -18,6 +30,8 @@ profile cfs_profile flags=(attach_disconnected,mediate_deleted) {
   deny @{PROC}/sysrq-trigger rwklx,
   deny @{PROC}/kcore rwklx,
 
+  #deny mount,
+
   deny /sys/[^f]*/** wklx,
   deny /sys/f[^s]*/** wklx,
   deny /sys/fs/[^c]*/** wklx,
@@ -25,4 +39,9 @@ profile cfs_profile flags=(attach_disconnected,mediate_deleted) {
   deny /sys/fs/cg[^r]*/** wklx,
   deny /sys/firmware/** rwklx,
   deny /sys/kernel/security/** rwklx,
+
+
+  # suppress ptrace denials when using 'docker ps' or using 'ps' inside a container
+  ptrace (trace,read,tracedby,readby) peer=cfs_profile,
+
 }
