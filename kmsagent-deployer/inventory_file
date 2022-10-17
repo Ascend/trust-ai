@@ -1,0 +1,2 @@
+[ascend]
+localhost ansible_connection='local'
