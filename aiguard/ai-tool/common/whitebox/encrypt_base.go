@@ -15,6 +15,7 @@ import (
 	"ai-tool/common/utils"
 )
 
+// GenerateTable generate whitebox table
 func GenerateTable() {
 	key := make([]byte, 16)
 	rand.Read(key)

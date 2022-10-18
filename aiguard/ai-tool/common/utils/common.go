@@ -11,6 +11,7 @@ const (
 	info = "Please input mk to decrypt psk info, and end with a new line."
 )
 
+// CloseConsole close expect console
 func CloseConsole(console *expect.Console) {
 	if console != nil {
 		err := console.Close()
@@ -20,6 +21,7 @@ func CloseConsole(console *expect.Console) {
 	}
 }
 
+// ConsoleShow show console
 func ConsoleShow(console *expect.Console, ch chan bool) {
 	data := make([]byte, 1024)
 	_, err := console.Read(data)
@@ -41,6 +43,7 @@ func ConsoleShow(console *expect.Console, ch chan bool) {
 	}
 }
 
+// SensitiveInfoClear clear sensitive info
 func SensitiveInfoClear(s []byte) {
 	for index := 0; index < len(s); index++ {
 		s[index] = 0
@@ -48,6 +51,7 @@ func SensitiveInfoClear(s []byte) {
 
 }
 
+// GetCommand get cfs command
 func GetCommand(arg []string) []string {
 	if len(arg) < 3 {
 		fmt.Println("please input cfs command follow the run")

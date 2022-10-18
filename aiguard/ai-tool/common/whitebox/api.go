@@ -9,6 +9,7 @@ import (
 
 const blockSize = 16
 
+// EncryptBytes encrypt bytes data
 func EncryptBytes(src []byte, f *embed.FS) ([]byte, error) {
 	paddingLen := blockSize - len(src)%blockSize
 	if paddingLen == 0 {
@@ -20,18 +21,18 @@ func EncryptBytes(src []byte, f *embed.FS) ([]byte, error) {
 	copy(temp[:len(src)], src)
 	temp[len(temp)-1] = byte(paddingLen)
 
-	src_block, dst_block := make([]byte, blockSize), make([]byte, blockSize)
-	defer utils.SensitiveInfoClear(src_block)
-	defer utils.SensitiveInfoClear(dst_block)
+	srcBlock, dstBlock := make([]byte, blockSize), make([]byte, blockSize)
+	defer utils.SensitiveInfoClear(srcBlock)
+	defer utils.SensitiveInfoClear(dstBlock)
 
 	for cycleTime := 0; cycleTime < len(temp)/blockSize; cycleTime++ {
 		start := cycleTime * blockSize
 		end := start + blockSize
-		copy(src_block[:], temp[start:end])
-		if err := encryptBlock(dst_block, src_block, f); err != nil {
+		copy(srcBlock[:], temp[start:end])
+		if err := encryptBlock(dstBlock, srcBlock, f); err != nil {
 			return []byte(nil), err
 		}
-		copy(temp[start:end], dst_block[:])
+		copy(temp[start:end], dstBlock[:])
 	}
 
 	dst := make([]byte, len(temp))
@@ -39,6 +40,7 @@ func EncryptBytes(src []byte, f *embed.FS) ([]byte, error) {
 	return dst, nil
 }
 
+// DecryptBytes decrypt bytes data
 func DecryptBytes(src []byte, f *embed.FS) ([]byte, error) {
 	if len(src)%blockSize != 0 {
 		return []byte(nil), fmt.Errorf("the decrypt cipher data length must be N*%v", blockSize)
@@ -48,18 +50,18 @@ func DecryptBytes(src []byte, f *embed.FS) ([]byte, error) {
 	defer utils.SensitiveInfoClear(temp)
 	copy(temp[:len(src)], src)
 
-	src_block, dst_block := make([]byte, blockSize), make([]byte, blockSize)
-	defer utils.SensitiveInfoClear(src_block)
-	defer utils.SensitiveInfoClear(dst_block)
+	srcBlock, dstBlock := make([]byte, blockSize), make([]byte, blockSize)
+	defer utils.SensitiveInfoClear(srcBlock)
+	defer utils.SensitiveInfoClear(dstBlock)
 
 	for cycleTime := 0; cycleTime < len(temp)/blockSize; cycleTime++ {
 		start := cycleTime * blockSize
 		end := start + blockSize
-		copy(src_block[:], temp[start:end])
-		if err := decryptBlock(dst_block, src_block, f); err != nil {
+		copy(srcBlock[:], temp[start:end])
+		if err := decryptBlock(dstBlock, srcBlock, f); err != nil {
 			return []byte(nil), err
 		}
-		copy(temp[start:end], dst_block[:])
+		copy(temp[start:end], dstBlock[:])
 	}
 
 	paddingLen := int(temp[len(temp)-1])
