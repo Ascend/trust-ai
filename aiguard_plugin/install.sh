@@ -13,7 +13,7 @@ function run_service(){
 }
 function check(){
     count=`ps -ef |grep aiguard-plugin |grep -v "grep" |wc -l`
-    if [$count<1];then
+    if (($count < 1));then
         echo "aiguard plugin run failed"
         exit 3
     fi
