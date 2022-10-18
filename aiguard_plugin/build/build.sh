@@ -46,6 +46,7 @@ function mv_file() {
     mv "$TOP_DIR/seccomp_profile.json"   "${TOP_DIR}"/aiguard_plugin/limit_file
     mkdir "$TOP_DIR"/aiguard_plugin/service
     mv "$TOP_DIR/aiguard_plugin.service"   "${TOP_DIR}"/aiguard_plugin/service
+    mv "$TOP_DIR/install.sh" "$TOP_DIR"/aiguard_plugin
 }
 
 function change_mod() {
