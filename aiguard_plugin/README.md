@@ -21,7 +21,7 @@ bash build.sh
 目录结构如下：
 
 ```
-run_plugin/
+aiguard_plugin/
 ├── aiguard-plugin
 │   └── aiguard-plugin //挂载设备文件
 ├── edge_om
@@ -46,47 +46,4 @@ run_plugin/
     "gid": 1000
     }
 
-3.创建seccomp路径`/var/lib/kubelet/seccomp/profiles/`
-
-4.构建dev_plugin为服务自启
-修改aiguard_plugin.service文件放到/etc/systemd/system目录下并执行
-
-    systemctl enable /etc/systemd/system/aiguard_plugin.service
-    systemctl start /etc/systemd/system/aiguard_plugin.service
-*aiguard_plugin.service参考如下*  注：centos 系统和A500环境不支持AppArmor， k8s下发容器时可取消apparmor的配置项，参考aiguard_plugin_centos.service
-```
-    [Unit]
-    Description=Ascend aiguard device plugin
-    
-    [Service]
-    ExecStartPre=/bin/bash -c "dos2unix /home/HwHiAiUser/testplugin/run_plugin/limit_file/cfs_profile"
-    ExecStartPost=/bin/bash -c "apparmor_parser -r -W /home/HwHiAiUser/testplugin/run_plugin/limit_file/cfs_profile"
-    ExecStartPre=/bin/bash -c "cp /home/HwHiAiUser/testplugin/run_plugin/limit_file/seccomp_profile.json /var/lib/kubelet/seccomp/profiles/"
-    ExecStart=/bin/bash -c "/home/HwHiAiUser/testplugin/run_plugin/aiguard-plugin/aiguard-plugin >/dev/null 2>&1 &"
-    Restart=always
-    RestartSec=2
-    KillMode=process
-    Type=forking
-    
-    [Install]
-    WantedBy=multi-user.target 
-
-```
- *aiguard_plugin_centos.service*
-```
-    [Unit]
-    Description=Ascend aiguard device plugin
-    
-    [Service]
-    ExecStartPre=/bin/bash -c "cp /home/HwHiAiUser/testplugin/run_plugin/limit_file/seccomp_profile.json /var/lib/kubelet/seccomp/profiles/"
-    ExecStart=/bin/bash -c "/home/HwHiAiUser/testplugin/run_plugin/aiguard-plugin/aiguard-plugin >/dev/null 2>&1 &"
-    Restart=always
-    RestartSec=2
-    KillMode=process
-    Type=forking
-    
-    [Install]
-    WantedBy=multi-user.target 
-
-```
-
+3.执行安装脚本 bash install.sh
