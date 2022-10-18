@@ -23,13 +23,14 @@ bash build.sh
 ```
 aiguard_plugin/
 ├── aiguard-plugin
-│   └── aiguard-plugin //挂载设备文件
+│   └── aiguard-plugin //设备插件二进制
 ├── edge_om
 │   └── config
-│       └── edge_user.json //运行后降权
+│       └── edge_user.json //运行后降权 配置文件
+├── install.sh //安装脚本
 ├── limit_file
-│   ├── cfs_profile //容器限制
-│   └── seccomp_profile.json //容器限制
+│   ├── cfs_profile //容器资源限制
+│   └── seccomp_profile.json //容器系统调用限制
 └── service
     └── aiguard_plugin.service //系统服务文件
 
