@@ -1,0 +1,10 @@
+[Unit] 
+Description=Ascend aiguard device plugin  
+[Service] 
+ExecStart=/bin/bash -c "/usr/local/bin/aiguard_plugin/aiguard-plugin/aiguard-plugin  >/dev/null 2>&1 &" 
+Restart=always 
+RestartSec=2 
+KillMode=process 
+Type=forking  
+[Install] 
+WantedBy=multi-user.target
