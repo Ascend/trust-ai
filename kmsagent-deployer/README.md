@@ -3,7 +3,7 @@
 KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 ## 环境要求
 1. 仅支持root用户使用。
-2. 工具所在环境的python >= 3.7，ansible==2.11.9
+2. 工具所在环境的python>=3.7，ansible==2.11.9，openssl>=1.1.1n。
 3. 环境搭建建议使用[ascend-deployer工具](https://gitee.com/ascend/ascend-deployer)部署，执行`./start_download.sh --os-list=<OS1>,<OS2>`进行系统依赖下载，将对应的npu的zip包放入ascend-deployer/resources目录，编辑inventory_file文件，参考下面的**批量配置**一节中的步骤。执行`./install.sh --install=sys_pkg,python,npu`进行环境部署，更多详情[参考链接](https://gitee.com/ascend/ascend-deployer/blob/master/README.md)。
 4. 仅支持Ubuntu 18.04/20.04、CentOS7及Euler操作系统，x86_64和aarch64架构均支持
 5. 运行环境时间需要校准到正确的UTC时间
@@ -42,7 +42,7 @@ KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 1. 执行`rm -f /etc/localtime && cp /usr/share/zoneinfo/UTC /etc/localtime`将主节点即本工具所在环境的时间设置为UTC时间，再参考命令`date -s '2022-10-13 12:00:00'`校准系统时间，请以实际情况进行校准。
 2. 单机配置KMSAgent服务可跳过上述批量配置步骤，执行`./kmsagent.sh --check --python-dir={python_dir}`可查看带配置设备的连通性，并检查所有设备的系统时间。由于证书的导入要求时间在一段区间内才能成功导入，该步骤会提示用户哪些环境需要修改系统时间才能成功导入KMSAgent证书。如果有不想修改系统时间的环境，请编辑inventory_file文件，将对应环境的配置删除，之后运行工具也不会对其进行配置。
 3. 执行`./kmsagent.sh --modify --python-dir={python_dir}`进行系统时间的修改，该步骤会修改步骤2提示环境的系统时间。如果某些环境不修改时间，请删除相关配置。
-4. 执行`./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --cert-op-param={param} --subject={param} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书，会要求用户输入ca.key的密钥，并进行第二次确认，之后在生成kmsagent.pem时会再次要求用户输入ca.key的密钥。
+4. 执行`./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --cert-op-param={param} --subject={param} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书，会要求用户输入ca.key的密钥（长度不能小于6位），并进行第二次确认，之后在生成kmsagent.pem时会再次要求用户输入ca.key的密钥。
 
 ## 参数说明
 
@@ -64,3 +64,4 @@ KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 
 ## 注意事项
 1. 工具运行要求`python>=3.7`且`ansible==2.11.9`。手动python安装参考路径为/usr/local/python3.7.5,执行`pip3 install cryptography==3.3.2 ansible==2.11.9`安装ansible。先安装cryptography再安装ansible，直接安装可能会导致依赖冲突。建议使用ascend-deployer工具进行部署。
+2. 生成ca.key时的密钥须符合组织的安全要求。

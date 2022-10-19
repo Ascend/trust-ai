@@ -16,6 +16,8 @@ class Cert:
             first_csr_dir = csr_list[0]
             while True:
                 passin = getpass.getpass("Enter pass phrase for CAkey:")
+                if not passin:
+                    continue
                 subp = self.get_cert(
                     csr_dir=first_csr_dir,
                     out_dir=os.path.dirname(first_csr_dir),
@@ -37,6 +39,8 @@ class Cert:
         else:
             while True:
                 passin = getpass.getpass("Enter pass phrase for CAkey:")
+                if not passin:
+                    continue
                 subp = self.get_cert(
                     csr_dir=local_csr_dir,
                     out_dir=os.path.dirname(local_csr_dir),

@@ -75,9 +75,9 @@ function rotate_log() {
 }
 
 function set_permission() {
-    chmod 750 "${BASE_DIR}" "${BASE_DIR}"/playbooks/
-    chmod 600 "${BASE_DIR}"/*.log "${BASE_DIR}"/inventory_file "${BASE_DIR}"/ansible.cfg 2>/dev/null
-    chmod 500 "${BASE_DIR}"/certs.py "${BASE_DIR}"/kmsagent.sh 2>/dev/null
+    chmod 750 "${BASE_DIR}" "${BASE_DIR}"/playbooks/ "${BASE_DIR}"/resources
+    chmod 600 "${BASE_DIR}"/*.log "${BASE_DIR}"/inventory_file "${BASE_DIR}"/ansible.cfg "${BASE_DIR}"/certs.py "${BASE_DIR}"/openssl.cnf 2>/dev/null
+    chmod 500 "${BASE_DIR}"/kmsagent.sh 2>/dev/null
     chmod 400 "${BASE_DIR}"/*.log.? 2>/dev/null
 }
 
@@ -115,6 +115,10 @@ function generate_ca_cert() {
     openssl rand -writerand ~/.rnd
     read -srp "Enter pass phrase for ca.key:" passout
     echo ""
+    if [ "${#passout}" -lt 6 ]; then
+        log_error "The CA certificate is generated failed"
+        return 1
+    fi
     read -srp "Verifying - Enter pass phrase for ca.key:" passout2
     echo ""
     if [ "${passout}" = "${passout2}" ]; then
@@ -133,6 +137,18 @@ function generate_ca_cert() {
     fi
 }
 
+function zip_extract() {
+    zip_list=$(find "${BASE_DIR}"/resources -name "*.zip")
+    rm -rf "${BASE_DIR}"/resources/fuse_*
+    for zip_file in $zip_list; do
+        if [[ $zip_file =~ x86_64.zip ]]; then
+            unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_x86_64
+        else
+            unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_aarch64
+        fi
+    done
+}
+
 function download_haveged_and_fuse() {
     python3 download.py
 }
@@ -143,6 +159,7 @@ function process_deploy() {
         print_usage
         return 1
     fi
+    zip_extract
     download_haveged_and_fuse
     if ! generate_ca_cert; then
         return 1
@@ -210,8 +227,8 @@ function parse_script_args() {
             ;;
         --aivault-ip=*)
             aivault_ip=$(echo "$1" | cut -d"=" -f2)
-            if echo "${aivault_ip}" | grep -Evq '^[0-9.]*$'; then
-                log_error "--aivault-ip parameter is invalid"
+            if [ "$(echo "${aivault_ip}" | grep -cEv '^[0-9.]*$')" -ne 0 ] || [ "$(echo "${aivault_ip}" | grep -cE '^*\.$')" -ne 0 ] || [ "$(echo "${aivault_ip}" | grep -cvE '^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?){4}$')" -ne 0 ]; then
+                log_error "The input vaule of [aivault-ip] is invalid, and value needs valid IPv4 address."
                 print_usage
                 return 1
             fi
@@ -219,8 +236,8 @@ function parse_script_args() {
             ;;
         --aivault-port=*)
             aivault_port=$(echo "$1" | cut -d"=" -f2)
-            if echo "${aivault_port}" | grep -Evq '^[0-9]*$'; then
-                log_error "--aivault-port parameter is invalid"
+            if [ "$(echo "${aivault_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${aivault_port}" -lt 1024 ] || [ "${aivault_port}" -gt 65535 ]; then
+                log_error "The input value of [aivault-port] is invalid, and value from 1024 to 65535 is available."
                 print_usage
                 return 1
             fi
@@ -228,8 +245,8 @@ function parse_script_args() {
             ;;
         --cfs-port=*)
             cfs_port=$(echo "$1" | cut -d"=" -f2)
-            if echo "${cfs_port}" | grep -Evq '^[0-9]*$'; then
-                log_error "--cfs-port parameter is invalid"
+            if [ "$(echo "${cfs_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${cfs_port}" -lt 1024 ] || [ "${cfs_port}" -gt 65535 ]; then
+                log_error "The input value of [cfs-port] is invalid, and value from 1024 to 65535 is available."
                 print_usage
                 return 1
             fi
@@ -248,7 +265,6 @@ function parse_script_args() {
             if [ "${python_dir: -1}" = / ]; then
                 python_dir="${python_dir%?}"
             fi
-
             shift
             ;;
         --check)

@@ -70,7 +70,7 @@
         group: HwHiAiUser
         mode: 0600
     
-    - name: yum install haveged and fuse
+    - name: yum install haveged
       shell: rpm -ivh --force --nodeps --replacepkgs {{ resources_dir }}/centos_{{ ansible_architecture }}/*.rpm
       register: sys_result
       when: ansible_pkg_mgr == "yum"
@@ -79,7 +79,7 @@
       debug: var=sys_result
       when: sys_result.changed
     
-    - name: apt install haveged and fuse
+    - name: apt install haveged
       shell: export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical; dpkg --force-all -i {{ resources_dir }}/ubuntu_{{ ansible_architecture }}/*.deb
       register: sys_result
       when: ansible_pkg_mgr == "apt"
@@ -102,6 +102,37 @@
       debug:
         msg:
           - "haveged status is {{ haveged_status.stdout }}"
+    
+    - name: find fuse-plugin
+      stat:
+        dest: "{{ resources_dir }}/fuse_{{ ansible_architecture }}/aiguard_plugin/install.sh"
+      register: fuse_plugin
+    
+    - name: install fuse-plugin
+      shell: bash {{ resources_dir }}/fuse_{{ ansible_architecture }}/aiguard_plugin/install.sh
+      when: fuse_plugin.stat.exists
+    
+    - name: message
+      debug:
+        msg:
+          - "can not find fuse-plugin package, fuse-plugin install skipped"
+      when: not fuse_plugin.stat.exists
+    
+    - name: Check fuse-plugin status
+      shell: ps -ef | grep aiguard-plugin | grep -v "grep" | wc -l
+      register: fuse_plugin_status
+    
+    - name: message
+      debug:
+        msg:
+          - "fuse-plugin run successfully"
+      when: fuse_plugin_status.stdout != 0 and fuse_plugin.stat.exists
+    
+    - name: message
+      debug:
+        msg:
+          - "fuse-plugin run failed"
+      when: fuse_plugin_status.stdout == 0 and fuse_plugin.stat.exists
     
     - name: Check docker status
       shell: systemctl is-active docker
