@@ -1,0 +1,37 @@
+{
+  "Normal_Interface": {
+    "GET": [
+      "/AIVAULT/v1/queryMK",
+      "/AIVAULT/v1/queryPSK",
+      "/usermanager/v1/query"
+    ],
+    "POST": [
+      "/AIVAULT/v1/updateKey",
+      "/AIVAULT/v1/createMK",
+      "/AIVAULT/v1/createPSK",
+      "/usermanager/v1/password"
+    ],
+    "DELETE": [
+      "/AIVAULT/v1/deletePSK",
+      "/AIVAULT/v1/deleteMK"
+    ]
+  },
+  "Admin_Interface": {
+    "GET": [
+      "/AIVAULT/v1/version",
+      "/AIVAULT/v1/certStatus",
+      "/AIVAULT/v1/health",
+      "/usermanager/v1/query",
+      "/datamanager/v1/export"
+    ],
+    "POST": [
+      "/AIVAULT/v1/updateKey",
+      "/usermanager/v1/user",
+      "/usermanager/v1/password",
+      "/datamanager/v1/import"
+    ],
+    "DELETE": [
+      "/usermanager/v1/user"
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "INIT_ADMIN_PASSWORD": "admin123!",
+  "AIVAULT_INTERFACE": "https://docker_ip:5000"
+}
