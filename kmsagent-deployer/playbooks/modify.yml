@@ -1,0 +1,18 @@
+- import_playbook: check.yml
+
+- name: deploy for all hosts
+  hosts: '{{ hosts_name }}'
+  gather_facts: false
+  tasks:
+    - name: set remote UTC time
+      shell: rm -f /etc/localtime && cp /usr/share/zoneinfo/UTC /etc/localtime
+      when: ansible_connection != "local" and remote_time != ""
+    
+    - name: get local time
+      shell: echo $(( $(date +%s) ))
+      register: time_result
+      when: ansible_connection == "local"
+    
+    - name: set remote time
+      shell: date -s "$(date -d "@{{ hostvars.localhost.time_result.stdout }}" "+%F %T")"
+      when: ansible_connection != "local" and remote_time != ""

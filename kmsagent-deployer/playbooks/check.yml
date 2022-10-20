@@ -1,0 +1,32 @@
+- name: deploy for all hosts
+  hosts: '{{ hosts_name }}'
+  gather_facts: false
+  tasks:
+    - name: get local time
+      shell: echo $(date +%s)
+      register: local_time
+      when: ansible_connection == "local"
+    
+    - name: get remote time
+      shell: echo $(date +%s)
+      register: remote_time
+      when: ansible_connection != "local"
+    
+    - name: check time
+      shell: |
+        if [ {{ hostvars.localhost.local_time.stdout }} -gt {{ remote_time.stdout }} ] || [ $(echo $(({{ hostvars.localhost.local_time.stdout }}+3650*24*60*60))) -lt {{ remote_time.stdout }} ];then echo {{ remote_time.stdout }};fi
+      register: check_result
+      when: ansible_connection != "local"
+    
+    - name: set remote_time
+      set_fact:
+        remote_time: "{{ check_result.stdout }}"
+        cacheable: yes
+      when: ansible_connection != "local"
+    
+    - name: Print nodes requiring modification time
+      debug:
+        msg:
+          - "The current environment system time needs to be modified. Please confirm whether to modify it."
+          - "If you do not want to modify the environment time, delete the configuration in the inventory_file file"
+      when: ansible_connection != "local" and check_result.stdout != ""

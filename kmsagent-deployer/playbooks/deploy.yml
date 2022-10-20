@@ -1,0 +1,245 @@
+- import_playbook: distribution.yml
+
+- name: deploy for all hosts
+  hosts: '{{ hosts_name }}'
+  gather_facts: false
+  tasks:
+    - name: gather facts
+      setup:
+        fact_path: /notexist
+    
+    - name: set resources_dir local
+      set_fact:
+        resources_dir: "{{ inventory_dir }}/resources"
+        cacheable: yes
+
+    - name: set resources_dir remote
+      set_fact:
+        resources_dir: "{{ ansible_user_dir }}/resources"
+        cacheable: yes
+      when: ansible_connection != "local"
+    
+    - name: check model
+      stat:
+        path: /run/board_cfg.ini
+      register: a500
+    
+    - name: set kmsagent path
+      set_fact:
+        kmsagent_path: "{{ '/usr/local/Ascend/driver/tools/kmsagent' if not a500.stat.exists else '/home/data/miniD/driver/tools/kmsagent' }}"
+        cacheable: yes
+    
+    - name: Check whether the cert directory exists
+      stat:
+        path: /opt/cert
+      register: dir_result
+
+    - name: clean resources
+      file:
+        state: absent
+        path: /opt/cert
+      when: dir_result.stat.exists
+    
+    - name: move ca files first
+      shell: cp -r {{ resources_dir }}/cert /opt
+      when: ansible_connection != "local"
+    
+    - name: move ca files second
+      shell: cp -r {{ resources_dir }}/cert /opt
+      when: ansible_connection == "local"
+    
+    - name: set cert dir permission
+      file:
+        path: /opt/cert
+        owner: HwHiAiUser
+        group: HwHiAiUser
+        mode: 0700
+        recurse: no
+    
+    - name: set cafile permission first
+      file:
+        path: /opt/cert/ca.key
+        owner: HwHiAiUser
+        group: HwHiAiUser
+        mode: 0600
+    
+    - name: set cafile permission second
+      file:
+        path: /opt/cert/ca.pem
+        owner: HwHiAiUser
+        group: HwHiAiUser
+        mode: 0600
+    
+    - name: yum install haveged
+      shell: rpm -ivh --force --nodeps --replacepkgs {{ resources_dir }}/centos_{{ ansible_architecture }}/*.rpm
+      register: sys_result
+      when: ansible_pkg_mgr == "yum"
+    
+    - name: message
+      debug: var=sys_result
+      when: sys_result.changed
+    
+    - name: apt install haveged
+      shell: export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical; dpkg --force-all -i {{ resources_dir }}/ubuntu_{{ ansible_architecture }}/*.deb
+      register: sys_result
+      when: ansible_pkg_mgr == "apt"
+
+    - name: message
+      debug: var=sys_result
+      when: sys_result.changed
+    
+    - name: enable haveged
+      shell: systemctl enable haveged
+    
+    - name: start haveged
+      shell: systemctl start haveged
+    
+    - name: check haveged status
+      shell: systemctl is-active haveged
+      register: haveged_status
+    
+    - name: message
+      debug:
+        msg:
+          - "haveged status is {{ haveged_status.stdout }}"
+    
+    - name: find fuse-plugin
+      stat:
+        dest: "{{ resources_dir }}/fuse_{{ ansible_architecture }}/aiguard_plugin/install.sh"
+      register: fuse_plugin
+    
+    - name: install fuse-plugin
+      shell: bash {{ resources_dir }}/fuse_{{ ansible_architecture }}/aiguard_plugin/install.sh
+      when: fuse_plugin.stat.exists
+    
+    - name: message
+      debug:
+        msg:
+          - "can not find fuse-plugin package, fuse-plugin install skipped"
+      when: not fuse_plugin.stat.exists
+    
+    - name: Check fuse-plugin status
+      shell: ps -ef | grep aiguard-plugin | grep -v "grep" | wc -l
+      register: fuse_plugin_status
+    
+    - name: message
+      debug:
+        msg:
+          - "fuse-plugin run successfully"
+      when: fuse_plugin_status.stdout != 0 and fuse_plugin.stat.exists
+    
+    - name: message
+      debug:
+        msg:
+          - "fuse-plugin run failed"
+      when: fuse_plugin_status.stdout == 0 and fuse_plugin.stat.exists
+    
+    - name: Check docker status
+      shell: systemctl is-active docker
+      register: docker_status
+      changed_when: false
+      failed_when: false
+      ignore_errors: yes
+    
+    - name: start docker
+      shell: systemctl daemon-reload && systemctl restart docker
+      when: docker_status.stdout != "active"
+
+    
+    - name: Check whether the docker network aiguard exists
+      shell: docker network ls | grep aiguard | wc -l
+      register: aiguard_result
+    
+    - name: docker create network aiguard
+      shell: docker network create aiguard
+      when: aiguard_result.stdout == "0"
+    
+    - name: get CfsIP
+      shell: docker network inspect aiguard | grep Gateway|cut -d'"' -f4
+      register: cfsip
+    
+    - name: Configuring the cfs service
+      shell: |
+        {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s SERVER -n CfsIP -v {{ cfsip.stdout }}
+        {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s SERVER -n CfsPort -v {{ cfs_port }}
+    
+    - name: Configuring the aivault service
+      shell: |
+        {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s AIVAULT_SERVER -n AiVaultIP -v {{ aivault_ip }}
+        {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s AIVAULT_SERVER -n AiVaultPort -v {{ aivault_port }}
+        {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s AIVAULT_SERVER -n AiVaultCaPath -v /opt/cert/ca.pem
+    
+    - name: Check whether the TlsCertPath directory exists
+      stat:
+        path: /opt/tlscert
+      register: tlscert_result
+    
+    - name: create TlsCertPath
+      shell: mkdir /opt/tlscert
+      when: not tlscert_result.stat.exists
+    
+    - name: Check whether the TlsBackupCertPath directory exists
+      stat:
+        path: /opt/tlscertbak
+      register: tlscertbak_result
+    
+    - name: create TlsBackupCertPath
+      shell: mkdir /opt/tlscertbak
+      when: not tlscertbak_result.stat.exists
+    
+    - name: Start kmsagent service
+      shell: npu-smi set -t key-manage -s start
+    
+    - name: Generate kmsagent.csr
+      shell: |
+        {{ kmsagent_path }} tls get-csr "rsa:4096:sha256" "{{ cert_op_param }}" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
+    
+    - name: Copy kmsagent.csr from remote host to local
+      fetch:
+        src: /opt/tlscert/tmp/kmsagent.csr
+        dest: "{{ hostvars.localhost.resources_dir }}"
+      when: ansible_connection != "local"
+    
+    - name: Generate kmsagent.pem
+      shell: python3 {{ resources_dir }}/../certs.py
+      when: ansible_connection == "local"
+    
+    - name: copy kmsagent.pem to remote hosts
+      copy:
+        src: "{{ hostvars.localhost.resources_dir }}/{{ hostvars[inventory_hostname]['inventory_hostname'] }}/opt/tlscert/tmp/kmsagent.pem"
+        dest: /opt/tlscert/tmp
+      when: ansible_connection != "local"
+
+    
+    - name: Import kmsagent certificate
+      shell: |
+        {{ kmsagent_path }} tls set-cert "/opt/tlscert/tmp/kmsagent.pem /opt/cert/ca.pem" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
+
+    - name: set TlsCertPath directory permission
+      file:
+        path: /opt/tlscert
+        owner: HwHiAiUser
+        group: HwHiAiUser
+        recurse: yes
+    
+    - name: set TlsBackupCertPath directory permission
+      file:
+        path: /opt/tlscertbak
+        owner: HwHiAiUser
+        group: HwHiAiUser
+        recurse: yes
+    
+    - name: restart the kmsagent service
+      shell: |
+        npu-smi set -t key-manage -s stop
+        npu-smi set -t key-manage -s start
+    
+    - name: Check the running state of kmsagent
+      shell: npu-smi info -t key-manage
+      register: kmsagent_stat
+    
+    - name: message
+      debug:
+        msg:
+          - "{{ kmsagent_stat | default('NOT DEFINED') }}"
+      when: kmsagent_stat.changed

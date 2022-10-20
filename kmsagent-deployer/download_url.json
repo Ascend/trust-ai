@@ -1,0 +1,16 @@
+{
+	"resources/centos_aarch64/": [
+		"https://repo.huaweicloud.com/epel/7/aarch64/Packages/h/haveged-1.9.1-1.el7.aarch64.rpm"
+	],
+	"resources/centos_x86_64/": [
+		"https://repo.huaweicloud.com/epel/7/x86_64/Packages/h/haveged-1.9.13-1.el7.x86_64.rpm"
+	],
+	"resources/ubuntu_x86_64/": [
+		"https://repo.huaweicloud.com/ubuntu/pool/universe/h/haveged/haveged_1.9.1-6_amd64.deb",
+		"https://repo.huaweicloud.com/ubuntu/pool/universe/h/haveged/libhavege1_1.9.1-6_amd64.deb"
+	],
+	"resources/ubuntu_aarch64/": [
+		"https://repo.huaweicloud.com/ubuntu-ports/pool/universe/h/haveged/haveged_1.9.1-6_arm64.deb",
+		"https://repo.huaweicloud.com/ubuntu-ports/pool/universe/h/haveged/libhavege1_1.9.1-6_arm64.deb"
+	]
+}
