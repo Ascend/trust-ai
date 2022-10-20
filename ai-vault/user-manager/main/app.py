@@ -8,7 +8,7 @@ from flask import Flask
 
 from utils.sqlite_operation import db, User
 from main.view.user_manager_view import user_manager
-from config import LOG_PATH, DB_PATH, LOGGING_CONFIG, CERT_PATH, CRT_FILE, KEY_FILE, INSTALL_PARAM, SQL_DB
+from config import LOG_PATH, RUN_LOG_FILE, DB_PATH, LOGGING_CONFIG, CERT_PATH, CRT_FILE, KEY_FILE, INSTALL_PARAM, SQL_DB
 app = Flask(__name__)
 
 
@@ -20,6 +20,7 @@ def init_logger():
     if not os.path.exists(LOG_PATH):
         os.makedirs(LOG_PATH, mode=0o750)
     log_conf.dictConfig(LOGGING_CONFIG)
+    os.chmod(RUN_LOG_FILE, 0o640)
 
 
 def init_certs():
@@ -49,10 +50,10 @@ def init_db():
 
 
 def init_app():
+    init_logger()
     certs_flag = init_certs()
     db_flag = init_db()
     register_api()
-    init_logger()
     return certs_flag and db_flag
 
 

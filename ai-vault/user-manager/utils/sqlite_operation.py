@@ -8,7 +8,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 from utils import status_code
 from utils.tools import pbkdf2hash
-from config import RUN_LOG, Admin_User, Admin_Role, Normal_Role, MAX_USER_NUM, DEFAULT_PAGE, DEFAULT_PAGE_SIZE, LOG_INFO
+from config import RUN_LOG, Admin_User, Admin_Role, Normal_Role, MAX_USER_NUM, DEFAULT_PAGE, \
+    DEFAULT_PAGE_SIZE, LOG_INFO, LOG_ERROR
 
 db = SQLAlchemy()
 
@@ -40,6 +41,7 @@ class User(db.Model):
         admin = cls.query.filter_by(user_name="admin").first()
         if admin is None:
             if cls.query.count() != 0:
+                RUN_LOG.log(LOG_ERROR, "DB may be corrupted, cannot find admin when start service.")
                 click.secho("DB may be corrupted, cannot find admin.")
                 return False
             if install_param.get("INIT_ADMIN_PASSWORD") is None:
@@ -50,7 +52,7 @@ class User(db.Model):
                          role_id=Admin_Role, role_type="admin", create_time=datetime.datetime.now())
             db.session.add(admin)
             db.session.commit()
-            RUN_LOG.log(LOG_INFO, "Init Admin Success. Start User-Manager service.")
+            RUN_LOG.log(LOG_INFO, "Init Admin Success.")
         return True
 
     @classmethod
