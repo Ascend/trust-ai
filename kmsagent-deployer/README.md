@@ -2,11 +2,13 @@
 ## 功能描述
 KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 ## 环境要求
-1. 仅支持root用户使用。
-2. 工具所在环境的python>=3.7，ansible==2.11.9，openssl>=1.1.1n。
-3. 环境搭建建议使用[ascend-deployer工具](https://gitee.com/ascend/ascend-deployer)部署，执行`./start_download.sh --os-list=<OS1>,<OS2>`进行系统依赖下载，将对应的npu的zip包放入ascend-deployer/resources目录，编辑inventory_file文件，参考下面的**批量配置**一节中的步骤。执行`./install.sh --install=sys_pkg,python,npu`进行环境部署，更多详情[参考链接](https://gitee.com/ascend/ascend-deployer/blob/master/README.md)。
-4. 仅支持Ubuntu 18.04/20.04、CentOS7及Euler操作系统，x86_64和aarch64架构均支持
-5. 运行环境时间需要校准到正确的UTC时间
+1. 仅支持root用户使用工具。
+2. 工具所在的环境即master节点需要安装python和ansible，且python>=3.7，python库cryptography==3.3.2，ansible-core==2.11.9。
+3. 加密工具运行环境需要安装开源OpenSSL工具，且版本>=1.1.1n，并且<3.0.0。
+4. 请确保待配置环境已经安装包含KMSAgent的驱动，安装好后，可以使用KMSAgent服务。
+5. CfsIP的获取需要使用docker，请确保待配置环境已经安装docker，且版本>=18.09。
+6. 仅支持Ubuntu 18.04/20.04、CentOS7.9及Euler2.10操作系统，x86_64和aarch64架构均支持。
+7. 运行环境时间需要校准到正确的UTC时间。
 ## 批量配置
 1. 基于密钥认证的ssh连接，本工具运行前请确认系统中未安装paramiko（ansible在某些情况下会使用paramiko，其配置不当容易引起安全问题）。配置其他设备的ip地址，编辑inventory_file文件，格式如下：
 
@@ -46,8 +48,8 @@ KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 
 ## 参数说明
 
-用户根据实际需要选择对应参数完成安装，命令为`./install.sh [options]`。
-参数说明请参见下表，表中各参数的可选参数范围可通过执行`./install.sh --help`查看。
+用户根据实际需要选择对应参数完成批量配置，命令为`./kmsagent.sh [options]`。
+参数说明请参见下表，表中各参数的可选参数范围可通过执行`./kmsagent.sh --help`查看。
 
 | 参数            | 说明                                                                                                                        |
 | :-------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -56,12 +58,11 @@ KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 | --aivault-port  | 指定aivault服务的端口。                                                                                                     |
 | --cfs-port      | 指定cfs服务的端口。                                                                                                         |
 | --cert-op-param | 指定kmsagent.csr的用户信息，参考格式：`"yanfabu\|chengdu\|sichuan\|Huawei\|CN"`。                                           |
-| --check         | 检查环境，确保控制机安装好可用的python3、ansible等组件，并检查与待安装设备的连通性及设备的系统时间。                        |
+| --check         | 检查环境，确保master节点安装好可用的python3、ansible等组件，并检查与待配置设备的连通性及设备的系统时间。                        |
 | --modify        | 修改远程节点的系统时间到UTC时间。                                                                                           |
 | --python-dir    | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5 |
 | --subject       | 设置CA请求的主题，参考格式：`"/CN=Example Root CA"`。                                                                       |
 | --verbose       | 打印详细信息。                                                                                                              |
 
 ## 注意事项
-1. 工具运行要求`python>=3.7`且`ansible==2.11.9`。手动python安装参考路径为/usr/local/python3.7.5,执行`pip3 install cryptography==3.3.2 ansible==2.11.9`安装ansible。先安装cryptography再安装ansible，直接安装可能会导致依赖冲突。建议使用ascend-deployer工具进行部署。
-2. 生成ca.key时的密钥须符合组织的安全要求。
+1. 生成ca.key时的密钥须符合组织的安全要求。
