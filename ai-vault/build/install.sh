@@ -34,16 +34,16 @@ read -sp "Enter password for ca.key > " passwd
 printf "\n"
 
 # AI-VAULT导出CSR
-su AiVault -c "/home/AiVault/ai-vault req -type MGMT -subject 'CN|SiChuan|ChengDu|Huawei|Ascend'" || exit 1
-su AiVault -c "/home/AiVault/ai-vault req -type SVC -subject 'CN|SiChuan|ChengDu|Huawei|Ascend'" || exit 1
+su AiVault -c "/home/AiVault/ai-vault req -force -type MGMT -subject 'CN|SiChuan|ChengDu|Huawei|Ascend'" || exit 1
+su AiVault -c "/home/AiVault/ai-vault req -force -type SVC -subject 'CN|SiChuan|ChengDu|Huawei|Ascend'" || exit 1
 
 # 签发AI-VAULT证书
 su AiVault -c "openssl x509 -req -in /home/AiVault/.ai-vault/cert/svc/svc.csr -CA /home/AiVault/ca.pem -CAkey /home/AiVault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/svc.pem -days 3650 -passin pass:'${passwd}'" || exit 1
 su AiVault -c "openssl x509 -req -in /home/AiVault/.ai-vault/cert/mgmt/mgmt.csr -CA /home/AiVault/ca.pem -CAkey /home/AiVault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/mgmt.pem -days 3650 -passin pass:'${passwd}'" || exit 1
 
 # 导入AI-VAULT证书
-su AiVault -c "/home/AiVault/ai-vault x509 -type MGMT -caFile /home/AiVault/ca.pem -certFile /home/AiVault/.ai-vault/mgmt.pem" || exit 1
-su AiVault -c "/home/AiVault/ai-vault x509 -type SVC -caFile /home/AiVault/ca.pem -certFile /home/AiVault/.ai-vault/svc.pem" || exit 1
+su AiVault -c "/home/AiVault/ai-vault x509 -type MGMT -caFile /home/AiVault/ca.pem -certFile /home/AiVault/.ai-vault/mgmt.pem | grep 'fingerprint'" || exit 1
+su AiVault -c "/home/AiVault/ai-vault x509 -type SVC -caFile /home/AiVault/ca.pem -certFile /home/AiVault/.ai-vault/svc.pem | grep 'fingerprint'" || exit 1
 
 # 生成服务证书私钥
 su AiVault -c "openssl genrsa -out /home/AiVault/.ai-vault/cert/server.key 4096" || exit 1
