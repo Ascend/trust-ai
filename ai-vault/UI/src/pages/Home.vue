@@ -1,28 +1,5 @@
 <template>
   <div class="main">
-      <div>
-        <el-upload
-          class="upload-demo"
-          action="/datamanager/v1/import"
-          :file-list="fileList"
-          style="display: inline-block;"
-          :before-upload="handleBeforeUpload"
-          :show-file-list="false"
-          :on-success="handleUploadSuccess"
-          :on-error="handleUploadError"
-          >
-          <el-button style="margin-left: 10px;" type="primary">{{ $t('BUTTON_UPLOAD') }}</el-button>
-        </el-upload>
-
-        <el-button 
-          type="primary" 
-          plain 
-          style="margin-left: 10px;"
-          @click="handleDownload"
-        >
-          {{ $t('BUTTON_DOWNLOAD') }}
-        </el-button>
-      </div>
     <div class="info-block">
       <el-row :gutter="20">
           <el-col :span="8" class="info-col">
@@ -55,6 +32,30 @@
       <el-table-column prop="CertAlarm" :label="$t('COLUMN_CERT_ALARM')"></el-table-column>
       <el-table-column prop="CrlStatus" :label="$t('COLUMN_CRL_STATUS')"></el-table-column>
     </el-table>
+
+    <div class="home-operation">
+      <el-upload
+        class="upload-demo"
+        action="/datamanager/v1/import"
+        :file-list="fileList"
+        style="display: inline-block;"
+        :before-upload="handleBeforeUpload"
+        :show-file-list="false"
+        :on-success="handleUploadSuccess"
+        :on-error="handleUploadError"
+        >
+        <el-button style="margin-left: 10px;" type="primary">{{ $t('BUTTON_UPLOAD') }}</el-button>
+      </el-upload>
+
+      <el-button 
+        type="primary" 
+        plain 
+        style="margin-left: 10px;"
+        @click="handleDownload"
+      >
+        {{ $t('BUTTON_DOWNLOAD') }}
+      </el-button>
+    </div>
   </div>
 </template>
 
@@ -79,20 +80,47 @@ export default {
     this.fetchData()
   },
   methods: {
-    fetchData() {
+    queryVersion() {
       fetchVersion()
-          .then(res => {
-              this.version = res.data.data.version.split('_')[0]
-          })
+        .then(res => {
+          if(res.data.status === '31000022') {
+            let timerVersion = setTimeout(() => {
+              this.queryVersion()
+              clearTimeout(timerVersion)
+            }, 1000);
+          }
+            this.version = res.data.data.version.split('_')[0]
+        })
+    },
+    queryHealth() {
       fetchHealthStatus()
-          .then(res => {
-              this.healthStatus = res.data.msg === 'ok' ? '健康' : '不健康'
-          })
+        .then(res => {
+          if(res.data.status === '31000022') {
+            let timerHealth = setTimeout(() => {
+              this.queryHealth()
+              clearTimeout(timerHealth)
+            }, 1000);
+          }
+            this.healthStatus = res.data.msg === 'ok' ? '健康' : '不健康'
+        })
+    },
+    queryCert() {
       fetchCertStatus()
-          .then(res => {
-              this.tableData = res.data.data
-              this.handleSpan()
-          })
+        .then(res => {
+          if(res.data.status === '31000022') {
+            let timerCert = setTimeout(() => {
+              this.queryCert()
+              clearTimeout(timerCert)
+            }, 1000);
+          }
+            this.tableData = res.data.data
+            this.handleSpan()
+        })
+    },
+    fetchData() {
+      this.queryVersion()
+      this.queryHealth()
+      this.queryCert()      
     },
     handleSpan() {
       let mgmtArr = this.tableData.filter(item => item.CertType === 'MGMT')
@@ -183,6 +211,9 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.home-operation {
+  margin-top: 20px;
+}
   .info-block {
       background-color: #1f2329;
       height: 64px;

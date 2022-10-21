@@ -15,6 +15,7 @@
                 class="input-search"
                 :placeholder="$t('PLACEHOLDER_INPUT')"
                 clearable
+                @clear="handleClear"
                 @keyup.enter.native="fetchUserList"
             ></el-input>
             <el-button
@@ -104,6 +105,8 @@ export default {
         fetchUserList() {
             if(this.UserName.length > 0) {
                 this.userParams.UserName = this.UserName
+            } else {
+                delete this.userParams.UserName
             }
             fetchUser(this.userParams)
                 .then(res => {
@@ -159,6 +162,9 @@ export default {
             this.userParams.CurrentPage = val
             this.fetchUserList()
         },
+        handleClear() {
+            this.fetchUserList()
+        }
     }
 }
 </script>
