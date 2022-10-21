@@ -20,8 +20,8 @@ export default {
     PLACEHOLDER_INPUT: '请输入名称查询 ...',
     BUTTON_ADD: '新增',
     BUTTON_ADD_USER: '新增用户',
-    BUTTON_UPLOAD: '上传',
-    BUTTON_DOWNLOAD: '下载',
+    BUTTON_UPLOAD: '上传数据',
+    BUTTON_DOWNLOAD: '下载数据',
 
     // 表格列名
     COLUMN_NAME: '名称',

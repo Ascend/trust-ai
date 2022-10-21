@@ -53,7 +53,7 @@ export default {
             saveAuthUserInfo(res.data.data);
             store.commit('userLogin', getUserInfo())
             if (res.data.data.RoleID === 1){
-              this.$router.push('/app/user')
+              this.$router.push('/app/home')
             } else {
               this.$router.push('/app/ai-vault')
             }
