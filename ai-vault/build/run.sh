@@ -3,7 +3,7 @@ cp -af data-manager .ai-vault/
 cp -af nginx .ai-vault/
 cp -af ai-vault .ai-vault/
 cp -af lib .ai-vault/
-chmod 500 .ai-vault/ai-vault
+chmod 700 .ai-vault/*
 
 
 cd /home/AiVault/.ai-vault/cert || exit
