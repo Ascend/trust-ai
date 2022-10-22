@@ -7,14 +7,14 @@
     <div class="login-block">
       <div class="subtitle">{{ $t('LOGIN_WELCOME') }}</div>
       <div class="title">{{ $t('MINDX_TITLE') }} {{ $t('PLATFORM_TITLE') }}</div>
-      <input 
+      <input
         v-model="username"
         type="text"
         required
         :placeholder="$t('PLACEHOLDER_USERNAME')"
         class="login-inp"
       />
-      <input 
+      <input
         v-model="password"
         type="password"
         required
@@ -22,7 +22,7 @@
         class="login-inp"
         @keyup.enter="handleLogin"
       />
-      <el-button type="primary" @click="handleLogin">{{ $t('SUBMIT') }}</el-button>
+      <el-button type="primary" @click="handleLogin">{{ $t('LOGIN') }}</el-button>
     </div>
   </div>
 </template>
@@ -64,7 +64,7 @@ export default {
               this.$message({
                   message: this.$t('ERR_LOGIN'),
               })
-          } 
+          }
         })
         .catch(err => {
           if (err.code == 401) {

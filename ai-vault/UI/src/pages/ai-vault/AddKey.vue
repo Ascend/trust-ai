@@ -164,6 +164,10 @@ export default {
                                             this.$message({
                                                 message: this.$t('ERR_ADD_MK'),
                                             })
+                                        } else if(res.status === '31000003') {
+                                            this.$message({
+                                                message: this.$t('ERR_MAX_MK'),
+                                            })
                                         }
                                     }
                                     reader.readAsText(res.data)
@@ -181,7 +185,7 @@ export default {
 
                                     this.$message({message: this.$t('SUCCESS_ADD')})
                                     this.$emit('handleRefresh', 'mk')
-                                }                                
+                                }
                             })
                     } else {
                         postPSK(this.pskForm)
@@ -193,6 +197,10 @@ export default {
                                     this.$message({
                                         message: this.$t('ERR_ADD_PSK'),
                                     })
+                                } else if(res.data.status === '31000010') {
+                                    this.$message({
+                                        message: this.$t('ERR_MAX_PSK'),
+                                   })
                                 } else if(res.data.status === '31000004') {
                                     this.$message({
                                         message: this.$t('ERR_MK_AREADY_BIND'),
