@@ -7,11 +7,11 @@ export default {
     LOGOUT: '退出',
     VERSION: '版本',
     HEALTH_STATUS: '健康状态',
-    
+
     // Sider
     NAV_HOME: '首页',
     NAV_USER: '用户管理',
-    NAV_AI_VAUL: '密钥管理',
+    NAV_AI_VAULT: '密钥管理',
 
     // Tabs
     TAB_MAIN_KEY: '主密钥',
@@ -28,7 +28,7 @@ export default {
     COLUMN_CREATE_TYPE: '创建类型',
     COLUMN_KEY_USAGE: '密钥用途',
     COLUMN_CREATE_TIME: '创建时间',
-    COLUMN_REMARKS: '备注',    
+    COLUMN_REMARKS: '备注',
     COLUMN_OPERATION: '操作',
     COLUMN_BIND_MK_NAME: '绑定的主密钥名称',
     COLUMN_CERT_TYPE: '证书类型',
@@ -57,6 +57,7 @@ export default {
     PLACEHOLDER_MK_PASSWORD: '请输入口令',
     PLACEHOLDER_KEY_PASSWORD: '请输入用户持有的口令',
     SUBMIT: '提交',
+    LOGIN: '登录',
     CURRENT_PSW: '当前密码',
     NEW_PSW: '新密码',
     CONFIRM_PSW: '确认密码',
@@ -103,6 +104,8 @@ export default {
     ERR_NOT_MEET_PASSWORD_COMPLEXY: '该口令不符合复杂度要求',
     ERR_UPLOAD_FILE_SIZE: '上传文件大小不能超过 50MB!',
     ERR_UPLOAD_FILE_TYPE: '上传文件必须为 zip 格式',
+    ERR_MAX_MK: '主密密钥量超过上限',
+    ERR_MAX_PSK: '预共享密钥数量超过上限',
 
 
     DIALOG_COPY: '请确认是否要将预共享密钥复制到剪切板：',

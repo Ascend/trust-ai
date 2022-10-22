@@ -1,9 +1,9 @@
 <template>
     <div>
         <div class="tab-main-operation">
-            <el-button 
-                type="primary" 
-                plain 
+            <el-button
+                type="primary"
+                plain
                 icon="el-icon-circle-plus-outline"
                 id="btn-add"
                 @click="handleAddMainKey"
@@ -142,10 +142,15 @@ export default {
                         })
                         this.isDelete = false
                         this.fetchData()
-                    } else {
+                    } else if(res.data.status === '31000005') {
                         this.$message({
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_DELETE_MK'),
                         })
+                        this.isDelete = false
+                    } else {
+                        this.$message({
+                          message: this.$t('ERR_DELETE') + '。',
+                      })
                         this.isDelete = false
                     }
                 })

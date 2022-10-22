@@ -35,7 +35,7 @@ export default {
                 },
                 {
                     id: 'ai-vault',
-                    label: 'NAV_AI_VAUL',
+                    label: 'NAV_AI_VAULT',
                     icon: 'icon_ai_vaul.png',
                     href: 'ai-vault',
                     isShow: false,
