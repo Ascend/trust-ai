@@ -1,0 +1,59 @@
+<template>
+  <div class="main">
+    <app-header class="app-header"></app-header>
+    <app-sider class="app-sider"></app-sider>
+    <router-view class="main-content"/>
+  </div>
+</template>
+
+<script>
+import AppHeader from '@/components/AppHeader.vue';
+import AppSider from '@/components/AppSider.vue';
+
+export default {
+    name: "layout",
+    data() {
+        return {};
+    },
+    components: { 
+      AppHeader,
+      AppSider
+    }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+.main {
+  background-color: #181b20;
+  height: 100vh;
+  overflow: auto;
+}
+
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  z-index: 2000;
+}
+
+.app-sider{
+  position: fixed;
+  width: 200px;
+  top: 50px;
+  padding: 16px 0 16px 24px;
+}
+
+.main-content {
+  margin-left: 240px;
+  padding: 66px 24px 0 24px;
+  height: calc(100vh - 60px);
+}
+</style>
+<style>
+.main-content {
+  color: #fffffe;
+}
+</style>

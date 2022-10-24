@@ -4,6 +4,7 @@ RUN sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list
 RUN sed -i "/openresty.org/d" /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get install build-essential -y
+RUN apt-get install libssl1.1 -y
 RUN apt-get install zlib* -y
 RUN apt-get install sqlite3 -y
 RUN apt-get install python3 -y
