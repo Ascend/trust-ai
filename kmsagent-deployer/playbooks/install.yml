@@ -1,0 +1,94 @@
+- name: yum install haveged
+  shell: rpm -ivh --force --nodeps --replacepkgs {{ resources_dir }}/centos_{{ ansible_architecture }}/*.rpm
+  register: sys_result
+  when: ansible_pkg_mgr == "yum"
+
+- name: message
+  debug: var=sys_result
+  when: sys_result.changed
+
+- name: apt install haveged
+  shell: export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical; dpkg --force-all -i {{ resources_dir }}/ubuntu_{{ ansible_architecture }}/*.deb
+  register: sys_result
+  when: ansible_pkg_mgr == "apt"
+
+- name: message
+  debug: var=sys_result
+  when: sys_result.changed
+
+- name: enable haveged
+  shell: systemctl enable haveged
+
+- name: start haveged
+  shell: systemctl start haveged
+
+- name: check haveged status
+  shell: systemctl is-active haveged
+  register: haveged_status
+
+- name: message
+  debug:
+    msg:
+      - "haveged status is {{ haveged_status.stdout }}"
+
+- name: find docker command
+  shell: command -v docker | wc -l
+  register: docker_exists
+
+- name: install docker
+  shell: |
+    \cp -f {{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/docker/* /usr/bin/
+    \cp -af {{ resources_dir }}/docker.service /etc/systemd/system
+  when: docker_exists.stdout == '0'
+
+- name: start docker
+  shell: |
+    systemctl enable docker.service
+    systemctl daemon-reload
+    systemctl restart docker
+  when: docker_exists.stdout == '0'
+
+- name: Check docker status
+  shell: systemctl is-active docker
+  register: docker_status
+  changed_when: false
+  failed_when: false
+  ignore_errors: yes
+
+- name: message
+  debug:
+    msg:
+      - "docker status is {{ docker_status.stdout }}"
+
+- name: find fuse-plugin
+  stat:
+    dest: "{{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh"
+  register: fuse_plugin
+  when: aivault_server is undefined
+
+- name: install fuse-plugin
+  shell: bash {{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh
+  when: aivault_server is undefined and fuse_plugin.stat.exists
+
+- name: message
+  debug:
+    msg:
+      - "can not find fuse-plugin package, fuse-plugin install skipped"
+  when: aivault_server is undefined and not fuse_plugin.stat.exists
+
+- name: Check fuse-plugin status
+  shell: ps -ef | grep aiguard-plugin | grep -v "grep" | wc -l
+  register: fuse_plugin_status
+  when: aivault_server is undefined
+
+- name: message
+  debug:
+    msg:
+      - "fuse-plugin run successfully"
+  when: aivault_server is undefined and fuse_plugin_status.stdout != '0' and fuse_plugin.stat.exists
+
+- name: message
+  debug:
+    msg:
+      - "fuse-plugin run failed"
+  when: aivault_server is undefined and fuse_plugin_status.stdout == '0' and fuse_plugin.stat.exists
