@@ -142,15 +142,19 @@ function zip_extract() {
     rm -rf "${BASE_DIR}"/resources/fuse_*
     for zip_file in $zip_list; do
         if [[ $zip_file =~ x86_64.zip ]]; then
-            unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_x86_64
-        else
-            unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_aarch64
+            unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_and_docker_x86_64
+        fi
+        if [[ $zip_file =~ aarch64.zip ]]; then
+            unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_and_docker_aarch64
         fi
     done
 }
 
-function download_haveged_and_fuse() {
+function download_haveged_and_docker() {
     python3 download.py
+    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_x86_64/
+    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_aarch64/
+    cp "${BASE_DIR}"/docker.service "${BASE_DIR}"/resources/
 }
 
 function process_deploy() {
@@ -160,7 +164,10 @@ function process_deploy() {
         return 1
     fi
     zip_extract
-    download_haveged_and_fuse
+    if ! download_haveged_and_docker;then
+        log_error "download files failed"
+        return 1
+    fi
     if ! generate_ca_cert; then
         return 1
     fi

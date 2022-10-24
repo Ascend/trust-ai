@@ -12,5 +12,11 @@
 	"resources/ubuntu_aarch64/": [
 		"https://repo.huaweicloud.com/ubuntu-ports/pool/universe/h/haveged/haveged_1.9.1-6_arm64.deb",
 		"https://repo.huaweicloud.com/ubuntu-ports/pool/universe/h/haveged/libhavege1_1.9.1-6_arm64.deb"
+	],
+	"resources/fuse_and_docker_x86_64/": [
+		"https://mirrors.huaweicloud.com/docker-ce/linux/static/stable/x86_64/docker-20.10.8.tgz"
+	],
+	"resources/fuse_and_docker_aarch64/": [
+		"https://mirrors.huaweicloud.com/docker-ce/linux/static/stable/aarch64/docker-20.10.8.tgz"
 	]
 }

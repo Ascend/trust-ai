@@ -77,50 +77,43 @@ export default {
     }
   },
   mounted() {
-    this.fetchData()
+    this.queryData()
   },
   methods: {
-    queryVersion() {
+    queryData() {
       fetchVersion()
-        .then(res => {
-          if(res.data.status === '31000022') {
+        .then(resVersion => {
+          if(resVersion.data.status === '31000022') {
             let timerVersion = setTimeout(() => {
-              this.queryVersion()
+              this.queryData()
               clearTimeout(timerVersion)
             }, 1000);
           }
-            this.version = res.data.data.version.split('_')[0]
+
+          fetchHealthStatus()
+            .then(resHealth => {
+              if(resHealth.data.status === '31000022') {
+                let timerHealth = setTimeout(() => {
+                  this.queryData()
+                  clearTimeout(timerHealth)
+                }, 1000);
+              }
+
+              fetchCertStatus()
+                .then(resCert => {
+                  if(resCert.data.status === '31000022') {
+                    let timerCert = setTimeout(() => {
+                      this.queryData()
+                      clearTimeout(timerCert)
+                    }, 1000);
+                  }
+                    this.tableData = resCert.data.data
+                    this.handleSpan()
+                    this.healthStatus = resHealth.data.msg === 'ok' ? '健康' : '不健康'
+                    this.version = resVersion.data.data.version.split('_')[0]
+                })
+            })
         })
-    },
-    queryHealth() {
-      fetchHealthStatus()
-        .then(res => {
-          if(res.data.status === '31000022') {
-            let timerHealth = setTimeout(() => {
-              this.queryHealth()
-              clearTimeout(timerHealth)
-            }, 1000);
-          }
-            this.healthStatus = res.data.msg === 'ok' ? '健康' : '不健康'
-        })
-    },
-    queryCert() {
-      fetchCertStatus()
-        .then(res => {
-          if(res.data.status === '31000022') {
-            let timerCert = setTimeout(() => {
-              this.queryCert()
-              clearTimeout(timerCert)
-            }, 1000);
-          }
-            this.tableData = res.data.data
-            this.handleSpan()
-        })
-    },
-    fetchData() {
-      this.queryVersion()
-      this.queryHealth()
-      this.queryCert()      
     },
     handleSpan() {
       let mgmtArr = this.tableData.filter(item => item.CertType === 'MGMT')
