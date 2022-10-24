@@ -16,12 +16,12 @@
                 :placeholder="$t('PLACEHOLDER_INPUT')"
                 clearable
                 @clear="handleClear"
-                @keyup.enter.native="fetchUserList"
+                @keyup.enter.native="handleSearch"
             ></el-input>
             <el-button
                 icon="el-icon-refresh"
                 class="button-refresh"
-                @click="fetchUserList"
+                @click="handleSearch"
             ></el-button>
         </div>
 
@@ -48,6 +48,7 @@
         <el-pagination
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
+            :current-page.sync="userParams.CurrentPage"
             :total="userPagination.total"
             :page-size="userParams.PageSize"
             layout="prev, pager, next"
@@ -162,8 +163,11 @@ export default {
             this.userParams.CurrentPage = val
             this.fetchUserList()
         },
+        handleSearch() {
+            this.handleCurrentChange(1)
+        },
         handleClear() {
-            this.fetchUserList()
+            this.handleCurrentChange(1)
         }
     }
 }
