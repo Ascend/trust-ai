@@ -2,6 +2,7 @@ import os.path
 import json
 from urllib import request
 from urllib.error import ContentTooShortError, URLError
+import sys
 
 
 def download_files(url_dict, retry_time=3):
@@ -18,12 +19,12 @@ def download_files(url_dict, retry_time=3):
                 check_dir(path_name)
                 file_name = url.split("/")[-1]
                 total_path = path_name + file_name
+                print("start downloading %s ..." % file_name)
                 f = request.urlopen(url)
                 with open(total_path, "wb") as download:
                     download.write(f.read())
                     print("download %s successfully" % file_name)
-                    download.close()
-            return
+            return True
         except ContentTooShortError as cte:
             print(cte)
         except URLError as err:
@@ -32,6 +33,7 @@ def download_files(url_dict, retry_time=3):
             print("connection reset by peer, retry...")
         finally:
             pass
+    return False
 
 
 def check_dir(filepath):
@@ -64,4 +66,6 @@ if __name__ == "__main__":
     for k in dict_json.keys():
         val = dict_json.get(k)
         dict_input = {k: val}
-        download_files(dict_input)
+        res = download_files(dict_input)
+        if not res:
+            sys.exit(1)

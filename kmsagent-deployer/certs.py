@@ -73,7 +73,7 @@ class Cert:
                 "-set_serial",
                 "01",
                 "-extfile",
-                "/etc/ssl/openssl.cnf",
+                f"{self.cur_dir}/openssl.cnf",
                 "-passin",
                 f"pass:{passin}",
             ],
