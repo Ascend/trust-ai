@@ -145,11 +145,10 @@ class User(db.Model):
         try:
             paginate = users.paginate(page=current_page, per_page=pagesize)
         except NotFound:
-            return status_code.PARAM_ERROR, None
-        else:
-            user_list = [cls.data2dict(user) for user in paginate.items]
-            page_count = len(user_list)
-            return status_code.SUCCESS, {"users": user_list, "total": total_count, "page_total": page_count}
+            paginate = users.paginate(page=DEFAULT_PAGE, per_page=pagesize)
+        user_list = [cls.data2dict(user) for user in paginate.items]
+        page_count = len(user_list)
+        return status_code.SUCCESS, {"users": user_list, "total": total_count, "page_total": page_count}
 
     def __repr__(self):
         return "<Users %r>" % self.user_name
