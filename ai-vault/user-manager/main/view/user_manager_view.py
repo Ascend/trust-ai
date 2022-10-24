@@ -196,6 +196,31 @@ class DelUserView(BaseView):
             return True, None
 
 
+class ResetPasswordView(BaseView):
+    """
+    用户登出
+    """
+    _op_name = "ResetPWD"
+
+    def post(self):
+        data = self.get_request_json()
+        if not self.parameter_check(data):
+            return https_ret(status_code.PARAM_ERROR)
+        user_name = self.get_with_log(data, "UserName")
+        new_passwd = self.get_with_log(data, "NewPassword")
+        if user_name is None or new_passwd is None:
+            return https_ret(status_code.PARAM_ERROR)
+        if new_passwd != self.get_with_log(data, "NewPasswordConfirm"):
+            RUN_LOG.log(*self.err_msg(status_code.PASSWD_NOT_SAME))
+            return https_ret(status_code.PASSWD_NOT_SAME)
+        status = User.reset_password(user_name, new_passwd)
+        if status == status_code.SUCCESS:
+            RUN_LOG.log(*self.info_msg("Update Password Success"))
+            return https_ret(status)
+        RUN_LOG.log(*self.err_msg(status))
+        return https_ret(status)
+
+
 class QueryUserView(BaseView):
     """
     查询用户，支持管理员与普通用户
@@ -308,6 +333,7 @@ auv = AddUserView.as_view("add_user")
 duv = DelUserView.as_view("del_user")
 qv = QueryUserView.as_view("user_list")
 upv = UpdatePasswordView.as_view("update_pwd")
+rpv = ResetPasswordView.as_view("reset_pwd")
 authv = AuthenticationView.as_view("authentication")
 
 user_manager.add_url_rule("/login",
@@ -329,6 +355,10 @@ user_manager.add_url_rule("/query",
 user_manager.add_url_rule("/password",
                           endpoint="update_pwd",
                           view_func=upv,
+                          methods=("POST",))
+user_manager.add_url_rule("/reset",
+                          endpoint="reset_pwd",
+                          view_func=rpv,
                           methods=("POST",))
 user_manager.add_url_rule("/auth",
                           endpoint="authentication",
