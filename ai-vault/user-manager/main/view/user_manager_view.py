@@ -198,7 +198,7 @@ class DelUserView(BaseView):
 
 class ResetPasswordView(BaseView):
     """
-    用户登出
+    管理员重置用户
     """
     _op_name = "ResetPWD"
 
