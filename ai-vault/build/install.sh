@@ -3,14 +3,9 @@ arch="$(arch)"
 
 # 安装docker
 docker version > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-  echo "docker already install"
-else
-  tar -zxf docker-20.10.12.tgz
-  cp docker/* /usr/bin/
-  cp -af docker.service /etc/systemd/system
-	systemctl enable docker.service
-	systemctl start docker
+if [ $? -ne 0 ]; then
+  echo "docker is not installed"
+  exit 1
 fi
 
 # 加载镜像
