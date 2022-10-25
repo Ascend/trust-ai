@@ -21,7 +21,6 @@
     
     <el-table
       :data="tableData"
-      :span-method="objectSpanMethod"
       style="width: 100%; margin-top: 20px"
       :cell-style="{ textAlign: 'center', border: '0.5px solid rgb(123, 143, 175, 0.5)', padding: '10px 0', }"
       :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
@@ -144,7 +143,7 @@ export default {
         })
         .finally(() => {
           let timerCert = setTimeout(() => {
-              this.fetchCertStatus()
+              this.queryCert()
               clearTimeout(timerCert)
             }, 1000);
         })
@@ -160,48 +159,12 @@ export default {
           } else {
             this.tmpTableData = res.data.data
             this.isQueryCert = true
-            this.handleSpan()
           }
         })
     },
     fetchData() {
       this.queryVersion()
-      this.queryHealth()
-      this.queryCert()      
-    },
-    handleSpan() {
-      let mgmtArr = this.tableData.filter(item => item.CertType === 'MGMT')
-      let svcArr = this.tableData.filter(item => item.CertType !== 'MGMT')
-      this.tableData = mgmtArr.concat(svcArr)
-
-      this.tableData.forEach((item, index) => {
-          item.CertType = {'MGMT': '管理面' , 'SVC': '服务面'}[item.CertType]
-          item.CertAlarm = item.CertAlarm === '' ? '正常' : '不正常'
-          item.CrlStatus = item.CrlStatus === 'No CRL certificate has been imported.' ? '未导入' : '已导入'
-          if(index === 0) {
-              this.spanArr.push(1)
-              this.position = 0
-          } else {
-              if(this.tableData[index].CertType === this.tableData[index - 1].CertType) {
-                  this.spanArr[this.position] += 1;
-                  this.spanArr.push(0)
-              } else {
-                  this.spanArr.push(1)
-                  this.position = index
-              }
-          }
-      })
-    },
-    objectSpanMethod({ row, column, rowIndex, columnIndex }) {
-      if (columnIndex === 0) {
-          const _row = this.spanArr[rowIndex]
-          const _col = _row > 0 ? 1 : 0;
-          return {
-              rowspan: _row,
-              colspan: _col
-          }
-      }
-    },    
+    },   
     handleBeforeUpload(file) {
       const isZip = file.type.indexOf('zip') > -1;
       const isLt50M = file.size / 1024 / 1024 <= 50;
