@@ -1,9 +1,12 @@
 <template>
     <div style="margin-bottom: 20px;">
+      <div class="user-amount">
+            {{ $t('NAV_USER') }}
+        </div>
         <el-button
               type="primary"
+              icon="add-icon"
               class="button-add"
-              plain
               @click="handleConfirmAddUser"
           >
                   {{ $t('BUTTON_ADD_USER') }}
@@ -187,7 +190,7 @@ export default {
                             message: this.$t('ERR_OPERATION'),
                         })
                         this.isDelorReset = false
-                    }      
+                    }
                 })
                 .catch(err => {
                     this.isDelorReset = false
@@ -250,6 +253,12 @@ export default {
     border-radius: 2px;
     font-size: 12px;
     float: left;
+    font-size: 12px;
+    color: #FFFFFF;
+    letter-spacing: 0;
+    text-align: center;
+    line-height: 16px;
+    font-weight: 500;
 }
 
 .user-operation {
@@ -270,5 +279,28 @@ export default {
 
 .input-psw {
     width: 80%;
+}
+
+.user-amount {
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #FFFFFE;
+    line-height: 24px;
+    font-weight: 500;
+}
+
+</style>
+
+<style>
+.add-icon {
+    background: url(../../assets/icon/icon_user_add.png) center no-repeat;
+    font-size: 16px;
+    background-size: cover;
+}
+
+.add-icon:before{
+    content: "替";
+    font-size: 16px;
+    visibility: hidden;
 }
 </style>
