@@ -1,9 +1,9 @@
 <template>
     <div style="margin-bottom: 20px;">
         <div class="user-operation">
-            <el-button 
-                  type="primary" 
-                  plain 
+            <el-button
+                  type="primary"
+                  plain
                   @click="handleConfirmAddUser"
               >
                   {{ $t('BUTTON_ADD_USER') }}
@@ -16,12 +16,12 @@
                 :placeholder="$t('PLACEHOLDER_INPUT')"
                 clearable
                 @clear="handleClear"
-                @keyup.enter.native="handleSearch"
+                @keyup.enter.native="fetchUserList"
             ></el-input>
             <el-button
                 icon="el-icon-refresh"
                 class="button-refresh"
-                @click="handleSearch"
+                @click="fetchUserList"
             ></el-button>
         </div>
 
@@ -48,7 +48,6 @@
         <el-pagination
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
-            :current-page.sync="userParams.CurrentPage"
             :total="userPagination.total"
             :page-size="userParams.PageSize"
             layout="prev, pager, next"
@@ -142,7 +141,7 @@ export default {
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_DELETE_USER'),
                         })
                         this.isDelete = false
-                    } 
+                    }
                 })
                 .catch(err => {
                     this.isDelete = false
@@ -163,17 +162,14 @@ export default {
             this.userParams.CurrentPage = val
             this.fetchUserList()
         },
-        handleSearch() {
-            this.handleCurrentChange(1)
-        },
         handleClear() {
-            this.handleCurrentChange(1)
+            this.fetchUserList()
         }
     }
 }
 </script>
 <style scoped>
-.user-operation {    
+.user-operation {
     display: flex;
     align-items: center;
     float: right;
