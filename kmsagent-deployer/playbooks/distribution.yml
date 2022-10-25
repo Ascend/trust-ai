@@ -9,6 +9,13 @@
 
 - hosts: '{{ hosts_name }}'
   tasks:
+    - name: check when set server
+      debug:
+        msg:
+          - "when set server, server must be set to aivault"
+      failed_when: true
+      when: server is defined and server != 'aivault'
+
     - name: copy to remote hosts
       copy:
         src: ~/resources.tar
