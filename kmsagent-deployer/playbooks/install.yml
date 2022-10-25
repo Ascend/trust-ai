@@ -60,6 +60,10 @@
     msg:
       - "docker status is {{ docker_status.stdout }}"
 
+- name: docker load aivault image
+  shell: docker load < {{ resources_dir }}/aivault_{{ ansible_architecture }}.tar
+  when: server is defined
+
 - name: find fuse-plugin
   stat:
     dest: "{{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh"
