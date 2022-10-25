@@ -1,13 +1,15 @@
 <template>
-    <div style="margin-bottom: 20px;">
-        <div class="user-operation">
-            <el-button 
-                  type="primary" 
-                  plain 
-                  @click="handleConfirmAddUser"
-              >
+      <div style="margin-bottom: 20px;">
+        <el-button
+              type="primary"
+              class="button-add"
+              plain
+              @click="handleConfirmAddUser"
+          >
                   {{ $t('BUTTON_ADD_USER') }}
-            </el-button>
+         </el-button>
+
+           <div class="user-operation">
             <el-input
                 type="text"
                 prefix-icon="el-icon-search"
@@ -23,12 +25,13 @@
                 class="button-refresh"
                 @click="fetchUserList"
             ></el-button>
-        </div>
+          </div>
+
 
         <el-table
             :data="userData"
-            style="width: 100%; margin-top: 40px; margin-bottom: 20px;"
-            :cell-style="{ textAlign: 'center', border: '0.5px solid rgb(123, 143, 175, 0.5)', padding: '10px 0', }"
+            style="width: 100%; margin-top: 40px; margin-bottom: 20px; font-size: 12px;"
+            :cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :empty-text="$t('EMPTY_TEXT')"
         >
@@ -36,9 +39,12 @@
             <el-table-column prop="UserName" :label="$t('COLUMN_USER_NAME')"></el-table-column>
             <el-table-column prop="Role" :label="$t('COLUMN_USER_TYPE')"></el-table-column>
             <el-table-column prop="CreateTime" :label="$t('COLUMN_CREATE_TIME')"></el-table-column>
-            <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')" width="120">
+            <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')" width="240">
                 <template slot-scope="scope">
-                    <el-button @click="handleConfirmDelete(scope.row)" type="danger" :disabled="scope.row.RoleID === 1" plain size="small">
+                    <el-button @click="handleConfirmDelete(scope.row)" type="text" :disabled="scope.row.RoleID === 1" size="small">
+                        {{ $t('RESET_PASSWORD') }}
+                    </el-button>
+                    <el-button @click="handleConfirmDelete(scope.row)" type="text" :disabled="scope.row.RoleID === 1" size="small">
                         {{ $t('OPERATION_DELETE') }}
                     </el-button>
                 </template>
@@ -141,7 +147,7 @@ export default {
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_DELETE_USER'),
                         })
                         this.isDelete = false
-                    } 
+                    }
                 })
                 .catch(err => {
                     this.isDelete = false
@@ -169,11 +175,18 @@ export default {
 }
 </script>
 <style scoped>
-.user-operation {    
+
+.button-add {
+    border-radius: 2px;
+    font-size: 12px;
+    float: left;
+}
+
+.user-operation {
     display: flex;
     align-items: center;
-    float: right;
     margin-bottom: 10px;
+    float: right;
 }
 
 .input-search {
@@ -184,4 +197,5 @@ export default {
 .button-refresh {
     margin-left: 10px;
 }
+
 </style>

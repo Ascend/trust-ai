@@ -42,6 +42,7 @@ export default {
     FILTER_INVALID: '无效',
     OPERATION_DELETE: '删除',
     EMPTY_TEXT: '暂无数据',
+    RESET_PASSWORD: '重置密码',
 
     //表单
     PLACEHOLDER_USERNAME: '请输入用户名',

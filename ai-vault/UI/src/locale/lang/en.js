@@ -34,6 +34,7 @@ export default {
     FILTER_INVALID: 'Invalid',
     OPERATION_DELETE: 'Delete',
     EMPTY_TEXT: 'No data',
+    RESET_PASSWORD: 'Reset',
 
     //表单
     PLACEHOLDER_USERNAME: 'Please enter username ...',
