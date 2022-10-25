@@ -4,7 +4,7 @@
     first_host: "{{ groups[hosts_name][0] }}"
   tasks:
     - name: make tar package for remote
-      shell: tar -cf ~/resources.tar ../resources
+      shell: tar -zcf ~/resources.tar ../resources
       when: not (host_count == "1" and first_host == "localhost")
 
 - hosts: '{{ hosts_name }}'
@@ -14,18 +14,31 @@
         msg:
           - "when set server, server must be set to aivault"
       failed_when: true
-      when: server is defined and server != 'aivault'
-
-    - name: copy to remote hosts
-      copy:
-        src: ~/resources.tar
-        dest: ~/
-      when: ansible_connection != "local"
+      when: server is defined and server != 'aivault' and ansible_connection != "local"
+    
+    - name: check when local set server
+      debug:
+        msg:
+          - "The server must be undefined when the connection is local"
+      failed_when: true
+      when: server is defined and ansible_connection == "local"
 
     - name: clean remote resources
       file:
         state: absent
         path: ~/resources
+      when: ansible_connection != "local"
+    
+    - name: clean remote resources.tar
+      file:
+        state: absent
+        path: ~/resources.tar
+      when: ansible_connection != "local"
+
+    - name: copy to remote hosts
+      copy:
+        src: ~/resources.tar
+        dest: ~/
       when: ansible_connection != "local"
 
     - name: uncompress on remote
