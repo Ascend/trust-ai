@@ -132,7 +132,7 @@ class ExportDataView(BaseView):
                 fpath = dirpath.replace(src_dir, '')
                 fpath = fpath and fpath + os.sep or ''
                 for filename in filenames:
-                    if filename.endswith(".log"):
+                    if ".log" in filename:
                         continue
                     z.write(os.path.join(dirpath, filename), fpath + filename)
         except Exception as e:

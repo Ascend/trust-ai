@@ -1,7 +1,6 @@
 <template>
   <div class="login-main">
     <div class="login-header">
-      <img src="../assets/login-logo.png" />
       {{ $t('PLATFORM_TITLE') }}
     </div>
     <div class="login-block">
@@ -24,6 +23,7 @@
       />
       <el-button type="primary" @click="handleLogin">{{ $t('LOGIN') }}</el-button>
     </div>
+    <div class="footer-copyright">{{copyright}} </div>
   </div>
 </template>
 
@@ -38,6 +38,7 @@ export default {
     return {
       username: '',
       password: '',
+      copyright: '版权所有© 华为软件技术有限公司2022。 保留一切权力'
     }
   },
   methods: {
@@ -94,7 +95,7 @@ export default {
 .login-main {
   width: 100vw;
   height: 100vh;
-  background: url(../assets/bg_login.jpg) center no-repeat;
+  background: url(../assets/bg_login.png) center no-repeat;
 }
 
 .login-header {
@@ -105,6 +106,7 @@ export default {
   height: 50px;
   z-index: 1000;
   font-size: 22px;
+  font-weight: bold;
   padding: 10px 30px;
   vertical-align: center;
   align-items: center;
@@ -152,6 +154,18 @@ export default {
   border: 1px solid #cbd4e2;
   border-radius: 2px;
   padding: 0 16px;
+}
+
+.footer-copyright{
+  min-height: 35px;
+  width: 100%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  bottom: 0;
+  color: #4c4c4c;
 }
 
 input::placeholder {
