@@ -7,6 +7,7 @@ export default {
     LOGOUT: 'Logout',
     VERSION: 'Version',
     HEALTH_STATUS: 'Health Status',
+    USER_AMOUNT: 'User Amount',
 
     // Sider
     NAV_HOME: 'Home',
