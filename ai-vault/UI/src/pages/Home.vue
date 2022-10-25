@@ -122,6 +122,12 @@ export default {
             this.isQueryVersion = true
           }
           })
+        .finally(() => {
+          let timerHealth = setTimeout(() => {
+              this.queryHealth()
+              clearTimeout(timerHealth)
+            }, 1000);
+        })
     },
     queryHealth() {
       fetchHealthStatus()
@@ -135,6 +141,12 @@ export default {
             this.tmpHealthStatus = res.data.msg === 'ok' ? '健康' : '不健康'
             this.isQueryHealth = true
           }
+        })
+        .finally(() => {
+          let timerCert = setTimeout(() => {
+              this.fetchCertStatus()
+              clearTimeout(timerCert)
+            }, 1000);
         })
     },
     queryCert() {
