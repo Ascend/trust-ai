@@ -176,7 +176,20 @@ export default {
             this.resetPswForm.UserName = this.selectedRow.UserName
             resetPassword(this.resetPswForm)
                 .then(res => {
-                    console.log(res.data)
+                    if(res.data.status === '00000000') {
+                        this.$message({
+                            message: this.$t('SUCCESS_OPERATION')
+                        })
+                        this.isDelorReset = false
+                        this.fetchUserList()
+                    } else {
+                        this.$message({
+                            message: this.$t('ERR_OPERATION'),
+                        })
+                        this.isDelorReset = false
+                    }      
+                })
+                .catch(err => {
                     this.isDelorReset = false
                 })
         },
