@@ -71,49 +71,74 @@ export default {
       version: '',
       tableData: [],
       healthStatus: '',
+      tmpVersion: '',
+      tmpTableData: [],
+      tmpHealthStatus: '',
+      isQueryVersion: false,
+      isQueryCert: false,
+      isQueryHealth: false,
       spanArr: [],
       position: 0,
       fileList: [],
     }
   },
   mounted() {
-    this.queryData()
+    this.fetchData()
+  },
+  watch: {
+    isQueryCert(newValue, oldValue) {
+      if(newValue) {
+        this.version = this.tmpVersion
+        this.healthStatus = this.tmpHealthStatus
+        this.tableData = this.tmpTableData
+      }
+    }
   },
   methods: {
-    queryData() {
+    queryVersion() {
       fetchVersion()
-        .then(resVersion => {
-          if(resVersion.data.status === '31000022') {
+        .then(res => {
+          if(res.data.status === '31000022') {
             let timerVersion = setTimeout(() => {
-              this.queryData()
+              this.queryVersion()
               clearTimeout(timerVersion)
             }, 1000);
           }
-
-          fetchHealthStatus()
-            .then(resHealth => {
-              if(resHealth.data.status === '31000022') {
-                let timerHealth = setTimeout(() => {
-                  this.queryData()
-                  clearTimeout(timerHealth)
-                }, 1000);
-              }
-
-              fetchCertStatus()
-                .then(resCert => {
-                  if(resCert.data.status === '31000022') {
-                    let timerCert = setTimeout(() => {
-                      this.queryData()
-                      clearTimeout(timerCert)
-                    }, 1000);
-                  }
-                    this.tableData = resCert.data.data
-                    this.handleSpan()
-                    this.healthStatus = resHealth.data.msg === 'ok' ? '健康' : '不健康'
-                    this.version = resVersion.data.data.version.split('_')[0]
-                })
-            })
+            this.tmpVersion = res.data.data.version.split('_')[0]
+            this.isQueryVersion = true
         })
+    },
+    queryHealth() {
+      fetchHealthStatus()
+        .then(res => {
+          if(res.data.status === '31000022') {
+            let timerHealth = setTimeout(() => {
+              this.queryHealth()
+              clearTimeout(timerHealth)
+            }, 1000);
+          }
+            this.tmpHealthStatus = res.data.msg === 'ok' ? '健康' : '不健康'
+            this.isQueryHealth = true
+        })
+    },
+    queryCert() {
+      fetchCertStatus()
+        .then(res => {
+          if(res.data.status === '31000022') {
+            let timerCert = setTimeout(() => {
+              this.queryCert()
+              clearTimeout(timerCert)
+            }, 1000);
+          }
+            this.tmpTableData = res.data.data
+            this.isQueryCert = true
+            this.handleSpan()
+        })
+    },
+    fetchData() {
+      this.queryVersion()
+      this.queryHealth()
+      this.queryCert()      
     },
     handleSpan() {
       let mgmtArr = this.tableData.filter(item => item.CertType === 'MGMT')
