@@ -22,7 +22,8 @@
       "/AIVAULT/v1/certStatus",
       "/AIVAULT/v1/health",
       "/usermanager/v1/query",
-      "/datamanager/v1/export"
+      "/datamanager/v1/export",
+      "/datamanager/v1/size"
     ],
     "POST": [
       "/AIVAULT/v1/updateKey",
