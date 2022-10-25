@@ -1,5 +1,5 @@
 <template>
-      <div style="margin-bottom: 20px;">
+    <div style="margin-bottom: 20px;">
         <el-button
               type="primary"
               class="button-add"
@@ -9,7 +9,7 @@
                   {{ $t('BUTTON_ADD_USER') }}
          </el-button>
 
-           <div class="user-operation">
+        <div class="user-operation">
             <el-input
                 type="text"
                 prefix-icon="el-icon-search"
@@ -18,15 +18,14 @@
                 :placeholder="$t('PLACEHOLDER_INPUT')"
                 clearable
                 @clear="handleClear"
-                @keyup.enter.native="fetchUserList"
+                @keyup.enter.native="handleSearch"
             ></el-input>
             <el-button
                 icon="el-icon-refresh"
                 class="button-refresh"
-                @click="fetchUserList"
+                @click="handleSearch"
             ></el-button>
-          </div>
-
+        </div>
 
         <el-table
             :data="userData"
@@ -41,7 +40,7 @@
             <el-table-column prop="CreateTime" :label="$t('COLUMN_CREATE_TIME')"></el-table-column>
             <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')" width="240">
                 <template slot-scope="scope">
-                    <el-button @click="handleConfirmDelete(scope.row)" type="text" :disabled="scope.row.RoleID === 1" size="small">
+                    <el-button @click="handleConfirmReset(scope.row)" type="text" :disabled="scope.row.RoleID === 1" size="small">
                         {{ $t('RESET_PASSWORD') }}
                     </el-button>
                     <el-button @click="handleConfirmDelete(scope.row)" type="text" :disabled="scope.row.RoleID === 1" size="small">
@@ -54,6 +53,7 @@
         <el-pagination
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
+            :current-page.sync="userParams.CurrentPage"
             :total="userPagination.total"
             :page-size="userParams.PageSize"
             layout="prev, pager, next"
@@ -63,15 +63,29 @@
 
         <el-dialog
             :title="$t('CONFIRM_DELETE')"
-            :visible.sync="isDelete"
+            :visible.sync= "isDelorReset"
             width="28%"
             :close-on-click-modal="false"
             :modal="false"
         >
-            {{$t('CONFIRM_DELETE_TIP')}} {{ selectedRow.UserName }}?
+            <el-form v-if="indexOperation === 'resetPWD'" :model="resetPswForm" :rules="resetPswRules">
+                <el-form-item :label="$t('NEW_PSW')" prop="NewPassword" :label-width="formLabelWidth">
+                    <el-tooltip :content="$t('TIP_PASSWORD')" placement="right">
+                        <el-input v-model="resetPswForm.NewPassword" type="password" class="input-psw" :placeholder="$t('PLACEHOLDER_NEW_PASSWORD')" autocomplete="off"></el-input>
+                    </el-tooltip>
+                </el-form-item>
+                <el-form-item :label="$t('CONFIRM_PSW')" prop="NewPasswordConfirm" :label-width="formLabelWidth">
+                    <el-tooltip :content="$t('TIP_PASSWORD')" placement="right">
+                        <el-input v-model="resetPswForm.NewPasswordConfirm" @keyup.enter.native="handleSubmitChangePassword('changePswForm')" type="password" class="input-psw" :placeholder="$t('PLACEHOLDER_CONFIRM_PASSWORD')" autocomplete="off"></el-input>
+                    </el-tooltip>
+                </el-form-item>
+            </el-form>
+            <div v-else>
+                {{$t('CONFIRM_DELETE_TIP')}} {{ selectedRow.UserName }}?
+            </div>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="isDelete = false">{{$t('BTN_CANCEL')}}</el-button>
-                <el-button type="primary" @click="handleDelete">{{$t('BTN_OK')}}</el-button>
+                <el-button @click="isDelorReset = false">{{$t('BTN_CANCEL')}}</el-button>
+                <el-button type="primary" @click="indexOperation === 'resetPWD' ? handleReset() : handleDelete()">{{$t('BTN_OK')}}</el-button>
             </span>
         </el-dialog>
 
@@ -80,7 +94,7 @@
 </template>
 
 <script>
-import { fetchUser, deleteUser } from '@/service/user.js'
+import { fetchUser, deleteUser, resetPassword } from '@/service/user.js'
 import UserManage from '@/components/UserManage.vue';
 
 export default {
@@ -89,6 +103,14 @@ export default {
     },
     name: 'user',
     data() {
+        let checkConfirmNewUserPassword = (rule, value, callback) => {
+            if (value !== this.resetPWDForm.NewPassword) {
+                callback(new Error(this.$t('ERR_CANNOT_CONFIRM_NEW_PASSWORD')))
+            } else {
+                callback();
+            }
+        }
+
         return {
             userData: [],
             userPagination: {
@@ -98,10 +120,26 @@ export default {
                 CurrentPage: 1,
                 PageSize: 10,
             },
-            isDelete: false,
+            resetPswForm: {
+                UserName: '',
+                NewPassword: '',
+                NewPasswordConfirm: '',
+            },
+            formLabelWidth: '100px',
             selectedRow: {},
+            isDelorReset: false,
+            indexOperation: '',
             isAddUser: false,
             UserName: '',
+            resetPswRules: {
+                NewPassword: [
+                    { required: true, message: this.$t('PLACEHOLDER_NEW_PASSWORD'), trigger: 'blur' },
+                ],
+                NewPasswordConfirm: [
+                    { required: true, message: this.$t('PLACEHOLDER_CONFIRM_PASSWORD'), trigger: 'blur' },
+                    { validator: checkConfirmNewUserPassword, trigger: 'blur' }
+                ]
+            }
         };
     },
     mounted() {
@@ -126,7 +164,21 @@ export default {
         },
         handleConfirmDelete(row) {
             this.selectedRow = row
-            this.isDelete = true
+            this.indexOperation = "delUser"
+            this.isDelorReset = true
+        },
+        handleConfirmReset(row) {
+            this.selectedRow = row
+            this.indexOperation = "resetPWD"
+            this.isDelorReset = true
+        },
+        handleReset(){
+            this.resetPswForm.UserName = this.selectedRow.UserName
+            resetPassword(this.resetPswForm)
+                .then(res => {
+                    console.log(res.data)
+                    this.isDelorReset = false
+                })
         },
         handleDelete(){
             deleteUser(this.selectedRow.UserName)
@@ -135,22 +187,22 @@ export default {
                         this.$message({
                             message: this.$t('SUCCESS_DELETE'),
                         })
-                        this.isDelete = false
+                        this.isDelorReset = false
                         this.fetchUserList()
                     }else if(res.data.status === '21000001') {
                         this.$message({
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_CONNECT_AIVAULT'),
                         })
-                        this.isDelete = false
+                        this.isDelorReset = false
                     } else{
                         this.$message({
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_DELETE_USER'),
                         })
-                        this.isDelete = false
+                        this.isDelorReset = false
                     }
                 })
                 .catch(err => {
-                    this.isDelete = false
+                    this.isDelorReset = false
                 })
         },
         handleConfirmAddUser() {
@@ -168,7 +220,12 @@ export default {
             this.userParams.CurrentPage = val
             this.fetchUserList()
         },
+        handleSearch() {
+            this.userParams.CurrentPage = 1
+            this.fetchUserList()
+        },
         handleClear() {
+            this.userParams.CurrentPage = 1
             this.fetchUserList()
         }
     }
@@ -198,4 +255,7 @@ export default {
     margin-left: 10px;
 }
 
+.input-psw {
+    width: 80%;
+}
 </style>
