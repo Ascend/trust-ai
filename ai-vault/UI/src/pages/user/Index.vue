@@ -1,9 +1,9 @@
 <template>
     <div style="margin-bottom: 20px;">
         <div class="user-operation">
-            <el-button
-                  type="primary"
-                  plain
+            <el-button 
+                  type="primary" 
+                  plain 
                   @click="handleConfirmAddUser"
               >
                   {{ $t('BUTTON_ADD_USER') }}
@@ -141,7 +141,7 @@ export default {
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_DELETE_USER'),
                         })
                         this.isDelete = false
-                    }
+                    } 
                 })
                 .catch(err => {
                     this.isDelete = false
@@ -169,7 +169,7 @@ export default {
 }
 </script>
 <style scoped>
-.user-operation {
+.user-operation {    
     display: flex;
     align-items: center;
     float: right;
