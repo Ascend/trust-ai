@@ -21,7 +21,7 @@ Iteration_Count = 10000
 MAX_USER_NUM = 500
 DEFAULT_PAGE = 1
 DEFAULT_PAGE_SIZE = 20
-MAX_URL_LEN = 100
+MAX_URL_LEN = 300
 
 WORK_DIR = os.path.dirname(os.path.realpath(__file__))
 DB_PATH = os.path.join(WORK_DIR, "user_manager.sqlite")

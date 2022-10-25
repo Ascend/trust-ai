@@ -22,12 +22,14 @@
       "/AIVAULT/v1/certStatus",
       "/AIVAULT/v1/health",
       "/usermanager/v1/query",
-      "/datamanager/v1/export"
+      "/datamanager/v1/export",
+      "/datamanager/v1/size"
     ],
     "POST": [
       "/AIVAULT/v1/updateKey",
       "/usermanager/v1/user",
       "/usermanager/v1/password",
+      "/usermanager/v1/reset",
       "/datamanager/v1/import"
     ],
     "DELETE": [
