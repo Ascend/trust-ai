@@ -4,12 +4,13 @@ import os
 import signal
 import zipfile
 import socket
+from os.path import getsize, join
 
 import psutil
 from flask import Blueprint, views, request, jsonify, send_from_directory
 
 from cfg import status_code
-from cfg.config import LOG_INFO, LOG_ERROR, RUN_LOG, AIVAULT_EXPORT_DATA_FILE, COMMON_DIR, HOME_PATH
+from cfg.config import LOG_INFO, LOG_ERROR, RUN_LOG, AIVAULT_EXPORT_DATA_FILE, COMMON_DIR, HOME_PATH, MAX_DATA_SIZE
 from cfg.status_code import ERROR_MSG_MAP, EXPORT_ERROR, IMPORT_ERROR, SUCCESS, PARAM_ERROR
 
 data_manager = Blueprint("data_manager", __name__)
@@ -110,6 +111,8 @@ class ExportDataView(BaseView):
         try:
             if os.path.exists(AIVAULT_EXPORT_DATA_FILE):
                 os.remove(AIVAULT_EXPORT_DATA_FILE)
+            if DataSizeView.get_size() > MAX_DATA_SIZE:
+                return self.https_ret(status_code.SIZE_ERROR)
             self.zip_file(COMMON_DIR)
             return send_from_directory(directory=HOME_PATH, path="aivault.zip"), 200
         except Exception as e:
@@ -138,8 +141,26 @@ class ExportDataView(BaseView):
             z.close()
 
 
+class DataSizeView(BaseView):
+    """
+    获取数据大小
+    """
+    _op_name = "get data size"
+
+    def get(self):
+        return self.https_ret(status_code.SUCCESS, data={"size": self.get_size()})
+
+    @staticmethod
+    def get_size():
+        size = 0
+        for root, dirs, files in os.walk(COMMON_DIR):
+            size += sum([getsize(join(root, name)) for name in files])
+        return size
+
+
 import_data = ImportDataView.as_view("import")
 export_data = ExportDataView.as_view("export")
+get_data_size = DataSizeView.as_view("size")
 
 
 data_manager.add_url_rule("/import",
@@ -147,5 +168,8 @@ data_manager.add_url_rule("/import",
                           methods=("POST",))
 data_manager.add_url_rule("/export",
                           view_func=export_data,
+                          methods=("GET",))
+data_manager.add_url_rule("/size",
+                          view_func=get_data_size,
                           methods=("GET",))
 

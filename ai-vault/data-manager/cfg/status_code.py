@@ -9,6 +9,8 @@ PARAM_ERROR = "00002000"
 IMPORT_ERROR = "41000001"
 # user name exits
 EXPORT_ERROR = "41000002"
+# max data size
+SIZE_ERROR = "41000003"
 
 
 ERROR_MSG_MAP = {
@@ -16,4 +18,5 @@ ERROR_MSG_MAP = {
     PARAM_ERROR: "Parameter Error",
     IMPORT_ERROR: "import data error",
     EXPORT_ERROR: "export data error",
+    SIZE_ERROR: "max data size error",
 }
