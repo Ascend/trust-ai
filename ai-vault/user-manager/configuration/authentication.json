@@ -28,6 +28,7 @@
       "/AIVAULT/v1/updateKey",
       "/usermanager/v1/user",
       "/usermanager/v1/password",
+      "/usermanager/v1/reset",
       "/datamanager/v1/import"
     ],
     "DELETE": [
