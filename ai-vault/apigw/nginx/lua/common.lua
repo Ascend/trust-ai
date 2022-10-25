@@ -26,11 +26,6 @@ function _M.get_session()
         ngx.log(ngx.ERR, "session verify failed")
         return nil
     end
---     local token = ngx.req.get_headers()["CSRF-Token"]
---     if token == nil or token ~= session_info.Token then
---         ngx.log(ngx.ERR, "token verify failed")
---         return nil
---     end
 
     -- 更新session
     ngx.shared.session_cache:expire(uid, 900)

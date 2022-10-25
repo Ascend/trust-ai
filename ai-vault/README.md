@@ -8,15 +8,11 @@
 
 ## 安装教程
 
-1. 下载离线安装包，下载链接如下。若环境未安装docker则下载包含docker离线包的版本。
+1. 将离线安装包上传到安装环境并解压。
 
-https://download.docker.com/linux/static/stable/x86_64/docker-20.10.12.tgz
+2. 将一键配置证书中生成的ca.pem和ca.key上传到解压目录。
 
-2. 将离线安装包上传到安装环境并解压。
-
-3. 将一键配置证书中生成的ca.pem和ca.key上传到解压目录。
-
-4. 执行安装命令
+3. 执行安装命令
 `bash install.sh`
 
 ## 规格
