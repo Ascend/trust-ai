@@ -86,11 +86,27 @@ export default {
     this.fetchData()
   },
   watch: {
+    isQueryVersion(newValue, oldValue) {
+      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+        this.version = this.tmpVersion
+        this.healthStatus = this.tmpHealthStatus
+        this.tableData = this.tmpTableData
+      }
+    },
+    isQueryHealth(newValue, oldValue) {
+      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+        this.version = this.tmpVersion
+        this.healthStatus = this.tmpHealthStatus
+        this.tableData = this.tmpTableData
+      }
+    },
     isQueryCert(newValue, oldValue) {
-      this.version = this.tmpVersion
-      this.healthStatus = this.tmpHealthStatus
-      this.tableData = this.tmpTableData
-    }
+      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+        this.version = this.tmpVersion
+        this.healthStatus = this.tmpHealthStatus
+        this.tableData = this.tmpTableData
+      }
+    },
   },
   methods: {
     queryVersion() {
@@ -106,6 +122,12 @@ export default {
             this.isQueryVersion = true
           }
           })
+        .finally(() => {
+          let timerHealth = setTimeout(() => {
+              this.queryHealth()
+              clearTimeout(timerHealth)
+            }, 1000);
+        })
     },
     queryHealth() {
       fetchHealthStatus()
@@ -119,6 +141,12 @@ export default {
             this.tmpHealthStatus = res.data.msg === 'ok' ? '健康' : '不健康'
             this.isQueryHealth = true
           }
+        })
+        .finally(() => {
+          let timerCert = setTimeout(() => {
+              this.fetchCertStatus()
+              clearTimeout(timerCert)
+            }, 1000);
         })
     },
     queryCert() {
