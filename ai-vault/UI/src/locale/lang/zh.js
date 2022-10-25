@@ -7,6 +7,7 @@ export default {
     LOGOUT: '退出',
     VERSION: '版本',
     HEALTH_STATUS: '健康状态',
+    USER_AMOUNT: '用户总数',
 
     // Sider
     NAV_HOME: '首页',

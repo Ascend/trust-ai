@@ -3,6 +3,17 @@
       <div class="user-amount">
             {{ $t('NAV_USER') }}
         </div>
+
+        <div class="file-body-top">
+        <div class="menu">
+          <div class="name-wrapper">
+          <img class="back-up" src="@/assets/icon/icon_user_amount.png" />
+        <div class="margin">{{ $t('USER_AMOUNT') }}</div>
+         <div class="num"> 2 </div>
+        </div>
+          </div>
+             </div>
+
         <el-button
               type="primary"
               icon="add-icon"
@@ -247,7 +258,56 @@ export default {
     }
 }
 </script>
+
 <style scoped>
+.file-body-top{
+  display: flex;
+  margin-bottom: 16px;
+}
+
+.menu{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 200px;
+    max-width: 400px;
+    height: 56px;
+    padding-left: 25px;
+    padding-right: 24px;
+    border-radius: 4px;
+    margin-right: 16px;
+    font-size: 12px;
+    line-height: 16px;
+    flex: 1;
+    flex-shrink: 0;
+    background: #333333;
+    &:last-child{
+    margin-right: 0;
+    }
+}
+
+.name-wrapper {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    color: #FFFFFE;
+    .back-up {
+      width: 20px;
+      height: 24px;
+      margin-right: 8px;
+    }
+  }
+
+.num{
+    font-size: 16px;
+    color: #FFFFFE;
+    letter-spacing: 0;
+    text-align: right;
+    line-height: 24px;
+    font-weight: 700;
+    margin-left: 300px;
+  }
 
 .button-add {
     border-radius: 2px;
@@ -259,6 +319,10 @@ export default {
     text-align: center;
     line-height: 16px;
     font-weight: 500;
+}
+
+.margin {
+  margin-left: 8px;
 }
 
 .user-operation {
