@@ -62,7 +62,6 @@ class User(db.Model):
             return status_code.USER_NOT_EXIST_ERROR, None
         if user.password == pbkdf2hash(password, user.salt)[0]:
             user.last_login_time = datetime.datetime.now()
-            db.session.add(user)
             db.session.commit()
             return status_code.SUCCESS, cls.data2dict(user)
         return status_code.PASSWD_ERROR, None
@@ -73,8 +72,7 @@ class User(db.Model):
         if user is None:
             return status_code.USER_NOT_EXIST_ERROR
         if user.password == pbkdf2hash(password, user.salt)[0]:
-            user.password = pbkdf2hash(new_password, user.salt)[0]
-            db.session.add(user)
+            user.password, user.salt = pbkdf2hash(new_password)
             db.session.commit()
             return status_code.SUCCESS
         return status_code.PASSWD_ERROR
@@ -86,8 +84,7 @@ class User(db.Model):
         user = cls.query.filter_by(user_name=user_name).first()
         if user is None:
             return status_code.USER_NOT_EXIST_ERROR
-        user.password = pbkdf2hash(new_password, user.salt)[0]
-        db.session.add(user)
+        user.password, user.salt = pbkdf2hash(new_password)
         db.session.commit()
         return status_code.SUCCESS
 
@@ -148,11 +145,10 @@ class User(db.Model):
         try:
             paginate = users.paginate(page=current_page, per_page=pagesize)
         except NotFound:
-            return status_code.PARAM_ERROR, None
-        else:
-            user_list = [cls.data2dict(user) for user in paginate.items]
-            page_count = len(user_list)
-            return status_code.SUCCESS, {"users": user_list, "total": total_count, "page_total": page_count}
+            paginate = users.paginate(page=DEFAULT_PAGE, per_page=pagesize)
+        user_list = [cls.data2dict(user) for user in paginate.items]
+        page_count = len(user_list)
+        return status_code.SUCCESS, {"users": user_list, "total": total_count, "page_total": page_count}
 
     def __repr__(self):
         return "<Users %r>" % self.user_name
