@@ -41,6 +41,7 @@ su AiVault -c "/home/AiVault/ai-vault x509 -type MGMT -caFile /home/AiVault/ca.p
 su AiVault -c "/home/AiVault/ai-vault x509 -type SVC -caFile /home/AiVault/ca.pem -certFile /home/AiVault/.ai-vault/svc.pem | grep 'fingerprint'" || exit 1
 
 # 生成服务证书私钥
+su AiVault -c "openssl rand -writerand ~/.rnd" || exit 1
 su AiVault -c "openssl genrsa -out /home/AiVault/.ai-vault/cert/server.key 4096" || exit 1
 # 生成服务证书CSR
 su AiVault -c "openssl req -new -key /home/AiVault/.ai-vault/cert/server.key -subj '/CN=aivault' -out /home/AiVault/.ai-vault/cert/server.csr" || exit 1

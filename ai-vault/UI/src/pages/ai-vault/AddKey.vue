@@ -61,20 +61,30 @@
         <el-dialog
             :visible.sync="isCopy"
             :title="$t('PSK_TITLE')"
-            width="35%"
+            width="500px"
             :close-on-click-modal="false"
             :modal="false"
         >
-            <b style="font-size: 16px;">
-                {{$t('PSK_TIP')}}
-                {{$t('DIALOG_COPY')}}
-            </b><br />
-            {{copyText.length > 50 ? copyText.slice(50) + ' ...' : copyText}}
+          <div style="background: #f97611;opacity: 0.2;border-radius: 2px;display: flex;">
+            <div><img src="@/assets/icon/alarm-orange.png"></div>
+            <div>{{ $t('PSK_TIPS')}}</div>
+          </div>
+          <el-form label-width="120px" style="margin-top: 20px">
+            <el-form-item label="绑定的主密钥">
+              <el-input v-model="mkName" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="预共享密钥名">
+              <el-input v-model="pskName" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="预共享密钥">
+              <el-input v-model="psk" type="textarea" :rows="8" style="height: auto"></el-input>
+            </el-form-item>
+          </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="handleCancelCopy">{{$t('BTN_CANCEL')}}</el-button>
                 <el-button type="primary" @click="handleCopy" v-clipboard:copy="copyText"
-      v-clipboard:success="handleCopy"
-      >{{$t('BTN_COPY')}}</el-button>
+                           v-clipboard:success="handleCopy"
+                >{{$t('BTN_COPY')}}</el-button>
+                <el-button @click="handleCancelCopy">{{$t('BTN_CANCEL')}}</el-button>
             </span>
         </el-dialog>
     </div>
@@ -100,6 +110,9 @@ export default {
                 Password: '',
                 MKRemarks: '',
             },
+          psk: 'ABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDsdss',
+            pskName: '',
+            mkName: '',
             pskForm: {
                 PSKName: '',
                 MKName: '',
@@ -188,6 +201,8 @@ export default {
                                 }
                             })
                     } else {
+                      this.mkName = this.pskForm.MKName
+                      this.pskName = this.pskForm.PSKName
                         postPSK(this.pskForm)
                             .then(res => {
                                 if(res.data.status === '00000000') {
