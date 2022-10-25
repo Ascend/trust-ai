@@ -86,11 +86,27 @@ export default {
     this.fetchData()
   },
   watch: {
+    isQueryVersion(newValue, oldValue) {
+      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+        this.version = this.tmpVersion
+        this.healthStatus = this.tmpHealthStatus
+        this.tableData = this.tmpTableData
+      }
+    },
+    isQueryHealth(newValue, oldValue) {
+      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+        this.version = this.tmpVersion
+        this.healthStatus = this.tmpHealthStatus
+        this.tableData = this.tmpTableData
+      }
+    },
     isQueryCert(newValue, oldValue) {
-      this.version = this.tmpVersion
-      this.healthStatus = this.tmpHealthStatus
-      this.tableData = this.tmpTableData
-    }
+      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+        this.version = this.tmpVersion
+        this.healthStatus = this.tmpHealthStatus
+        this.tableData = this.tmpTableData
+      }
+    },
   },
   methods: {
     queryVersion() {
