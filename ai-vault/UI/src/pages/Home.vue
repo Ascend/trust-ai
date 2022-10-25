@@ -87,11 +87,9 @@ export default {
   },
   watch: {
     isQueryCert(newValue, oldValue) {
-      if(newValue) {
-        this.version = this.tmpVersion
-        this.healthStatus = this.tmpHealthStatus
-        this.tableData = this.tmpTableData
-      }
+      this.version = this.tmpVersion
+      this.healthStatus = this.tmpHealthStatus
+      this.tableData = this.tmpTableData
     }
   },
   methods: {
