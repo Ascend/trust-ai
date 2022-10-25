@@ -26,33 +26,33 @@
       stat:
         path: /run/board_cfg.ini
       register: a500
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: set kmsagent path
       set_fact:
         kmsagent_path: "{{ '/usr/local/Ascend/driver/tools/kmsagent' if not a500.stat.exists else '/home/data/miniD/driver/tools/kmsagent' }}"
         cacheable: yes
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: Check whether the cert directory exists
       stat:
         path: /opt/cert
       register: dir_result
-      when: aivault_server is undefined
+      when: server is undefined
 
     - name: clean resources
       file:
         state: absent
         path: /opt/cert
-      when: aivault_server is undefined and dir_result.stat.exists
+      when: server is undefined and dir_result.stat.exists
     
     - name: move ca files first
       shell: cp -r {{ resources_dir }}/cert /opt
-      when: aivault_server is undefined and ansible_connection != "local"
+      when: server is undefined and ansible_connection != "local"
     
     - name: move ca files second
       shell: cp -r {{ resources_dir }}/cert /opt
-      when: aivault_server is undefined and ansible_connection == "local"
+      when: server is undefined and ansible_connection == "local"
     
     - name: set cert dir permission
       file:
@@ -61,7 +61,7 @@
         group: HwHiAiUser
         mode: 0700
         recurse: no
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: set cafile permission first
       file:
@@ -69,7 +69,7 @@
         owner: HwHiAiUser
         group: HwHiAiUser
         mode: 0600
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: set cafile permission second
       file:
@@ -77,85 +77,85 @@
         owner: HwHiAiUser
         group: HwHiAiUser
         mode: 0600
-      when: aivault_server is undefined
+      when: server is undefined
 
     - name: Check whether the docker network aiguard exists
       shell: docker network ls | grep aiguard | wc -l
       register: aiguard_result
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: docker create network aiguard
       shell: docker network create aiguard
-      when: aivault_server is undefined and aiguard_result.stdout == "0"
+      when: server is undefined and aiguard_result.stdout == "0"
     
     - name: get CfsIP
       shell: docker network inspect aiguard | grep Gateway|cut -d'"' -f4
       register: cfsip
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: Configuring the cfs service
       shell: |
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s SERVER -n CfsIP -v {{ cfsip.stdout }}
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s SERVER -n CfsPort -v {{ cfs_port }}
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: Configuring the aivault service
       shell: |
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s AIVAULT_SERVER -n AiVaultIP -v {{ aivault_ip }}
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s AIVAULT_SERVER -n AiVaultPort -v {{ aivault_port }}
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s AIVAULT_SERVER -n AiVaultCaPath -v /opt/cert/ca.pem
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: Check whether the TlsCertPath directory exists
       stat:
         path: /opt/tlscert
       register: tlscert_result
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: create TlsCertPath
       shell: mkdir /opt/tlscert
-      when: aivault_server is undefined and not tlscert_result.stat.exists
+      when: server is undefined and not tlscert_result.stat.exists
     
     - name: Check whether the TlsBackupCertPath directory exists
       stat:
         path: /opt/tlscertbak
       register: tlscertbak_result
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: create TlsBackupCertPath
       shell: mkdir /opt/tlscertbak
-      when: aivault_server is undefined and not tlscertbak_result.stat.exists
+      when: server is undefined and not tlscertbak_result.stat.exists
     
     - name: Start kmsagent service
       shell: npu-smi set -t key-manage -s start
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: Generate kmsagent.csr
       shell: |
         {{ kmsagent_path }} tls get-csr "rsa:4096:sha256" "{{ cert_op_param }}" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: Copy kmsagent.csr from remote host to local
       fetch:
         src: /opt/tlscert/tmp/kmsagent.csr
         dest: "{{ hostvars.localhost.resources_dir }}"
-      when: aivault_server is undefined and ansible_connection != "local"
+      when: server is undefined and ansible_connection != "local"
     
     - name: Generate kmsagent.pem
       shell: python3 {{ resources_dir }}/../certs.py
-      when: aivault_server is undefined and ansible_connection == "local"
+      when: server is undefined and ansible_connection == "local"
     
     - name: copy kmsagent.pem to remote hosts
       copy:
         src: "{{ hostvars.localhost.resources_dir }}/{{ hostvars[inventory_hostname]['inventory_hostname'] }}/opt/tlscert/tmp/kmsagent.pem"
         dest: /opt/tlscert/tmp
-      when: aivault_server is undefined and ansible_connection != "local"
+      when: server is undefined and ansible_connection != "local"
 
     
     - name: Import kmsagent certificate
       shell: |
         {{ kmsagent_path }} tls set-cert "/opt/tlscert/tmp/kmsagent.pem /opt/cert/ca.pem" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
-      when: aivault_server is undefined
+      when: server is undefined
 
     - name: set TlsCertPath directory permission
       file:
@@ -163,7 +163,7 @@
         owner: HwHiAiUser
         group: HwHiAiUser
         recurse: yes
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: set TlsBackupCertPath directory permission
       file:
@@ -171,21 +171,21 @@
         owner: HwHiAiUser
         group: HwHiAiUser
         recurse: yes
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: restart the kmsagent service
       shell: |
         npu-smi set -t key-manage -s stop
         npu-smi set -t key-manage -s start
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: Check the running state of kmsagent
       shell: npu-smi info -t key-manage
       register: kmsagent_stat
-      when: aivault_server is undefined
+      when: server is undefined
     
     - name: message
       debug:
         msg:
           - "{{ kmsagent_stat | default('NOT DEFINED') }}"
-      when: aivault_server is undefined and kmsagent_stat.changed
+      when: server is undefined and kmsagent_stat.changed

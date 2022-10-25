@@ -64,31 +64,31 @@
   stat:
     dest: "{{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh"
   register: fuse_plugin
-  when: aivault_server is undefined
+  when: server is undefined
 
 - name: install fuse-plugin
   shell: bash {{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh
-  when: aivault_server is undefined and fuse_plugin.stat.exists
+  when: server is undefined and fuse_plugin.stat.exists
 
 - name: message
   debug:
     msg:
       - "can not find fuse-plugin package, fuse-plugin install skipped"
-  when: aivault_server is undefined and not fuse_plugin.stat.exists
+  when: server is undefined and not fuse_plugin.stat.exists
 
 - name: Check fuse-plugin status
   shell: ps -ef | grep aiguard-plugin | grep -v "grep" | wc -l
   register: fuse_plugin_status
-  when: aivault_server is undefined
+  when: server is undefined
 
 - name: message
   debug:
     msg:
       - "fuse-plugin run successfully"
-  when: aivault_server is undefined and fuse_plugin_status.stdout != '0' and fuse_plugin.stat.exists
+  when: server is undefined and fuse_plugin_status.stdout != '0' and fuse_plugin.stat.exists
 
 - name: message
   debug:
     msg:
       - "fuse-plugin run failed"
-  when: aivault_server is undefined and fuse_plugin_status.stdout == '0' and fuse_plugin.stat.exists
+  when: server is undefined and fuse_plugin_status.stdout == '0' and fuse_plugin.stat.exists
