@@ -43,7 +43,7 @@
 
         <el-table
             :data="userData"
-            style="width: 100%; margin-top: 40px; margin-bottom: 5px; font-size: 12px;"
+            style="width: 100%; margin-top: 40px; margin-bottom: 5px; font-size: 12px; border-radius: 4px;padding: 24px;"
             :cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :empty-text="$t('EMPTY_TEXT')"
