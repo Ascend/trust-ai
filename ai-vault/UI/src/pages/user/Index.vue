@@ -47,11 +47,12 @@
             :cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :empty-text="$t('EMPTY_TEXT')"
+            @sort-change="handleUserTable"
         >
-            <el-table-column prop="UserID" :label="$t('COLUMN_USER_ID')"></el-table-column>
+            <el-table-column prop="UserID" :label="$t('COLUMN_USER_ID')" sortable="custom"></el-table-column>
             <el-table-column prop="UserName" :label="$t('COLUMN_USER_NAME')"></el-table-column>
             <el-table-column prop="Role" :label="$t('COLUMN_USER_TYPE')"></el-table-column>
-            <el-table-column prop="CreateTime" :label="$t('COLUMN_CREATE_TIME')"></el-table-column>
+            <el-table-column prop="CreateTime" :label="$t('COLUMN_CREATE_TIME')" sortable="custom"></el-table-column>
             <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')" width="240">
                 <template slot-scope="scope">
                     <el-button @click="handleConfirmReset(scope.row)" type="text" :disabled="scope.row.RoleID === 1" size="small">
@@ -257,6 +258,8 @@ export default {
         handleClear() {
             this.userParams.CurrentPage = 1
             this.fetchUserList()
+        },
+        handleUserTable(){
         },
         handleGetUserAmount() {
             fetchUser({})

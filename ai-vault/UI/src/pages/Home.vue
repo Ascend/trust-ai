@@ -158,7 +158,6 @@ export default {
               }
           }
       })
-      console.log(this.tableData)
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
       if (columnIndex === 0) {
@@ -169,13 +168,6 @@ export default {
               colspan: _col
           }
       }
-    },
-    handleCertInfo(item) {
-      item
-      item.CertType = {'MGMT': '管理面' , 'SVC': '服务面'}[item.CertType]
-      item.CertAlarm = item.CertAlarm === '' ? '正常' : '不正常'
-      item.CrlStatus = item.CrlStatus === 'No CRL certificate has been imported.' ? '未导入' : '已导入'
-      return item
     },
     handleBeforeUpload(file) {
       const isZip = file.type.indexOf('zip') > -1;
@@ -233,13 +225,19 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.home {
-  height: 100vh;
+.home{
+  width: 100%;
+  height: 100%;
+  background: url(../assets/bg_user_home.png) center no-repeat;
+  background-size: cover;
+  position: absolute;
   padding: 64px 24px 24px;
   display: flex;
   flex-direction: row;
   overflow: auto;
 }
+
+
 .left {
   flex-grow: 1;
   display: flex;
