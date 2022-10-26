@@ -41,42 +41,43 @@
             ></el-button>
         </div>
 
-        <el-table
-            :data="userData"
-            style="width: 100%; margin-top: 40px; margin-bottom: 5px; font-size: 12px; border-radius: 4px;padding: 24px;"
-            :cell-style="{ textAlign: 'center', padding: '10px 0', }"
-            :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
-            :empty-text="$t('EMPTY_TEXT')"
-            :height="tableHeight"
-            @sort-change="handleSortUserTable"
-        >
-            <el-table-column prop="UserID" :label="$t('COLUMN_USER_ID')" sortable="custom"></el-table-column>
-            <el-table-column prop="UserName" :label="$t('COLUMN_USER_NAME')"></el-table-column>
-            <el-table-column prop="Role" :label="$t('COLUMN_USER_TYPE')"></el-table-column>
-            <el-table-column prop="CreateTime" :label="$t('COLUMN_CREATE_TIME')" sortable="custom"></el-table-column>
-            <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')" width="240">
-                <template slot-scope="scope">
-                    <el-button @click="handleConfirmReset(scope.row)" type="text" :disabled="scope.row.RoleID === 1" size="small">
-                        {{ $t('RESET_PASSWORD') }}
-                    </el-button>
-                    <el-button @click="handleConfirmDelete(scope.row)" type="text" :disabled="scope.row.RoleID === 1" size="small">
-                        {{ $t('OPERATION_DELETE') }}
-                    </el-button>
-                </template>
-            </el-table-column>
-        </el-table>
-
-        <el-pagination
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page.sync="pageParams.CurrentPage"
-            :hide-on-single-page=true
-            :page-size="pageParams.PageSize"
-            :total="userPagination.total"
-            layout="prev, pager, next"
-            style="padding-bottom: 20px;"
-        >
-        </el-pagination>
+        <div style="background:#1f2329; margin-top: 70px;">
+            <el-table
+                :data="userData"
+                style="width: 100%; margin-top: 40px; margin-bottom: 5px; font-size: 12px; border-radius: 4px;padding: 24px;"
+                :cell-style="{ textAlign: 'center', padding: '10px 0', }"
+                :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
+                :empty-text="$t('EMPTY_TEXT')"
+                :height="tableHeight"
+                @sort-change="handleSortUserTable"
+            >
+                <el-table-column prop="UserID" :label="$t('COLUMN_USER_ID')" sortable="custom"></el-table-column>
+                <el-table-column prop="UserName" :label="$t('COLUMN_USER_NAME')"></el-table-column>
+                <el-table-column prop="Role" :label="$t('COLUMN_USER_TYPE')"></el-table-column>
+                <el-table-column prop="CreateTime" :label="$t('COLUMN_CREATE_TIME')" sortable="custom"></el-table-column>
+                <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')" width="240">
+                    <template slot-scope="scope">
+                        <el-button @click="handleConfirmReset(scope.row)" type="text" :disabled="scope.row.RoleID === 1" size="small">
+                            {{ $t('RESET_PASSWORD') }}
+                        </el-button>
+                        <el-button @click="handleConfirmDelete(scope.row)" type="text" :disabled="scope.row.RoleID === 1" size="small">
+                            {{ $t('OPERATION_DELETE') }}
+                        </el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-pagination
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                :current-page.sync="pageParams.CurrentPage"
+                :hide-on-single-page=true
+                :page-size="pageParams.PageSize"
+                :total="userPagination.total"
+                layout="total, prev, pager, next, jumper"
+                style="padding-bottom: 20px;"
+            >
+            </el-pagination>
+        </div>
 
         <el-dialog
             :title="$t('CONFIRM_DELETE')"
@@ -162,7 +163,7 @@ export default {
                     { validator: checkConfirmNewUserPassword, trigger: 'blur' }
                 ]
             },
-            tableHeight: window.innerHeight - 280
+            tableHeight: window.innerHeight - 330
         };
     },
     watch: {
@@ -388,6 +389,10 @@ export default {
     color: #FFFFFE;
     line-height: 24px;
     font-weight: 500;
+}
+
+.el-table::before {
+    background-color: #1f2329;
 }
 
 </style>

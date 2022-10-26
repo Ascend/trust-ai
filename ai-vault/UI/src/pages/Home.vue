@@ -126,10 +126,10 @@ export default {
         .then(res => {
               this.useramount = res.data.data.total
           })
-      // fetchDataSize()
-      //   .then(res => {
-      //     this.datasize = (res.data.data.size / 1024 / 1024).toFixed(2)
-      //   })
+      fetchDataSize()
+        .then(res => {
+          this.datasize = (res.data.data.size / 1024 / 1024).toFixed(2)
+        })
       fetchVersion()
         .then(resVersion => {
           if(resVersion.data.status === '31000022') {
