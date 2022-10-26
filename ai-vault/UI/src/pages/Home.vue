@@ -18,7 +18,7 @@
           </el-col>
       </el-row>
     </div>
-    
+
     <el-table
       :data="tableData"
       :span-method="objectSpanMethod"
@@ -47,9 +47,9 @@
         <el-button style="margin-left: 10px;" type="primary">{{ $t('BUTTON_UPLOAD') }}</el-button>
       </el-upload>
 
-      <el-button 
-        type="primary" 
-        plain 
+      <el-button
+        type="primary"
+        plain
         style="margin-left: 10px;"
         @click="handleDownload"
       >
@@ -147,7 +147,7 @@ export default {
               colspan: _col
           }
       }
-    },    
+    },
     handleBeforeUpload(file) {
       const isZip = file.type.indexOf('zip') > -1;
       const isLt50M = file.size / 1024 / 1024 <= 50;
@@ -204,6 +204,14 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.main{
+  width: 100%;
+  height: 100%;
+  background: url(../assets/bg_user_home.png) center no-repeat;
+  background-size: cover;
+  position: absolute;
+}
+
 .home-operation {
   margin-top: 20px;
 }
@@ -214,7 +222,7 @@ export default {
       padding: 16px 24px;
       margin-top: 10px;
   }
-  
+
   .info-col {
       display: flex;
       vertical-align: center;
@@ -222,13 +230,13 @@ export default {
   .info-subitem {
       display: inline-block;
   }
-  
+
   .info-subitem-title {
       margin-left: 10px;
       font-size: 14px;
       color: #6A6A6A;
   }
-  
+
   .info-subitem-text {
       margin-left: 10px;
       font-size: 32px;
