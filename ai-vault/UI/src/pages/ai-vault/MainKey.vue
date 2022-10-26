@@ -1,15 +1,14 @@
 <template>
     <div>
+        <el-button
+            type="primary"
+            icon="el-icon-circle-plus-outline"
+            class="btn-add"
+            @click="handleAddMainKey"
+        >
+            {{ $t('BUTTON_ADD') }}
+      </el-button>
         <div class="tab-main-operation">
-            <el-button
-                type="primary"
-                plain
-                icon="el-icon-circle-plus-outline"
-                id="btn-add"
-                @click="handleAddMainKey"
-            >
-                {{ $t('BUTTON_ADD') }}
-            </el-button>
             <el-input
                 type="text"
                 prefix-icon="el-icon-search"
@@ -36,11 +35,11 @@
             :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :empty-text="$t('EMPTY_TEXT')"
         >
-            <el-table-column prop="MKName" :label="$t('COLUMN_NAME')" sortable="custom" width="280"></el-table-column>
-            <el-table-column prop="MKUsage" :label="$t('COLUMN_KEY_USAGE')" width="280"></el-table-column>
-            <el-table-column prop="CreatedAt" :label="$t('COLUMN_CREATE_TIME')" sortable="custom" width="320"></el-table-column>
-            <el-table-column prop="MKRemarks" :label="$t('COLUMN_REMARKS')" width="360"></el-table-column>
-            <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')" >
+            <el-table-column prop="MKName" :label="$t('COLUMN_NAME')" sortable="custom"></el-table-column>
+            <el-table-column prop="MKUsage" :label="$t('COLUMN_KEY_USAGE')"></el-table-column>
+            <el-table-column prop="CreatedAt" :label="$t('COLUMN_CREATE_TIME')" sortable="custom"></el-table-column>
+            <el-table-column prop="MKRemarks" :label="$t('COLUMN_REMARKS')"></el-table-column>
+            <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')">
                 <template slot-scope="scope">
                     <el-button @click="handleConfirmDelete(scope.row)" type="text" plain size="small">
                         {{ $t('OPERATION_DELETE') }}
@@ -164,15 +163,18 @@ export default {
 }
 </script>
 <style scoped>
-
-#btn-add {
-    float: left;
-}
-
 .tab-main-operation {
     display: flex;
     align-items: center;
     float: right;
+}
+
+.btn-add {
+  float: left;
+  margin-left: 10px;
+  background: #0077FF;
+  border-radius: 2px;
+  color: #FFFFFF;
 }
 
 .input-search {
