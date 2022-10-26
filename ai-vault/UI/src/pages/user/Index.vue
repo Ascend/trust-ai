@@ -195,13 +195,13 @@ export default {
             resetPassword(this.resetPswForm)
                 .then(res => {
                     if(res.data.status === '00000000') {
-                        this.$message({
+                        this.$message.success({
                             message: this.$t('SUCCESS_OPERATION')
                         })
                         this.isDelorReset = false
                         this.fetchUserList()
                     } else {
-                        this.$message({
+                        this.$message.error({
                             message: this.$t('ERR_OPERATION'),
                         })
                         this.isDelorReset = false
@@ -215,18 +215,18 @@ export default {
             deleteUser(this.selectedRow.UserName)
                 .then(res => {
                     if(res.data.status === '00000000') {
-                        this.$message({
+                        this.$message.success({
                             message: this.$t('SUCCESS_DELETE'),
                         })
                         this.isDelorReset = false
                         this.fetchUserList()
                     }else if(res.data.status === '21000001') {
-                        this.$message({
+                        this.$message.error({
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_CONNECT_AIVAULT'),
                         })
                         this.isDelorReset = false
                     } else{
-                        this.$message({
+                        this.$message.error({
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_DELETE_USER'),
                         })
                         this.isDelorReset = false

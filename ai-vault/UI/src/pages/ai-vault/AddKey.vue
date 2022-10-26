@@ -203,7 +203,7 @@ export default {
                                     link.click();
                                     window.URL.revokeObjectURL(url);
 
-                                    this.$message({message: this.$t('SUCCESS_ADD')})
+                                    this.$message.success({message: this.$t('SUCCESS_ADD')})
                                     this.$emit('handleRefresh', 'mk')
                                 }
                             })

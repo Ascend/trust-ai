@@ -58,28 +58,28 @@ export default {
             } else {
               this.$router.push('/app/ai-vault')
             }
-            this.$message({
+            this.$message.success({
               message: this.$t('SUCCESS_LOGIN')
             })
           } else if(res.data.status === '21000004' || res.data.status === '00002000') {
-              this.$message({
+              this.$message.error({
                   message: this.$t('ERR_LOGIN'),
               })
           }
         })
         .catch(err => {
           if (err.code == 401) {
-            this.$message({
+            this.$message.error({
               message: this.$t('ERR_LOGIN'),
               type: 'error'
             })
           } else if (err.code == 403) {
-            this.$message({
+            this.$message.error({
               message: this.$t('ERR_LOGIN_LOCKING'),
               type: 'error'
             })
           } else {
-            this.$message({
+            this.$message.error({
               message: err,
               type: 'error'
             })
