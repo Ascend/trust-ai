@@ -143,6 +143,11 @@ export default {
                         })
                         this.isDelete = false
                         this.fetchData()
+                    } else if(res.data.status === '31000022') {
+                        this.$message.error({
+                            message: this.$t('ERR_SYSTEM_BUSY'),
+                        })
+                        this.isDelete = false
                     } else if(res.data.status === '31000005') {
                         this.$message.error({
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_DELETE_MK'),

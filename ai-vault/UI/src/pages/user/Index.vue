@@ -43,10 +43,11 @@
 
         <el-table
             :data="userData"
-            style="width: 100%; margin-top: 40px; margin-bottom: 20px; font-size: 12px;"
+            style="width: 100%; margin-top: 40px; margin-bottom: 5px; font-size: 12px;"
             :cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :empty-text="$t('EMPTY_TEXT')"
+            :height="tableHeight"
             @sort-change="handleSortUserTable"
         >
             <el-table-column prop="UserID" :label="$t('COLUMN_USER_ID')" sortable="custom"></el-table-column>
@@ -73,7 +74,7 @@
             :page-size="userParams.PageSize"
             :total="userPagination.total"
             layout="prev, pager, next"
-            style="padding-bottom: 30px;"
+            style="padding-bottom: 20px;"
         >
         </el-pagination>
 
@@ -126,6 +127,7 @@ export default {
                 callback();
             }
         }
+
         return {
             useramount: 0,
             userData: [],
@@ -160,7 +162,8 @@ export default {
                     { required: true, message: this.$t('PLACEHOLDER_CONFIRM_PASSWORD'), trigger: 'blur' },
                     { validator: checkConfirmNewUserPassword, trigger: 'blur' }
                 ]
-            }
+            },
+            tableHeight: window.innerHeight - 280
         };
     },
     watch: {
@@ -181,7 +184,7 @@ export default {
             }
             if(this.UserName.length > 0) {
                 params.UserName = this.UserName
-            } 
+            }
             if(this.sortParams.SortBy.length > 0) {
                 params.SortBy = this.sortParams.SortBy
             }

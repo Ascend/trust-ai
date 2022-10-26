@@ -117,6 +117,7 @@ export default {
     ERR_UPLOAD_FILE_TYPE: '上传文件必须为 zip 格式',
     ERR_MAX_MK: '主密密钥量超过上限',
     ERR_MAX_PSK: '预共享密钥数量超过上限',
+    ERR_SYSTEM_BUSY: '系统繁忙，请稍后重试',
 
 
     DIALOG_COPY: '请确认是否要将预共享密钥复制到剪切板：',
