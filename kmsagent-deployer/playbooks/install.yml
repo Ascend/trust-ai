@@ -1,7 +1,7 @@
 - name: yum install haveged
   shell: rpm -ivh --force --nodeps --replacepkgs {{ resources_dir }}/centos_{{ ansible_architecture }}/*.rpm
   register: sys_result
-  when: ansible_pkg_mgr == "yum"
+  when: ansible_pkg_mgr == "yum" or ansible_pkg_mgr == "dnf"
 
 - name: message
   debug: var=sys_result
@@ -60,9 +60,21 @@
     msg:
       - "docker status is {{ docker_status.stdout }}"
 
+- name: find aivault image
+  stat:
+    dest: "{{ resources_dir }}/aivault_{{ ansible_architecture }}.tar"
+  register: aivault_image
+  when: server is defined
+
 - name: docker load aivault image
   shell: docker load < {{ resources_dir }}/aivault_{{ ansible_architecture }}.tar
-  when: server is defined
+  when: server is defined and aivault_image.stat.exists
+
+- name: message
+  debug:
+    msg:
+      - "can not find aivault_{{ ansible_architecture }}.tar, load image skipped"
+  when: server is defined and not aivault_image.stat.exists
 
 - name: find fuse-plugin
   stat:
