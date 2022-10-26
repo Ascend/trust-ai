@@ -1,13 +1,21 @@
 <template>
     <div>
         <el-dialog
-            :title="$t('BASIC_INFO')"
+            :title="currPage === 'mk' ? $t('ADD_MK') : $t('ADD_PSK')"
             :visible.sync="isAddKey"
             :close-on-click-modal="false"
             :before-close="handleClose"
             width="30%"
             :modal="false"
         >
+            <div v-if="currPage === 'mk'" style="background: rgba(249,118,17,0.2);border-radius: 2px;display: flex; padding-bottom: 8px; padding-top: 8px; margin-bottom: 24px">
+                <div style="margin-left: 8px"><img src="@/assets/icon/alarm-orange.svg"></div>
+                <div style="margin-left: 8px">{{ $t('ADD_MK_TIP')}}</div>
+            </div>
+            <div v-else style="background: rgba(0,119,255,0.2);border-radius: 2px;display: flex; padding-bottom: 8px; padding-top: 8px; margin-bottom: 24px">
+                <div style="margin-left: 8px"><img src="@/assets/icon/remind.svg"></div>
+                <div style="margin-left: 8px">{{ $t('ADD_PSK_TIP')}}</div>
+            </div>
             <el-form v-if="currPage === 'mk'" :model="mkForm" :rules="mkRules" ref="mkForm">
                 <el-form-item :label="$t('KEY_NAME')" prop="MKName" :label-width="formLabelWidth">
                     <el-tooltip :content="$t('TIP_KEY_NAME')" placement="right">
@@ -65,9 +73,9 @@
             :close-on-click-modal="false"
             :modal="false"
         >
-          <div style="background: #f97611;opacity: 0.2;border-radius: 2px;display: flex;">
-            <div><img src="@/assets/icon/alarm-orange.png"></div>
-            <div>{{ $t('PSK_TIPS')}}</div>
+          <div style="background: rgba(249,118,17,0.2);border-radius: 2px;display: flex; padding-bottom: 8px; padding-top: 8px">
+            <div style="margin-left: 8px"><img src="@/assets/icon/alarm-orange.svg"></div>
+            <div style="margin-left: 8px">{{ $t('PSK_TIPS')}}</div>
           </div>
           <el-form label-width="120px" style="margin-top: 20px">
             <el-form-item label="绑定的主密钥">
@@ -77,7 +85,7 @@
               <el-input v-model="pskName" disabled></el-input>
             </el-form-item>
             <el-form-item label="预共享密钥">
-              <el-input v-model="psk" type="textarea" :rows="8" style="height: auto"></el-input>
+              <el-input v-model="copyText" type="textarea" :rows="12" style="height: auto"></el-input>
             </el-form-item>
           </el-form>
             <span slot="footer" class="dialog-footer">
@@ -110,7 +118,6 @@ export default {
                 Password: '',
                 MKRemarks: '',
             },
-          psk: 'ABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDASDABDSBDsdss',
             pskName: '',
             mkName: '',
             pskForm: {

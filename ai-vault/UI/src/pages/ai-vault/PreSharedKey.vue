@@ -1,15 +1,15 @@
 <template>
     <div>
+        <el-button
+            type="primary"
+            icon="el-icon-circle-plus-outline"
+            class="btn-add"
+            @click="handleAddPreSharedKey"
+        >
+            {{ $t('BUTTON_ADD') }}
+      </el-button>
         <div class="tab-main-operation">
-            <el-button 
-                type="primary" 
-                plain 
-                icon="el-icon-circle-plus-outline"
-                id="btn-add"
-                @click="handleAddPreSharedKey"
-            >
-                {{ $t('BUTTON_ADD') }}
-            </el-button>
+
             <el-input
                 type="text"
                 prefix-icon="el-icon-search"
@@ -32,17 +32,17 @@
             @sort-change="handleSortPSKTable"
             max-height="600"
             :highlight-current-row="true"
-            :cell-style="{ textAlign: 'center', border: '0.5px solid rgb(123, 143, 175, 0.5)', padding: '10px 0', }"
+            :cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :empty-text="$t('EMPTY_TEXT')"
         >
-            <el-table-column prop="PSKName" :label="$t('COLUMN_NAME')" sortable="custom" width="280"></el-table-column>
-            <el-table-column prop="PSKBindMKName" :label="$t('COLUMN_BIND_MK_NAME')" width="280"></el-table-column>
-            <el-table-column prop="PSKCreateTime" :label="$t('COLUMN_CREATE_TIME')" sortable="custom" width="320"></el-table-column>
-            <el-table-column prop="PSKRemarks" :label="$t('COLUMN_REMARKS')" width="360"></el-table-column>
-            <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')" >
+            <el-table-column prop="PSKName" :label="$t('COLUMN_NAME')" sortable="custom"></el-table-column>
+            <el-table-column prop="PSKBindMKName" :label="$t('COLUMN_BIND_MK_NAME')"></el-table-column>
+            <el-table-column prop="PSKCreateTime" :label="$t('COLUMN_CREATE_TIME')" sortable="custom"></el-table-column>
+            <el-table-column prop="PSKRemarks" :label="$t('COLUMN_REMARKS')"></el-table-column>
+            <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')">
                 <template slot-scope="scope">
-                    <el-button @click="handleConfirmDelete(scope.row)" type="danger" plain size="small">
+                    <el-button @click="handleConfirmDelete(scope.row)" type="text" plain size="small">
                         {{ $t('OPERATION_DELETE') }}
                     </el-button>
                 </template>
@@ -55,7 +55,10 @@
             :close-on-click-modal="false"
             :modal="false"
         >
-            {{$t('CONFIRM_DELETE_KEY_TIP')}}{{$t('CONFIRM_DELETE_TIP')}} {{ selectedRow.PSKName }}?
+          <div style="display: flex;">
+              <div style="margin-left: 16px; margin-right: 16px"><img src="@/assets/icon/warn.svg"></div>
+              {{$t('CONFIRM_DELETE_KEY_TIP')}}{{$t('CONFIRM_DELETE_TIP')}} {{ selectedRow.PSKName }}?
+          </div>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="isDelete = false">{{$t('BTN_CANCEL')}}</el-button>
                 <el-button type="primary" @click="handleDelete">{{$t('BTN_OK')}}</el-button>
@@ -95,7 +98,7 @@ export default {
             if(newPage === 'psk') {
                 this.fetchData()
             }
-        },        
+        },
         isRefresh(newValue, oldValue){
             this.fetchData()
         },
@@ -161,6 +164,14 @@ export default {
     display: flex;
     align-items: center;
     float: right;
+}
+
+.btn-add {
+  float: left;
+  margin-left: 10px;
+  background: #0077FF;
+  border-radius: 2px;
+  color: #FFFFFF;
 }
 
 .input-search {
