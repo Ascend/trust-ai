@@ -8,6 +8,9 @@ export default {
     VERSION: '版本',
     HEALTH_STATUS: '健康状态',
     USER_AMOUNT: '用户总数',
+    TOOL_INFO: '组件信息',
+    SYS_DATA_SIZE: '系统数据大小（MB）',
+    CERT_INFO: '组件证书',
 
     // Sider
     NAV_HOME: '首页',

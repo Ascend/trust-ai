@@ -71,7 +71,8 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .nav-item {
-    height: 36px;
+    height: 32px;
+    width: 200px;
     padding-top: 10px;
     padding-left: 20px;
     border-radius: 10px;
@@ -88,7 +89,10 @@ export default {
 }
 
 .nav-text {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 400;
     vertical-align: middle;
-    color: #6a6a6a;
+    color: #FFFFFE;
 }
 </style>

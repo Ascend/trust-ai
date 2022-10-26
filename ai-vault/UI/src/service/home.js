@@ -28,3 +28,9 @@ export function exportFile(params = {}) {
         responseType: 'blob'
     });
 }
+
+// 数据大小
+export function fetchDataSize(params = {}) {
+    const url = '/datamanager/v1/size'
+    return $get(url, params)
+}

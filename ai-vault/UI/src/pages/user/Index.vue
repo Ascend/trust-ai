@@ -9,7 +9,7 @@
           <div class="name-wrapper">
           <img class="back-up" src="@/assets/icon/icon_user_amount.png" />
         <div class="margin">{{ $t('USER_AMOUNT') }}</div>
-         <div class="num"> 2 </div>
+         <div class="num"> {{ useramount }} </div>
         </div>
           </div>
              </div>
@@ -68,9 +68,10 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page.sync="userParams.CurrentPage"
-            :total="userPagination.total"
+            :hide-on-single-page=true
             :page-size="userParams.PageSize"
-            layout="prev, pager, next"
+            :total="userPagination.total"
+            layout="prev, pager, next, total"
             style="padding-bottom: 30px;"
         >
         </el-pagination>
@@ -126,9 +127,10 @@ export default {
         }
 
         return {
+            useramount: 0,
             userData: [],
             userPagination: {
-                total: 0,
+                total: 10,
             },
             userParams: {
                 CurrentPage: 1,
@@ -175,6 +177,7 @@ export default {
                     this.userData = res.data.data.users
                     this.userPagination.total = res.data.data.total
                 })
+            this.handleGetUserAmount()
         },
         handleConfirmDelete(row) {
             this.selectedRow = row
@@ -254,6 +257,12 @@ export default {
         handleClear() {
             this.userParams.CurrentPage = 1
             this.fetchUserList()
+        },
+        handleGetUserAmount() {
+            fetchUser({})
+                .then(res => {
+                        this.useramount = res.data.data.total
+                    })
         }
     }
 }
@@ -282,25 +291,26 @@ export default {
     flex: 1;
     flex-shrink: 0;
     background: #333333;
-    &:last-child{
-    margin-right: 0;
-    }
 }
+.menu:last-child{
+    margin-right: 0;
+}
+
 
 .name-wrapper {
     display: flex;
     align-items: center;
     font-weight: 500;
     color: #FFFFFE;
-    .back-up {
+}
+.back-up {
       width: 20px;
       height: 24px;
       margin-right: 8px;
     }
-  }
 
 .num{
-    font-size: 16px;
+    font-size: 12px;
     color: #FFFFFE;
     letter-spacing: 0;
     text-align: right;

@@ -7,6 +7,9 @@ export default {
     LOGOUT: 'Logout',
     VERSION: 'Version',
     HEALTH_STATUS: 'Health Status',
+    TOOL_INFO: 'Component Information',
+    SYS_DATA_SIZE: 'System Data Size(MB)',
+    CERT_INFO: 'Certs',
     USER_AMOUNT: 'User Amount',
 
     // Sider
