@@ -98,6 +98,12 @@ export default {
       version: '',
       tableData: [],
       healthStatus: '',
+      tmpVersion: '',
+      tmpTableData: [],
+      tmpHealthStatus: '',
+      isQueryVersion: false,
+      isQueryCert: false,
+      isQueryHealth: false,
       spanArr: [],
       position: 0,
       fileList: [],
@@ -118,51 +124,103 @@ export default {
     }
   },
   mounted() {
-    this.queryData()
+    this.fetchData()
+  },
+  watch: {
+    isQueryVersion(newValue, oldValue) {
+      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+        this.version = this.tmpVersion
+        this.healthStatus = this.tmpHealthStatus
+        this.tableData = this.tmpTableData
+      }
+    },
+    isQueryHealth(newValue, oldValue) {
+      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+        this.version = this.tmpVersion
+        this.healthStatus = this.tmpHealthStatus
+        this.tableData = this.tmpTableData
+      }
+    },
+    isQueryCert(newValue, oldValue) {
+      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+        this.version = this.tmpVersion
+        this.healthStatus = this.tmpHealthStatus
+        this.tableData = this.tmpTableData
+        this.handleSpan()
+      }
+    },
   },
   methods: {
-    queryData() {
+    handleGetUserAmount() {
       fetchUser({})
         .then(res => {
-              this.useramount = res.data.data.total
-          })
-      fetchDataSize()
+                this.useramount = res.data.data.total
+            })
+    },
+    handleGetDataSize() {
+      fetchDataSize({})
         .then(res => {
-          this.datasize = (res.data.data.size / 1024 / 1024).toFixed(2)
-        })
+                this.datasize = (res.data.data.size / 1024 /1024).toFixed(2)
+            })
+    },
+    queryVersion() {
       fetchVersion()
-        .then(resVersion => {
-          if(resVersion.data.status === '31000022') {
+        .then(res => {
+          if(res.data.status === '31000022') {
             let timerVersion = setTimeout(() => {
-              this.queryData()
+              this.queryVersion()
               clearTimeout(timerVersion)
             }, 1000);
+          } else {
+            this.tmpVersion = res.data.data.version.split('_')[0]
+            this.isQueryVersion = true
           }
-
-          fetchHealthStatus()
-            .then(resHealth => {
-              if(resHealth.data.status === '31000022') {
-                let timerHealth = setTimeout(() => {
-                  this.queryData()
-                  clearTimeout(timerHealth)
-                }, 1000);
-              }
-
-              fetchCertStatus()
-                .then(resCert => {
-                  if(resCert.data.status === '31000022') {
-                    let timerCert = setTimeout(() => {
-                      this.queryData()
-                      clearTimeout(timerCert)
-                    }, 1000);
-                  }
-                    this.tableData = resCert.data.data
-                    this.handleSpan()
-                    this.healthStatus = resHealth.data.msg === 'ok' ? '健康' : '不健康'
-                    this.version = resVersion.data.data.version.split('_')[0]
-                })
-            })
+          })
+        .finally(() => {
+          let timerHealth = setTimeout(() => {
+              this.queryHealth()
+              clearTimeout(timerHealth)
+            }, 1000);
         })
+    },
+    queryHealth() {
+      fetchHealthStatus()
+        .then(res => {
+          if(res.data.status === '31000022') {
+            let timerHealth = setTimeout(() => {
+              this.queryHealth()
+              clearTimeout(timerHealth)
+            }, 1000);
+          } else {
+            this.tmpHealthStatus = res.data.msg === 'ok' ? '健康' : '不健康'
+            this.isQueryHealth = true
+          }
+        })
+        .finally(() => {
+          let timerCert = setTimeout(() => {
+              this.queryCert()
+              clearTimeout(timerCert)
+            }, 1000);
+        })
+    },
+    queryCert() {
+      fetchCertStatus()
+        .then(res => {
+          if(res.data.status === '31000022') {
+            let timerCert = setTimeout(() => {
+              this.queryCert()
+              clearTimeout(timerCert)
+            }, 1000);
+          } else {
+            this.tmpTableData = res.data.data
+            this.isQueryCert = true
+          }
+        })
+    },
+    fetchData() {
+      this.handleGetUserAmount()
+      this.handleGetDataSize()
+      this.queryVersion()
     },
     handleSpan() {
       let mgmtArr = this.tableData.filter(item => item.CertType === 'MGMT')

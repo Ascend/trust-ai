@@ -169,13 +169,10 @@ export default {
                     if(this.currPage === 'mk') {
                         postMK(this.mkForm)
                             .then(res => {
-                                console.log('post mk', res);
-                                console.log('post mk', res.data.status);
                                 if (res.headers['content-disposition'] === undefined) {
                                     let reader = new FileReader();
                                     reader.onload = (e) => {
                                         let res = JSON.parse(e.target.result);
-                                        console.log('res:', res);
                                         if(res.data.status === '00002000') {
                                             this.$message.error({
                                                 message: this.$t('ERR_PARAMS_CHECK_FAILED'),
