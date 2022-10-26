@@ -138,18 +138,18 @@ export default {
             deleteMK(this.selectedRow.MKName)
                 .then(res => {
                     if(res.data.status === '00000000') {
-                        this.$message({
+                        this.$message.success({
                             message: this.$t('SUCCESS_DELETE'),
                         })
                         this.isDelete = false
                         this.fetchData()
                     } else if(res.data.status === '31000005') {
-                        this.$message({
+                        this.$message.error({
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_DELETE_MK'),
                         })
                         this.isDelete = false
                     } else {
-                        this.$message({
+                        this.$message.error({
                           message: this.$t('ERR_DELETE') + '。',
                       })
                         this.isDelete = false

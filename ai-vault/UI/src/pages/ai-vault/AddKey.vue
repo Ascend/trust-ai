@@ -177,15 +177,15 @@ export default {
                                         let res = JSON.parse(e.target.result);
                                         console.log('res:', res);
                                         if(res.status === '00002000') {
-                                            this.$message({
+                                            this.$message.error({
                                                 message: this.$t('ERR_PARAMS_CHECK_FAILED'),
                                             })
                                         } else if(res.status === '31000008') {
-                                            this.$message({
+                                            this.$message.error({
                                                 message: this.$t('ERR_ADD_MK'),
                                             })
                                         } else if(res.status === '31000003') {
-                                            this.$message({
+                                            this.$message.error({
                                                 message: this.$t('ERR_MAX_MK'),
                                             })
                                         }
@@ -216,31 +216,31 @@ export default {
                                     this.copyText = res.data.data.PSK
                                     this.isCopy = true
                                 } else if(res.data.status === '31000009') {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_ADD_PSK'),
                                     })
                                 } else if(res.data.status === '31000010') {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_MAX_PSK'),
                                    })
                                 } else if(res.data.status === '31000004') {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_MK_AREADY_BIND'),
                                     })
                                 } else if(res.data.status === '00002000') {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_PARAMS_CHECK_FAILED'),
                                     })
                                 } else if(res.data.status === '31000011') {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_ADD_PSK_MK_NOT_EXIST'),
                                     })
                                 } else if(res.data.status === '31000006') {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_NOT_MEET_PASSWORD_COMPLEXY'),
                                     })
                                 } else {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_ADD'),
                                     })
                                 }

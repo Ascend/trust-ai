@@ -140,13 +140,13 @@ export default {
             deletePSK(this.selectedRow.PSKName)
                 .then(res => {
                     if(res.data.status === '00000000') {
-                        this.$message({
+                        this.$message.success({
                             message: this.$t('SUCCESS_DELETE'),
                         })
                         this.isDelete = false
                         this.fetchData()
                     } else {
-                        this.$message({
+                        this.$message.error({
                             message: this.$t('ERR_DELETE'),
                         })
                         this.isDelete = false
