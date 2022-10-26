@@ -7,6 +7,10 @@ export default {
     LOGOUT: 'Logout',
     VERSION: 'Version',
     HEALTH_STATUS: 'Health Status',
+    TOOL_INFO: 'Component Information',
+    SYS_DATA_SIZE: 'System Data Size(MB)',
+    CERT_INFO: 'Certs',
+    USER_AMOUNT: 'User Amount',
 
     // Sider
     NAV_HOME: 'Home',
@@ -34,6 +38,7 @@ export default {
     FILTER_INVALID: 'Invalid',
     OPERATION_DELETE: 'Delete',
     EMPTY_TEXT: 'No data',
+    RESET_PASSWORD: 'Reset',
 
     //表单
     PLACEHOLDER_USERNAME: 'Please enter username ...',

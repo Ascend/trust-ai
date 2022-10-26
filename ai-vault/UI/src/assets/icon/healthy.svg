@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="22px" height="24px" viewBox="0 0 22 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>healthy@1x</title>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#41E58C" offset="0%"></stop>
+            <stop stop-color="#199243" offset="100%"></stop>
+        </linearGradient>
+        <path d="M1.05133619,5.26104932 L9.98883619,0.263315403 C10.6166891,-0.0877718009 11.3833109,-0.0877718009 12.0111638,0.263315403 L20.9486638,5.26104932 C21.5980976,5.62420425 22,6.3073487 22,7.0480863 L22,16.9519137 C22,17.6926513 21.5980976,18.3757957 20.9486638,18.7389507 L12.0111638,23.7366846 C11.3833109,24.0877718 10.6166891,24.0877718 9.98883619,23.7366846 L1.05133619,18.7389507 C0.401902419,18.3757957 0,17.6926513 0,16.9519137 L0,7.0480863 C0,6.3073487 0.401902419,5.62420425 1.05133619,5.26104932 Z" id="path-2"></path>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-4">
+            <stop stop-color="#1B9647" offset="0%"></stop>
+            <stop stop-color="#26A652" offset="100%"></stop>
+        </linearGradient>
+        <path d="M11.5935526,10.727554 L20.5310526,6.59638054 C21.046751,6.35800969 21.6607709,6.57701248 21.9025045,7.08553697 C21.9667147,7.22061309 22,7.36796585 22,7.51714558 L22,17.5255072 C22,17.8928876 21.7990488,18.2317037 21.4743319,18.4118161 L12.5368319,23.3692243 C12.0404316,23.6445651 11.4116629,23.470959 11.1324377,22.9814641 C11.0456107,22.8292522 11,22.6575553 11,22.4829154 L11,11.6483191 C11,11.2538553 11.2313431,10.8949778 11.5935526,10.727554 Z" id="path-5"></path>
+        <linearGradient x1="50%" y1="1.1909965%" x2="50%" y2="100%" id="linearGradient-7">
+            <stop stop-color="#2EB95E" offset="0%"></stop>
+            <stop stop-color="#138C3D" offset="100%"></stop>
+        </linearGradient>
+        <path d="M10.4064474,10.727554 L1.46894743,6.59638054 C0.953249049,6.35800969 0.339229091,6.57701248 0.0974954723,7.08553697 C0.0332853105,7.22061309 0,7.36796585 0,7.51714558 L0,17.5255072 C0,17.8928876 0.20095121,18.2317037 0.525668097,18.4118161 L9.4631681,23.3692243 C9.95956841,23.6445651 10.5883371,23.470959 10.8675623,22.9814641 C10.9543893,22.8292522 11,22.6575553 11,22.4829154 L11,11.6483191 C11,11.2538553 10.7686569,10.8949778 10.4064474,10.727554 Z" id="path-8"></path>
+    </defs>
+    <g id="系统管理员-首页" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="10" transform="translate(-1572.000000, -217.000000)">
+            <g id="编组-6" transform="translate(1548.000000, 64.000000)">
+                <g id="组件健康状态" transform="translate(24.000000, 130.000000)">
+                    <g id="healthy" transform="translate(0.000000, 23.000000)">
+                        <mask id="mask-3" fill="white">
+                            <use xlink:href="#path-2"></use>
+                        </mask>
+                        <use id="3" fill="url(#linearGradient-1)" xlink:href="#path-2"></use>
+                        <rect id="矩形" fill="#24AB36" style="mix-blend-mode: color;" mask="url(#mask-3)" x="-1" y="0" width="24" height="24"></rect>
+                        <mask id="mask-6" fill="white">
+                            <use xlink:href="#path-5"></use>
+                        </mask>
+                        <use id="3备份" fill="url(#linearGradient-4)" xlink:href="#path-5"></use>
+                        <rect id="矩形" fill="#24AB36" style="mix-blend-mode: color;" mask="url(#mask-6)" x="-1" y="0" width="24" height="24"></rect>
+                        <mask id="mask-9" fill="white">
+                            <use xlink:href="#path-8"></use>
+                        </mask>
+                        <use id="3备份-2" fill="url(#linearGradient-7)" xlink:href="#path-8"></use>
+                        <rect id="矩形" fill="#24AB36" style="mix-blend-mode: color;" mask="url(#mask-9)" x="-1" y="0" width="24" height="24"></rect>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

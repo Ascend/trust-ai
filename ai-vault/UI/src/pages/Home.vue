@@ -1,72 +1,100 @@
 <template>
-  <div class="main">
-    <div class="info-block">
-      <el-row :gutter="20">
-          <el-col :span="8" class="info-col">
-              <img class="info-img" src="@/assets/user/version.png" />
-              <div class="info-subitem">
-                  <div class="info-subitem-title">{{$t('VERSION')}}</div>
-                  <span class="info-subitem-text">{{ version }}</span>
-              </div>
-          </el-col>
-          <el-col :span="8" class="info-col">
-              <img class="info-img" src="@/assets/user/healthStatus.png" />
-              <div class="info-subitem">
-                  <div class="info-subitem-title">{{$t('HEALTH_STATUS')}}</div>
-                  <span class="info-subitem-text">{{ healthStatus }}</span>
-              </div>
-          </el-col>
-      </el-row>
+  <div class="home">
+    <div class="left">
+      <div class="left-box first-left">
+        <div class="left-name">{{ $t("USER_AMOUNT") }}</div>
+        <div class="left-num">{{ useramount }}</div>
+      </div>
+      <div class="left-box">
+        <div class="left-name">{{ $t("SYS_DATA_SIZE") }}</div>
+        <div class="left-num">{{ datasize }}</div>
+      </div>
     </div>
-    
-    <el-table
-      :data="tableData"
-      style="width: 100%; margin-top: 20px"
-      :cell-style="{ textAlign: 'center', border: '0.5px solid rgb(123, 143, 175, 0.5)', padding: '10px 0', }"
-      :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
-      :empty-text="$t('EMPTY_TEXT')"
-    >
-      <el-table-column prop="CertType" :label="$t('COLUMN_CERT_TYPE')"></el-table-column>
-      <el-table-column prop="CertValidDate" :label="$t('COLUMN_CERT_VALID_DATE')"></el-table-column>
-      <el-table-column prop="CertAlarm" :label="$t('COLUMN_CERT_ALARM')"></el-table-column>
-      <el-table-column prop="CrlStatus" :label="$t('COLUMN_CRL_STATUS')"></el-table-column>
-    </el-table>
+    <div class="right">
+      <div class="right-box right-top">
 
-    <div class="home-operation">
-      <el-upload
-        class="upload-demo"
-        action="/datamanager/v1/import"
-        :file-list="fileList"
-        style="display: inline-block;"
-        :before-upload="handleBeforeUpload"
-        :show-file-list="false"
-        :on-success="handleUploadSuccess"
-        :on-error="handleUploadError"
-        >
-        <el-button style="margin-left: 10px;" type="primary">{{ $t('BUTTON_UPLOAD') }}</el-button>
-      </el-upload>
-
-      <el-button 
-        type="primary" 
-        plain 
-        style="margin-left: 10px;"
-        @click="handleDownload"
-      >
-        {{ $t('BUTTON_DOWNLOAD') }}
-      </el-button>
+        <div>
+          <div class="title">{{ $t("TOOL_INFO") }}</div>
+        </div>
+        <div class="top-button">
+            <el-upload
+              class="upload-demo"
+              action="/datamanager/v1/import"
+              :file-list="fileList"
+              style="display: inline-block;"
+              :before-upload="handleBeforeUpload"
+              :show-file-list="false"
+              :on-success="handleUploadSuccess"
+              :on-error="handleUploadError"
+              >
+              <el-button type="text" icon="el-icon-upload2" :loading="isUploading" style="color:#D3DCE9">{{ $t('BUTTON_UPLOAD') }}</el-button>
+            </el-upload>
+            <el-button type="text" icon="el-icon-download" :loading="isDownloading" style="color:#D3DCE9" @click="handleDownload">{{ $t('BUTTON_DOWNLOAD') }}</el-button>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("VERSION") }}</div>
+          <div class="right_info">{{ version }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("HEALTH_STATUS") }}</div>
+          <div class="right_info" style="display: flex;">
+            <img src="@/assets/icon/healthy.svg" style="margin-right: 10px">
+            <div>{{ healthStatus }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="right-box">
+        <div class="title">{{ $t("CERT_INFO") }}</div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CERT_TYPE") }}</div>
+          <div class="right_info">{{ mgmtcert.CertType }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CERT_VALID_DATE") }}</div>
+          <div class="right_info">{{ mgmtcert.CertValidDate }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CERT_ALARM") }}</div>
+          <div class="right_info">{{ mgmtcert.CertAlarm }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CRL_STATUS") }}</div>
+          <div class="right_info">{{ mgmtcert.CrlStatus }}</div>
+        </div>
+      </div>
+      <div class="right-box">
+        <div class="title">{{ $t("CERT_INFO") }}</div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CERT_TYPE") }}</div>
+          <div class="right_info">{{ svccert.CertType }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CERT_VALID_DATE") }}</div>
+          <div class="right_info">{{ svccert.CertValidDate }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CERT_ALARM") }}</div>
+          <div class="right_info">{{ svccert.CertAlarm }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CRL_STATUS") }}</div>
+          <div class="right_info">{{ svccert.CrlStatus }}</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { fetchVersion, fetchHealthStatus, fetchCertStatus, exportFile } from '@/service/home.js'
+import { fetchDataSize, fetchVersion, fetchHealthStatus, fetchCertStatus, exportFile } from '@/service/home.js'
+import {fetchUser} from '@/service/user.js'
 
 export default {
   name: 'home',
   data () {
     return {
-      username: '',
-      password: '',
+      useramount: 0,
+      datasize: 0,
       version: '',
       tableData: [],
       healthStatus: '',
@@ -79,6 +107,20 @@ export default {
       spanArr: [],
       position: 0,
       fileList: [],
+      isUploading: false,
+      isDownloading: false,
+      mgmtcert: {
+        CertType: '管理面',
+        CertValidDate: '',
+        CertAlarm: '',
+        CrlStatus: '',
+      },
+      svccert: {
+        CertType: '服务面',
+        CertValidDate: '',
+        CertAlarm: '',
+        CrlStatus: '',
+      }
     }
   },
   mounted() {
@@ -104,10 +146,23 @@ export default {
         this.version = this.tmpVersion
         this.healthStatus = this.tmpHealthStatus
         this.tableData = this.tmpTableData
+        this.handleSpan()
       }
     },
   },
   methods: {
+    handleGetUserAmount() {
+      fetchUser({})
+        .then(res => {
+                this.useramount = res.data.data.total
+            })
+    },
+    handleGetDataSize() {
+      fetchDataSize({})
+        .then(res => {
+                this.datasize = (res.data.data.size / 1024 /1024).toFixed(2)
+            })
+    },
     queryVersion() {
       fetchVersion()
         .then(res => {
@@ -163,21 +218,43 @@ export default {
         })
     },
     fetchData() {
+      this.handleGetUserAmount()
+      this.handleGetDataSize()
       this.queryVersion()
-    },   
+    },
+    handleSpan() {
+      let mgmtArr = this.tableData.filter(item => item.CertType === 'MGMT')
+      let svcArr = this.tableData.filter(item => item.CertType !== 'MGMT')
+      this.tableData = mgmtArr.concat(svcArr)
+      this.tableData.forEach((item, index) => {
+        if(item.CertType === 'MGMT') {
+          this.mgmtcert.CertAlarm = item.CertAlarm === '' ? '正常' : '不正常'
+          this.mgmtcert.CrlStatus = item.CrlStatus === 'No CRL certificate has been imported.' ? '未导入' : '已导入'
+          this.mgmtcert.CertValidDate = item.CertValidDate
+        }else {
+        }
+          this.svccert.CertAlarm = item.CertAlarm === '' ? '正常' : '不正常'
+          this.svccert.CrlStatus = item.CrlStatus === 'No CRL certificate has been imported.' ? '未导入' : '已导入'
+          this.svccert.CertValidDate = item.CertValidDate
+      })
+    },
     handleBeforeUpload(file) {
+      this.isUploading=true;
       const isZip = file.type.indexOf('zip') > -1;
       const isLt50M = file.size / 1024 / 1024 <= 50;
 
       if (!isZip) {
         this.$message.error(this.$t('ERR_UPLOAD_FILE_TYPE'));
+        this.isUploading=false;
       }
       if (!isLt50M) {
         this.$message.error(this.$t('ERR_UPLOAD_FILE_SIZE'));
+        this.isUploading=false;
       }
       return isZip && isLt50M;
     },
     handleDownload() {
+      this.isDownloading=true;
       exportFile()
         .then(res => {
           if (res.headers['content-disposition'] === undefined) {
@@ -204,6 +281,7 @@ export default {
             window.URL.revokeObjectURL(url);
           }
         })
+      this.isDownloading=false;
     },
     handleUploadSuccess(response, file, fileList) {
       if(response.status === "00000000") {
@@ -211,9 +289,11 @@ export default {
       } else {
         this.$message.warning({message: this.$t('ERR_UPLOAD')})
       }
+      this.isUploading=false;
     },
     handleUploadError(err, file, fileList) {
       this.$message.warning({message: this.$t('ERR_UPLOAD')})
+      this.isUploading=false;
     }
   }
 }
@@ -221,34 +301,108 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.home-operation {
-  margin-top: 20px;
+.home{
+  display: flex;
+  flex-direction: row;
+  overflow: auto;
 }
-  .info-block {
-      background-color: #1f2329;
-      height: 64px;
-      border-radius: 4px;
-      padding: 16px 24px;
-      margin-top: 10px;
-  }
-  
-  .info-col {
-      display: flex;
-      vertical-align: center;
-  }
-  .info-subitem {
-      display: inline-block;
-  }
-  
-  .info-subitem-title {
-      margin-left: 10px;
-      font-size: 14px;
-      color: #6A6A6A;
-  }
-  
-  .info-subitem-text {
-      margin-left: 10px;
-      font-size: 32px;
-      color: #6A6A6A;
-  }
-  </style>
+
+
+.left {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 6px;
+  min-width: 855px;
+}
+.left-box {
+  padding: 0 57px;
+  height: 108px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+.first-left:before {
+  content: '';
+  width: 1px;
+  height: 40px;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  margin-top: -20px;
+  background: #8D98AA;
+}
+.left-name {
+  font-size: 21px;
+  color: #8D98AA;
+  line-height: 30px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-align: center;
+}
+.left-num {
+  font-size: 54px;
+  color: #FFFFFF;
+  line-height: 80px;
+  font-weight: 400;
+  text-align: center;
+  letter-spacing: 0;
+}
+
+.right {
+  width: 348px;
+  min-width: 348px;
+  letter-spacing: 0;
+  font-size: 12px;
+  color: #8D98AA;
+}
+
+
+.title {
+  font-size: 16px;
+  align-items: center;
+  color: #FFFFFE;
+  letter-spacing: 0;
+  line-height: 24px;
+  font-weight: 400;
+}
+
+.top-button {
+  align-items: center;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+
+.right_name {
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #8D98AA;
+}
+
+.right_info {
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: #FFFFFE;
+}
+
+.right-box {
+  background: #2A2F37;
+  border-radius: 6px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.info-block {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+</style>

@@ -20,6 +20,14 @@ export function changePassword(params = {}) {
     });
 }
 
+// 重置密码
+export function resetPassword(params = {}) {
+    const url = '/usermanager/v1/reset'
+    return $post(url, {
+        ...params
+    });
+}
+
 // 添加用户
 export function addUser(params = {}) {
     const url = '/usermanager/v1/user'

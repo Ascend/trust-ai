@@ -1,13 +1,21 @@
 <template>
     <div>
         <el-dialog
-            :title="$t('BASIC_INFO')"
+            :title="currPage === 'mk' ? $t('ADD_MK') : $t('ADD_PSK')"
             :visible.sync="isAddKey"
             :close-on-click-modal="false"
             :before-close="handleClose"
             width="30%"
             :modal="false"
         >
+            <div v-if="currPage === 'mk'" style="background: rgba(249,118,17,0.2);border-radius: 2px;display: flex; padding-bottom: 8px; padding-top: 8px; margin-bottom: 24px">
+                <div style="margin-left: 8px"><img src="@/assets/icon/alarm-orange.svg"></div>
+                <div style="margin-left: 8px">{{ $t('ADD_MK_TIP')}}</div>
+            </div>
+            <div v-else style="background: rgba(0,119,255,0.2);border-radius: 2px;display: flex; padding-bottom: 8px; padding-top: 8px; margin-bottom: 24px">
+                <div style="margin-left: 8px"><img src="@/assets/icon/remind.svg"></div>
+                <div style="margin-left: 8px">{{ $t('ADD_PSK_TIP')}}</div>
+            </div>
             <el-form v-if="currPage === 'mk'" :model="mkForm" :rules="mkRules" ref="mkForm">
                 <el-form-item :label="$t('KEY_NAME')" prop="MKName" :label-width="formLabelWidth">
                     <el-tooltip :content="$t('TIP_KEY_NAME')" placement="right">
@@ -61,20 +69,30 @@
         <el-dialog
             :visible.sync="isCopy"
             :title="$t('PSK_TITLE')"
-            width="35%"
+            width="500px"
             :close-on-click-modal="false"
             :modal="false"
         >
-            <b style="font-size: 16px;">
-                {{$t('PSK_TIP')}}
-                {{$t('DIALOG_COPY')}}
-            </b><br />
-            {{copyText.length > 50 ? copyText.slice(50) + ' ...' : copyText}}
+          <div style="background: rgba(249,118,17,0.2);border-radius: 2px;display: flex; padding-bottom: 8px; padding-top: 8px">
+            <div style="margin-left: 8px"><img src="@/assets/icon/alarm-orange.svg"></div>
+            <div style="margin-left: 8px">{{ $t('PSK_TIPS')}}</div>
+          </div>
+          <el-form label-width="120px" style="margin-top: 20px">
+            <el-form-item label="绑定的主密钥">
+              <el-input v-model="mkName" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="预共享密钥名">
+              <el-input v-model="pskName" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="预共享密钥">
+              <el-input v-model="copyText" type="textarea" :rows="12" style="height: auto"></el-input>
+            </el-form-item>
+          </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="handleCancelCopy">{{$t('BTN_CANCEL')}}</el-button>
                 <el-button type="primary" @click="handleCopy" v-clipboard:copy="copyText"
-      v-clipboard:success="handleCopy"
-      >{{$t('BTN_COPY')}}</el-button>
+                           v-clipboard:success="handleCopy"
+                >{{$t('BTN_COPY')}}</el-button>
+                <el-button @click="handleCancelCopy">{{$t('BTN_CANCEL')}}</el-button>
             </span>
         </el-dialog>
     </div>
@@ -100,6 +118,8 @@ export default {
                 Password: '',
                 MKRemarks: '',
             },
+            pskName: '',
+            mkName: '',
             pskForm: {
                 PSKName: '',
                 MKName: '',
@@ -153,16 +173,20 @@ export default {
                                     let reader = new FileReader();
                                     reader.onload = (e) => {
                                         let res = JSON.parse(e.target.result);
-                                        if(res.status === '00002000') {
-                                            this.$message({
+                                        if(res.data.status === '00002000') {
+                                            this.$message.error({
                                                 message: this.$t('ERR_PARAMS_CHECK_FAILED'),
                                             })
-                                        } else if(res.status === '31000008') {
-                                            this.$message({
+                                        } else if(res.data.status === '31000022') {
+                                            this.$message.error({
+                                              message: this.$t('ERR_SYSTEM_BUSY'),
+                                            })
+                                        } else if(res.data.status === '31000008') {
+                                            this.$message.error({
                                                 message: this.$t('ERR_ADD_MK'),
                                             })
-                                        } else if(res.status === '31000003') {
-                                            this.$message({
+                                        } else if(res.data.status === '31000003') {
+                                            this.$message.error({
                                                 message: this.$t('ERR_MAX_MK'),
                                             })
                                         }
@@ -180,42 +204,48 @@ export default {
                                     link.click();
                                     window.URL.revokeObjectURL(url);
 
-                                    this.$message({message: this.$t('SUCCESS_ADD')})
+                                    this.$message.success({message: this.$t('SUCCESS_ADD')})
                                     this.$emit('handleRefresh', 'mk')
                                 }
                             })
                     } else {
+                      this.mkName = this.pskForm.MKName
+                      this.pskName = this.pskForm.PSKName
                         postPSK(this.pskForm)
                             .then(res => {
                                 if(res.data.status === '00000000') {
                                     this.copyText = res.data.data.PSK
                                     this.isCopy = true
                                 } else if(res.data.status === '31000009') {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_ADD_PSK'),
                                     })
                                 } else if(res.data.status === '31000010') {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_MAX_PSK'),
                                    })
                                 } else if(res.data.status === '31000004') {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_MK_AREADY_BIND'),
                                     })
                                 } else if(res.data.status === '00002000') {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_PARAMS_CHECK_FAILED'),
                                     })
                                 } else if(res.data.status === '31000011') {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_ADD_PSK_MK_NOT_EXIST'),
                                     })
+                                } else if(res.data.status === '31000022') {
+                                  this.$message.error({
+                                    message: this.$t('ERR_SYSTEM_BUSY'),
+                                  })
                                 } else if(res.data.status === '31000006') {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_NOT_MEET_PASSWORD_COMPLEXY'),
                                     })
                                 } else {
-                                    this.$message({
+                                    this.$message.error({
                                         message: this.$t('ERR_ADD'),
                                     })
                                 }

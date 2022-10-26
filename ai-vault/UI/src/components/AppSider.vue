@@ -1,9 +1,9 @@
 <template>
     <div>
         <template v-for="nav in navList">
-            <div class="nav-item" v-if="nav.isShow" @click="jumpNav(nav)">
-                <div class="nav-wrap">
-                    <img :src="require('@/assets/icon/'+nav.icon)" class="nav-icon"/>
+            <div class="nav-item" :class="{active: nav.id === currentNav}" v-if="nav.isShow" @click="jumpNav(nav)">
+                <div class="nav-wrap" >
+                    <img :src="require('@/assets/icon/'+nav.icon)" class="nav-icon" style="margin: 2px;"/>
                     <span class="nav-text">{{ $t(nav.label) }}</span>
                 </div>
             </div>
@@ -18,6 +18,7 @@ export default {
     components: {},
     data() {
         return {
+            currentNav: '',
             navList: [
                 {
                     id: 'home',
@@ -50,6 +51,7 @@ export default {
     methods: {
         jumpNav(item) {
             if(this.currentPath !== item.href){
+                this.currentNav = item.id
                 this.currentPath = item.href
                 this.$router.push({ name: item.href })
             }
@@ -71,16 +73,22 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .nav-item {
-    height: 36px;
+    height: 32px;
+    width: 200px;
     padding-top: 10px;
     padding-left: 20px;
     border-radius: 10px;
     background: #1f2329;
     margin-bottom: 10px;
+    cursor: pointer;
 }
 
-.nav-item {
-    cursor: pointer;
+.nav-item:hover {
+    background: #0077FF;
+}
+
+.active {
+    background: #0077FF;
 }
 
 .nav-icon {
@@ -88,7 +96,10 @@ export default {
 }
 
 .nav-text {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
     vertical-align: middle;
-    color: #6a6a6a;
+    color: #FFFFFE;
 }
 </style>

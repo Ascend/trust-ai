@@ -7,6 +7,10 @@ export default {
     LOGOUT: '退出',
     VERSION: '版本',
     HEALTH_STATUS: '健康状态',
+    USER_AMOUNT: '用户总数',
+    TOOL_INFO: '组件信息',
+    SYS_DATA_SIZE: '系统数据大小（MB）',
+    CERT_INFO: '组件证书',
 
     // Sider
     NAV_HOME: '首页',
@@ -42,6 +46,7 @@ export default {
     FILTER_INVALID: '无效',
     OPERATION_DELETE: '删除',
     EMPTY_TEXT: '暂无数据',
+    RESET_PASSWORD: '重置密码',
 
     //表单
     PLACEHOLDER_USERNAME: '请输入用户名',
@@ -73,7 +78,7 @@ export default {
     BTN_OK: '确定',
     BTN_CANCEL: '取消',
     BTN_COPY: "复制到剪贴板",
-    CONFIRM_DELETE: '删除确认',
+    CONFIRM_DELETE: '删除提醒',
     CONFIRM_DELETE_TIP: '请确认是否要删除',
     CONFIRM_DELETE_KEY_TIP: '删除后将无法加解密模型。',
 
@@ -96,6 +101,12 @@ export default {
     ERR_ADD_PSK_MK_NOT_EXIST: '所填主密钥不存在',
     SUCCESS_OPERATION: '操作成功',
     ERR_OPERATION: '操作失败',
+    SUCCESS_CHANGE_PASSWORD: '修改密码成功',
+    ERR_CHANGE_PASSWORD: '修改密码失败',
+    SUCCESS_RESET_PASSWORD: '重置密码成功',
+    ERR_RESET_PASSWORD: '修改密码失败',
+    SUCCESS_ADD_USER: '添加用户成功',
+    ERR_ADD_USER: '添加用户失败',
     SUCCESS_COPY: '复制成功',
     ERR_COPY: '复制失败',
     ERR_ADD: '添加失败',
@@ -106,11 +117,17 @@ export default {
     ERR_UPLOAD_FILE_TYPE: '上传文件必须为 zip 格式',
     ERR_MAX_MK: '主密密钥量超过上限',
     ERR_MAX_PSK: '预共享密钥数量超过上限',
+    ERR_SYSTEM_BUSY: '系统繁忙，请稍后重试',
 
 
     DIALOG_COPY: '请确认是否要将预共享密钥复制到剪切板：',
     PSK_TIP: '请妥善保管预共享密钥，关闭窗口后将无法查询得到！',
-    PSK_TITLE: '提示',
+    PSK_TITLE: '预共享密钥',
+    PSK_TIPS: '关闭弹窗将无法再次获取预共享密钥，请妥善保管预共享密钥。您可以选择将预共享密钥复制到剪贴板',
+    ADD_MK: '新建主密钥',
+    ADD_PSK: '新建预共享密钥',
+    ADD_MK_TIP: '新建成功后将自动下载主密钥，请妥善保管主密钥，主密钥丢失将无法找回',
+    ADD_PSK_TIP: '主密钥与预共享密钥一一对应。新建完成将弹出“预共享密钥”弹窗，请留意保存',
 
     // Tooltip
     TIP_ADD_USER_USERNAME: '长度为[1, 32]，仅支持数字、字母、下划线和”-“字符。必须以字母开头。',
@@ -118,6 +135,6 @@ export default {
     TIP_KEY_NAME: '长度为[1, 128]，仅支持数字、字母、下划线和”-“字符。',
     TIP_KEY_USAGE: '长度为[1, 128]，仅支持数字、字母、空格、下划线和”-“字符，不支持全空格。',
     TIP_KEY_PASSWORD: '长度为[40, 64]，仅支持数字、字母、英文特殊字符（至少包含两种），且不能与密钥名称或反转密钥名称相同。',
-    TIP_REMARKS: '仅支持数字、字母、空格、下划线和和”-“字符，不支持全空格。',
+    TIP_REMARKS: '仅支持数字、字母、空格、下划线和和”-“字符。',
 
 };

@@ -1,5 +1,5 @@
 <template>
-  <div class="main">
+  <div class="main bg_img">
     <app-header class="app-header"></app-header>
     <app-sider class="app-sider"></app-sider>
     <router-view class="main-content"/>
@@ -15,7 +15,7 @@ export default {
     data() {
         return {};
     },
-    components: { 
+    components: {
       AppHeader,
       AppSider
     }
@@ -25,9 +25,14 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .main {
-  background-color: #181b20;
-  height: 100vh;
-  overflow: auto;
+  width: 100%;
+  height: 100%;
+}
+
+.bg_img{
+  background: url(../assets/bg_user_home.png) center no-repeat;
+  background-size: cover;
+  position: absolute;
 }
 
 .app-header {
@@ -49,7 +54,7 @@ export default {
 .main-content {
   margin-left: 240px;
   padding: 66px 24px 0 24px;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 80px);
 }
 </style>
 <style>
