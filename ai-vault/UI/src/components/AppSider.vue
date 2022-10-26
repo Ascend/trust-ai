@@ -1,8 +1,8 @@
 <template>
     <div>
         <template v-for="nav in navList">
-            <div class="nav-item" v-if="nav.isShow" @click="jumpNav(nav)">
-                <div class="nav-wrap">
+            <div class="nav-item" :class="{active: nav.id === currentNav}" v-if="nav.isShow" @click="jumpNav(nav)">
+                <div class="nav-wrap" >
                     <img :src="require('@/assets/icon/'+nav.icon)" class="nav-icon" style="margin: 2px;"/>
                     <span class="nav-text">{{ $t(nav.label) }}</span>
                 </div>
@@ -18,6 +18,7 @@ export default {
     components: {},
     data() {
         return {
+            currentNav: '',
             navList: [
                 {
                     id: 'home',
@@ -50,6 +51,7 @@ export default {
     methods: {
         jumpNav(item) {
             if(this.currentPath !== item.href){
+                this.currentNav = item.id
                 this.currentPath = item.href
                 this.$router.push({ name: item.href })
             }
@@ -78,10 +80,15 @@ export default {
     border-radius: 10px;
     background: #1f2329;
     margin-bottom: 10px;
+    cursor: pointer;
 }
 
-.nav-item {
-    cursor: pointer;
+.nav-item:hover {
+    background: #0077FF;
+}
+
+.active {
+    background: #0077FF;
 }
 
 .nav-icon {
