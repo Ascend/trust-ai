@@ -37,7 +37,10 @@
         </div>
         <div class="info-block">
           <div class="right_name">{{ $t("HEALTH_STATUS") }}</div>
-          <div class="right_info">{{ healthStatus }}</div>
+          <div class="right_info" style="display: flex;">
+            <img src="@/assets/icon/healthy.svg" style="margin-right: 10px">
+            <div>{{ healthStatus }}</div>
+          </div>
         </div>
       </div>
       <div class="right-box">
