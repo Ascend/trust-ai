@@ -13,7 +13,7 @@
     <div class="right">
       <div class="right-box right-top">
 
-        <div class="sbutton">
+        <div>
           <div class="title">{{ $t("TOOL_INFO") }}</div>
         </div>
         <div class="top-button">
@@ -27,9 +27,9 @@
               :on-success="handleUploadSuccess"
               :on-error="handleUploadError"
               >
-              <el-button type="text" icon="el-icon-upload2" style="color:#D3DCE9">{{ $t('BUTTON_UPLOAD') }}</el-button>
+              <el-button type="text" icon="el-icon-upload2" :loading="isUploading" style="color:#D3DCE9">{{ $t('BUTTON_UPLOAD') }}</el-button>
             </el-upload>
-            <el-button type="text" icon="el-icon-download" :loading='isDownloading' style="color:#D3DCE9" @click="handleDownload">{{ $t('BUTTON_DOWNLOAD') }}</el-button>
+            <el-button type="text" icon="el-icon-download" :loading="isDownloading" style="color:#D3DCE9" @click="handleDownload">{{ $t('BUTTON_DOWNLOAD') }}</el-button>
         </div>
         <div class="info-block">
           <div class="right_name">{{ $t("VERSION") }}</div>
@@ -101,6 +101,7 @@ export default {
       spanArr: [],
       position: 0,
       fileList: [],
+      isUploading: false,
       isDownloading: false,
       mgmtcert: {
         CertType: '管理面',
@@ -127,7 +128,7 @@ export default {
           })
       // fetchDataSize()
       //   .then(res => {
-      //     this.datasize = res.data.data.size
+      //     this.datasize = (res.data.data.size / 1024 / 1024).toFixed(2)
       //   })
       fetchVersion()
         .then(resVersion => {
@@ -180,20 +181,22 @@ export default {
       })
     },
     handleBeforeUpload(file) {
+      this.isUploading=true;
       const isZip = file.type.indexOf('zip') > -1;
       const isLt50M = file.size / 1024 / 1024 <= 50;
 
       if (!isZip) {
         this.$message.error(this.$t('ERR_UPLOAD_FILE_TYPE'));
+        this.isUploading=false;
       }
       if (!isLt50M) {
         this.$message.error(this.$t('ERR_UPLOAD_FILE_SIZE'));
+        this.isUploading=false;
       }
       return isZip && isLt50M;
     },
     handleDownload() {
-      this.isDownloading=true
-      console.log(this.isDownloading)
+      this.isDownloading=true;
       exportFile()
         .then(res => {
           if (res.headers['content-disposition'] === undefined) {
@@ -220,7 +223,7 @@ export default {
             window.URL.revokeObjectURL(url);
           }
         })
-      this.isDownloading=false
+      this.isDownloading=false;
     },
     handleUploadSuccess(response, file, fileList) {
       if(response.status === "00000000") {
@@ -228,9 +231,11 @@ export default {
       } else {
         this.$message.warning({message: this.$t('ERR_UPLOAD')})
       }
+      this.isUploading=false;
     },
     handleUploadError(err, file, fileList) {
       this.$message.warning({message: this.$t('ERR_UPLOAD')})
+      this.isUploading=false;
     }
   }
 }

@@ -43,11 +43,12 @@
 
         <el-table
             :data="userData"
-            style="width: 100%; margin-top: 40px; margin-bottom: 20px; font-size: 12px;"
+            style="width: 100%; margin-top: 40px; margin-bottom: 5px; font-size: 12px;"
             :cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :empty-text="$t('EMPTY_TEXT')"
-            @sort-change="handleUserTable"
+            :height="tableHeight"
+            @sort-change="handleSortUserTable"
         >
             <el-table-column prop="UserID" :label="$t('COLUMN_USER_ID')" sortable="custom"></el-table-column>
             <el-table-column prop="UserName" :label="$t('COLUMN_USER_NAME')"></el-table-column>
@@ -68,12 +69,12 @@
         <el-pagination
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
-            :current-page.sync="userParams.CurrentPage"
+            :current-page.sync="pageParams.CurrentPage"
             :hide-on-single-page=true
-            :page-size="userParams.PageSize"
+            :page-size="pageParams.PageSize"
             :total="userPagination.total"
-            layout="prev, pager, next, total"
-            style="padding-bottom: 30px;"
+            layout="prev, pager, next"
+            style="padding-bottom: 20px;"
         >
         </el-pagination>
 
@@ -84,7 +85,7 @@
             :close-on-click-modal="false"
             :modal="false"
         >
-            <el-form v-if="indexOperation === 'resetPWD'" :model="resetPswForm" :rules="resetPswRules">
+            <el-form v-if="indexOperation === 'resetPWD'" :model="resetPswForm" :rules="resetPswRules" ref="resetPswForm">
                 <el-form-item :label="$t('NEW_PSW')" prop="NewPassword" :label-width="formLabelWidth">
                     <el-tooltip :content="$t('TIP_PASSWORD')" placement="right">
                         <el-input v-model="resetPswForm.NewPassword" type="password" class="input-psw" :placeholder="$t('PLACEHOLDER_NEW_PASSWORD')" autocomplete="off"></el-input>
@@ -92,7 +93,7 @@
                 </el-form-item>
                 <el-form-item :label="$t('CONFIRM_PSW')" prop="NewPasswordConfirm" :label-width="formLabelWidth">
                     <el-tooltip :content="$t('TIP_PASSWORD')" placement="right">
-                        <el-input v-model="resetPswForm.NewPasswordConfirm" @keyup.enter.native="handleSubmitChangePassword('changePswForm')" type="password" class="input-psw" :placeholder="$t('PLACEHOLDER_CONFIRM_PASSWORD')" autocomplete="off"></el-input>
+                        <el-input v-model="resetPswForm.NewPasswordConfirm" @keyup.enter.native="handleSubmitResetPassword()" type="password" class="input-psw" :placeholder="$t('PLACEHOLDER_CONFIRM_PASSWORD')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
             </el-form>
@@ -101,7 +102,7 @@
             </div>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="isDelorReset = false">{{$t('BTN_CANCEL')}}</el-button>
-                <el-button type="primary" @click="indexOperation === 'resetPWD' ? handleReset() : handleDelete()">{{$t('BTN_OK')}}</el-button>
+                <el-button type="primary" @click="indexOperation === 'resetPWD' ? handleSubmitResetPassword() : handleDelete()">{{$t('BTN_OK')}}</el-button>
             </span>
         </el-dialog>
 
@@ -120,7 +121,7 @@ export default {
     name: 'user',
     data() {
         let checkConfirmNewUserPassword = (rule, value, callback) => {
-            if (value !== this.resetPWDForm.NewPassword) {
+            if (value !== this.resetPswForm.NewPassword) {
                 callback(new Error(this.$t('ERR_CANNOT_CONFIRM_NEW_PASSWORD')))
             } else {
                 callback();
@@ -133,7 +134,11 @@ export default {
             userPagination: {
                 total: 10,
             },
-            userParams: {
+            sortParams: {
+                SortBy: 'UserID',
+                SortMode: 'asc',
+            },
+            pageParams: {
                 CurrentPage: 1,
                 PageSize: 10,
             },
@@ -156,23 +161,34 @@ export default {
                     { required: true, message: this.$t('PLACEHOLDER_CONFIRM_PASSWORD'), trigger: 'blur' },
                     { validator: checkConfirmNewUserPassword, trigger: 'blur' }
                 ]
-            }
+            },
+            tableHeight: window.innerHeight - 280
         };
+    },
+    watch: {
+        isDelorReset(newValue, oldValue) {
+            this.$nextTick(()=>{
+                this.$refs.resetPswForm.resetFields();
+            })
+        }
     },
     mounted() {
       this.fetchUserList()
     },
     methods: {
         fetchUserList() {
-            if(this.UserName.length > 0) {
-                this.userParams.UserName = this.UserName
-            } else {
-                delete this.userParams.UserName
+            let params = {
+                PageSize: 10,
+                CurrentPage: this.pageParams.CurrentPage,
+                SortBy: this.sortParams.SortBy,
+                SortMode: this.sortParams.SortMode,
             }
-            fetchUser(this.userParams)
+            if(this.UserName.length > 0) {
+                params.UserName = this.UserName
+            }
+            fetchUser(params)
                 .then(res => {
                     res.data.data.users.forEach(item => {
-                        // RoleID = 1:管理员，=4 普通用户
                         item.Role = {1: '管理员', 4: '普通用户'}[item.RoleID]
                     })
                     this.userData = res.data.data.users
@@ -190,26 +206,33 @@ export default {
             this.indexOperation = "resetPWD"
             this.isDelorReset = true
         },
-        handleReset(){
-            this.resetPswForm.UserName = this.selectedRow.UserName
-            resetPassword(this.resetPswForm)
-                .then(res => {
-                    if(res.data.status === '00000000') {
-                        this.$message.success({
-                            message: this.$t('SUCCESS_OPERATION')
+        handleSubmitResetPassword() {
+            this.$refs.resetPswForm.validate((valid) => {
+                if (valid) {
+                    this.resetPswForm.UserName = this.selectedRow.UserName
+                    resetPassword(this.resetPswForm)
+                        .then(res => {
+                            if(res.data.status === '00000000') {
+                                this.$message.success({
+                                    message: this.$t('SUCCESS_RESET_PASSWORD')
+                                })
+                                this.isDelorReset = false
+                                this.fetchUserList()
+                            } else if (res.data.status === '00002000') {
+                                this.$message.error({
+                                    message: this.$t('ERR_PARAMS_CHECK_FAILED'),
+                                })
+                            } else {
+                                this.$message.error({
+                                    message: this.$t('ERR_RESET_PASSWORD'),
+                                })
+                            }
                         })
-                        this.isDelorReset = false
-                        this.fetchUserList()
-                    } else {
-                        this.$message.error({
-                            message: this.$t('ERR_OPERATION'),
+                        .catch(err => {
+                            this.isDelorReset = false
                         })
-                        this.isDelorReset = false
-                    }
-                })
-                .catch(err => {
-                    this.isDelorReset = false
-                })
+                }
+            })
         },
         handleDelete(){
             deleteUser(this.selectedRow.UserName)
@@ -224,12 +247,10 @@ export default {
                         this.$message.error({
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_CONNECT_AIVAULT'),
                         })
-                        this.isDelorReset = false
                     } else{
                         this.$message.error({
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_DELETE_USER'),
                         })
-                        this.isDelorReset = false
                     }
                 })
                 .catch(err => {
@@ -244,22 +265,25 @@ export default {
             this.fetchUserList()
         },
         handleSizeChange(val) {
-            this.userParams.PageSize = val
+            this.pageParams.PageSize = val
             this.fetchUserList()
         },
         handleCurrentChange(val) {
-            this.userParams.CurrentPage = val
+            this.pageParams.CurrentPage = val
             this.fetchUserList()
         },
         handleSearch() {
-            this.userParams.CurrentPage = 1
+            this.pageParams.CurrentPage = 1
             this.fetchUserList()
         },
         handleClear() {
-            this.userParams.CurrentPage = 1
+            this.pageParams.CurrentPage = 1
             this.fetchUserList()
         },
-        handleUserTable(){
+        handleSortUserTable({column, prop, order}){
+            this.sortParams.SortBy = prop === 'UserID' ? 'UserID' : prop
+            this.sortParams.SortMode = {'ascending': 'asc', 'descending': 'desc'}[order]
+            this.fetchUserList()
         },
         handleGetUserAmount() {
             fetchUser({})

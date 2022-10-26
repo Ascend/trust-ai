@@ -142,8 +142,8 @@ export default {
                     changePassword(this.changePswForm)
                         .then(res => {
                             if(res.data.status === '00000000') {
-                                this.$message({
-                                    message: this.$t('SUCCESS_OPERATION'),
+                                this.$message.success({
+                                    message: this.$t('SUCCESS_CHANGE_PASSWORD'),
                                 })
                                 this.handleCancel()
                                 setTimeout(() => {
@@ -157,11 +157,14 @@ export default {
                                     sessionStorage.clear()
                                     this.$router.push('/login');
                                 }, 2000)
-                            } else {
-                                this.$message({
-                                    message: this.$t('ERR_OPERATION'),
+                            } else if (res.data.status === '00002000') {
+                                this.$message.error({
+                                    message: this.$t('ERR_PARAMS_CHECK_FAILED'),
                                 })
-                                this.handleCancel()
+                            } else {
+                                this.$message.error({
+                                    message: this.$t('ERR_CHANGE_PASSWORD'),
+                                })
                             }
                         })
                         .catch(err => {
@@ -178,19 +181,23 @@ export default {
                     addUser(this.addUserForm)
                         .then(res => {
                             if(res.data.status === '00000000') {
-                                this.$message({
-                                    message: this.$t('SUCCESS_OPERATION'),
+                                this.$message.success({
+                                    message: this.$t('SUCCESS_ADD_USER'),
                                 })
+                                this.handleCancel()
                             } else if (res.data.status === '21000003') {
-                                this.$message({
+                                this.$message.error({
                                     message: this.$t('ERR_USER_AREADY_EXIST'),
                                 })
                             } else if (res.data.status === '00002000') {
-                                this.$message({
+                                this.$message.error({
                                     message: this.$t('ERR_PARAMS_CHECK_FAILED'),
                                 })
-                            }
-                            this.handleCancel()
+                            } else {
+                                this.$message.error({
+                                    message: this.$t('ERR_ADD_USER'),
+                                })
+                            }                   
                         })
                         .catch(err => {
                             this.handleCancel()
