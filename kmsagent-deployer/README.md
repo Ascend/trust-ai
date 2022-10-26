@@ -6,16 +6,17 @@ KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 2. 工具所在的环境即master节点需要安装python和ansible，且python>=3.7，python库cryptography==3.3.2，ansible-core==2.11.9。
 3. 加密工具运行环境需要安装开源OpenSSL工具，且版本>=1.1.1n，并且<3.0.0。
 4. 请确保待配置环境已经安装包含KMSAgent的驱动，安装好后，可以使用KMSAgent服务。
-5. CfsIP的获取需要使用docker，请确保待配置环境已经安装docker，且版本>=18.09。
-6. 仅支持Ubuntu 18.04/20.04、CentOS7.9及Euler2.10操作系统，x86_64和aarch64架构均支持。
+5. 确保工具所在环境已经安装docker，且版本>=18.09。
+6. 仅支持Ubuntu 18.04/20.04、CentOS8.2及Euler2.10操作系统，x86_64和aarch64架构均支持。
 7. 运行环境时间需要校准到正确的UTC时间。
+8. 请确保各节点的根目录有足够的磁盘空间以正常进行批量配置。
 ## 批量配置
-1. 基于密钥认证的ssh连接，本工具运行前请确认系统中未安装paramiko（ansible在某些情况下会使用paramiko，其配置不当容易引起安全问题）。配置其他设备的ip地址，编辑inventory_file文件，aivault服务所在节点只会安装haveged和docker，须配置变量aivault_server='True', 格式如下：
+1. 基于密钥认证的ssh连接，本工具运行前请确认系统中未安装paramiko（ansible在某些情况下会使用paramiko，其配置不当容易引起安全问题）。配置其他设备的ip地址，编辑inventory_file文件，aivault服务所在节点只会安装haveged和docker，须配置变量server='aivault', 格式如下：
 
    ```
    [ascend]
    localhost ansible_connection='local'
-   ip_address_1 ansible_ssh_user='root' aivault_server='True'  # aivault所在节点
+   ip_address_1 ansible_ssh_user='root' server='aivault'  # aivault服务所在节点
    ip_address_2 ansible_ssh_user='root'
    ```
 
@@ -42,9 +43,10 @@ KMSAgent批量配置工具，用于批量配置KMSAgent服务。
    ```
 ## KMSAgent批量配置流程
 1. 执行`rm -f /etc/localtime && cp /usr/share/zoneinfo/UTC /etc/localtime`将主节点即本工具所在环境的时间设置为UTC时间，再参考命令`date -s '2022-10-13 12:00:00'`校准系统时间，请以实际情况进行校准。
-2. 单机配置KMSAgent服务可跳过上述批量配置步骤，执行`./kmsagent.sh --check --python-dir={python_dir}`可查看带配置设备的连通性，并检查所有设备的系统时间。由于证书的导入要求时间在一段区间内才能成功导入，该步骤会提示用户哪些环境需要修改系统时间才能成功导入KMSAgent证书。如果有不想修改系统时间的环境，请编辑inventory_file文件，将对应环境的配置删除，之后运行工具也不会对其进行配置。
-3. 执行`./kmsagent.sh --modify --python-dir={python_dir}`进行系统时间的修改，该步骤会修改步骤2提示环境的系统时间。如果某些环境不修改时间，请删除相关配置。
-4. 执行`./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --cert-op-param={param} --subject={param} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书，会要求用户输入ca.key的密钥（长度不能小于6位），并进行第二次确认，之后在生成kmsagent.pem时会再次要求用户输入ca.key的密钥。
+2. 从[晟腾镜像仓库](https://ascendhub.huawei.com/#/index)拉取aivault镜像（镜像的架构与待配置的aivault环境的架构相同）,镜像拉取完成后进入工具的resources目录，执行`docker save ascendhub.huawei.com/public-ascendhub/ai-vault-arm:{version} > aivault_aarch64.tar`或`docker save ascendhub.huawei.com/public-ascendhub/ai-vault-x86:{version} > aivault_x86_64.tar`将镜像保存到工具的resources目录（请将**version**替换成对应的版本，只需要下载ai-vault服务节点相同架构的镜像）。
+3. 执行`./kmsagent.sh --check --python-dir={python_dir}`可查看带配置设备的连通性，并检查所有设备的系统时间。由于证书的导入要求时间在一段区间内才能成功导入，该步骤会提示用户哪些环境需要修改系统时间才能成功导入KMSAgent证书。如果有不想修改系统时间的环境，请编辑inventory_file文件，将对应环境的配置删除，之后运行工具也不会对其进行配置。
+4. 执行`./kmsagent.sh --modify --python-dir={python_dir}`进行系统时间的修改，该步骤会修改步骤2提示环境的系统时间。如果某些环境不修改时间，请删除相关配置。
+5. 执行`./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --cert-op-param={param} --subject={param} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书，会要求用户输入ca.key的密钥（长度不能小于6位），并进行第二次确认，之后在生成kmsagent.pem时会再次要求用户输入ca.key的密钥。
 
 ## 参数说明
 
@@ -67,3 +69,4 @@ KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 ## 注意事项
 1. 生成ca.key时的密钥须符合组织的安全要求。
 2. master节点不能是ai-vault服务所在节点。
+3. 批量配置任务依赖master节点，请不要删除或注释掉master节点的配置。

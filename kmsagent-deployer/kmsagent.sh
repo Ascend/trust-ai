@@ -143,9 +143,11 @@ function zip_extract() {
     for zip_file in $zip_list; do
         if [[ $zip_file =~ x86_64.zip ]]; then
             unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_and_docker_x86_64
+            rm -f "$zip_file"
         fi
         if [[ $zip_file =~ aarch64.zip ]]; then
             unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_and_docker_aarch64
+            rm -f "$zip_file"
         fi
     done
 }
@@ -153,7 +155,9 @@ function zip_extract() {
 function download_haveged_and_docker() {
     python3 download.py
     tar -xf "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_x86_64/
+    rm -f "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker*.tgz
     tar -xf "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_aarch64/
+    rm -f "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker*.tgz
     cp "${BASE_DIR}"/docker.service "${BASE_DIR}"/resources/
 }
 

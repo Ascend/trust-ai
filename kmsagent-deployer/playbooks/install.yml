@@ -1,7 +1,7 @@
 - name: yum install haveged
   shell: rpm -ivh --force --nodeps --replacepkgs {{ resources_dir }}/centos_{{ ansible_architecture }}/*.rpm
   register: sys_result
-  when: ansible_pkg_mgr == "yum"
+  when: ansible_pkg_mgr == "yum" or ansible_pkg_mgr == "dnf"
 
 - name: message
   debug: var=sys_result
@@ -60,35 +60,51 @@
     msg:
       - "docker status is {{ docker_status.stdout }}"
 
+- name: find aivault image
+  stat:
+    dest: "{{ resources_dir }}/aivault_{{ ansible_architecture }}.tar"
+  register: aivault_image
+  when: server is defined
+
+- name: docker load aivault image
+  shell: docker load < {{ resources_dir }}/aivault_{{ ansible_architecture }}.tar
+  when: server is defined and aivault_image.stat.exists
+
+- name: message
+  debug:
+    msg:
+      - "can not find aivault_{{ ansible_architecture }}.tar, load image skipped"
+  when: server is defined and not aivault_image.stat.exists
+
 - name: find fuse-plugin
   stat:
     dest: "{{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh"
   register: fuse_plugin
-  when: aivault_server is undefined
+  when: server is undefined
 
 - name: install fuse-plugin
   shell: bash {{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh
-  when: aivault_server is undefined and fuse_plugin.stat.exists
+  when: server is undefined and fuse_plugin.stat.exists
 
 - name: message
   debug:
     msg:
       - "can not find fuse-plugin package, fuse-plugin install skipped"
-  when: aivault_server is undefined and not fuse_plugin.stat.exists
+  when: server is undefined and not fuse_plugin.stat.exists
 
 - name: Check fuse-plugin status
   shell: ps -ef | grep aiguard-plugin | grep -v "grep" | wc -l
   register: fuse_plugin_status
-  when: aivault_server is undefined
+  when: server is undefined
 
 - name: message
   debug:
     msg:
       - "fuse-plugin run successfully"
-  when: aivault_server is undefined and fuse_plugin_status.stdout != '0' and fuse_plugin.stat.exists
+  when: server is undefined and fuse_plugin_status.stdout != '0' and fuse_plugin.stat.exists
 
 - name: message
   debug:
     msg:
       - "fuse-plugin run failed"
-  when: aivault_server is undefined and fuse_plugin_status.stdout == '0' and fuse_plugin.stat.exists
+  when: server is undefined and fuse_plugin_status.stdout == '0' and fuse_plugin.stat.exists
