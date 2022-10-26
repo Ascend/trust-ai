@@ -69,9 +69,9 @@
         <el-pagination
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
-            :current-page.sync="userParams.CurrentPage"
+            :current-page.sync="pageParams.CurrentPage"
             :hide-on-single-page=true
-            :page-size="userParams.PageSize"
+            :page-size="pageParams.PageSize"
             :total="userPagination.total"
             layout="prev, pager, next"
             style="padding-bottom: 20px;"
@@ -135,11 +135,10 @@ export default {
                 total: 10,
             },
             sortParams: {
-                SortBy: '',
-                SortMode: '',
+                SortBy: 'UserID',
+                SortMode: 'asc',
             },
-            userParams: {
-                UserName: '',
+            pageParams: {
                 CurrentPage: 1,
                 PageSize: 10,
             },
@@ -180,16 +179,12 @@ export default {
         fetchUserList() {
             let params = {
                 PageSize: 10,
-                CurrentPage: this.userParams.CurrentPage,
+                CurrentPage: this.pageParams.CurrentPage,
+                SortBy: this.sortParams.SortBy,
+                SortMode: this.sortParams.SortMode,
             }
             if(this.UserName.length > 0) {
                 params.UserName = this.UserName
-            }
-            if(this.sortParams.SortBy.length > 0) {
-                params.SortBy = this.sortParams.SortBy
-            }
-            if(this.sortParams.SortMode.length > 0) {
-                params.SortMode = this.sortParams.SortMode
             }
             fetchUser(params)
                 .then(res => {
@@ -270,19 +265,19 @@ export default {
             this.fetchUserList()
         },
         handleSizeChange(val) {
-            this.userParams.PageSize = val
+            this.pageParams.PageSize = val
             this.fetchUserList()
         },
         handleCurrentChange(val) {
-            this.userParams.CurrentPage = val
+            this.pageParams.CurrentPage = val
             this.fetchUserList()
         },
         handleSearch() {
-            this.userParams.CurrentPage = 1
+            this.pageParams.CurrentPage = 1
             this.fetchUserList()
         },
         handleClear() {
-            this.userParams.CurrentPage = 1
+            this.pageParams.CurrentPage = 1
             this.fetchUserList()
         },
         handleSortUserTable({column, prop, order}){
