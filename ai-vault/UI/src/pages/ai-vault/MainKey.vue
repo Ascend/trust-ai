@@ -32,7 +32,7 @@
             @sort-change="handleSortMKTable"
             max-height="600"
             :highlight-current-row="true"
-            :cell-style="{ textAlign: 'center', border: '0.5px solid rgb(123, 143, 175, 0.5)', padding: '10px 0', }"
+            :cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :empty-text="$t('EMPTY_TEXT')"
         >
