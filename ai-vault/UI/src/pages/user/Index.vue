@@ -43,11 +43,12 @@
 
         <el-table
             :data="userData"
-            style="width: 100%; margin-top: 40px; margin-bottom: 20px; font-size: 12px;"
+            style="width: 100%; margin-top: 40px; margin-bottom: 5px; font-size: 12px;"
             :cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
             :empty-text="$t('EMPTY_TEXT')"
             @sort-change="handleUserTable"
+            :height="tableHeight"
         >
             <el-table-column prop="UserID" :label="$t('COLUMN_USER_ID')" sortable="custom"></el-table-column>
             <el-table-column prop="UserName" :label="$t('COLUMN_USER_NAME')"></el-table-column>
@@ -73,7 +74,7 @@
             :page-size="userParams.PageSize"
             :total="userPagination.total"
             layout="prev, pager, next, total"
-            style="padding-bottom: 30px;"
+            style="padding-bottom: 20px;"
         >
         </el-pagination>
 
@@ -156,7 +157,8 @@ export default {
                     { required: true, message: this.$t('PLACEHOLDER_CONFIRM_PASSWORD'), trigger: 'blur' },
                     { validator: checkConfirmNewUserPassword, trigger: 'blur' }
                 ]
-            }
+            },
+            tableHeight: window.innerHeight - 280
         };
     },
     mounted() {
