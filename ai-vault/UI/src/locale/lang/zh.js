@@ -75,7 +75,7 @@ export default {
     BTN_OK: '确定',
     BTN_CANCEL: '取消',
     BTN_COPY: "复制到剪贴板",
-    CONFIRM_DELETE: '删除确认',
+    CONFIRM_DELETE: '删除提醒',
     CONFIRM_DELETE_TIP: '请确认是否要删除',
     CONFIRM_DELETE_KEY_TIP: '删除后将无法加解密模型。',
 
@@ -114,6 +114,10 @@ export default {
     PSK_TIP: '请妥善保管预共享密钥，关闭窗口后将无法查询得到！',
     PSK_TITLE: '预共享密钥',
     PSK_TIPS: '关闭弹窗将无法再次获取预共享密钥，请妥善保管预共享密钥。您可以选择将预共享密钥复制到剪贴板',
+    ADD_MK: '新建主密钥',
+    ADD_PSK: '新建预共享密钥',
+    ADD_MK_TIP: '新建成功后将自动下载主密钥，请妥善保管主密钥，主密钥丢失将无法找回',
+    ADD_PSK_TIP: '主密钥与预共享密钥一一对应。新建完成将弹出“预共享密钥”弹窗，请留意保存',
 
     // Tooltip
     TIP_ADD_USER_USERNAME: '长度为[1, 32]，仅支持数字、字母、下划线和”-“字符。必须以字母开头。',

@@ -42,7 +42,7 @@
             <el-table-column prop="MKRemarks" :label="$t('COLUMN_REMARKS')" width="360"></el-table-column>
             <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')" >
                 <template slot-scope="scope">
-                    <el-button @click="handleConfirmDelete(scope.row)" type="danger" plain size="small">
+                    <el-button @click="handleConfirmDelete(scope.row)" type="text" plain size="small">
                         {{ $t('OPERATION_DELETE') }}
                     </el-button>
                 </template>
@@ -54,8 +54,10 @@
             width="28%"
             :close-on-click-modal="false"
             :modal="false"
-        >
-            {{$t('CONFIRM_DELETE_KEY_TIP')}}{{$t('CONFIRM_DELETE_TIP')}} {{ selectedRow.MKName }}?
+        >   <div style="display: flex;">
+                <div style="margin-left: 16px; margin-right: 16px"><img src="@/assets/icon/warn.svg"></div>
+                {{$t('CONFIRM_DELETE_KEY_TIP')}}{{$t('CONFIRM_DELETE_TIP')}} {{ selectedRow.MKName }}?
+            </div>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="isDelete = false">{{$t('BTN_CANCEL')}}</el-button>
                 <el-button type="primary" @click="handleDelete">{{$t('BTN_OK')}}</el-button>
