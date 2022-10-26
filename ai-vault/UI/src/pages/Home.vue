@@ -1,73 +1,86 @@
 <template>
-  <div class="main">
-    <div class="info-block">
-      <el-row :gutter="20">
-          <el-col :span="8" class="info-col">
-              <img class="info-img" src="@/assets/user/version.png" />
-              <div class="info-subitem">
-                  <div class="info-subitem-title">{{$t('VERSION')}}</div>
-                  <span class="info-subitem-text">{{ version }}</span>
-              </div>
-          </el-col>
-          <el-col :span="8" class="info-col">
-              <img class="info-img" src="@/assets/user/healthStatus.png" />
-              <div class="info-subitem">
-                  <div class="info-subitem-title">{{$t('HEALTH_STATUS')}}</div>
-                  <span class="info-subitem-text">{{ healthStatus }}</span>
-              </div>
-          </el-col>
-      </el-row>
+  <div class="home">
+    <div class="left">
+      <div class="left-box first-left">
+        <div class="left-name">{{ $t("USER_AMOUNT") }}</div>
+        <div class="left-num">{{ useramount }}</div>
+      </div>
+      <div class="left-box">
+        <div class="left-name">{{ $t("SYS_DATA_SIZE") }}</div>
+        <div class="left-num">{{ datasize }}</div>
+      </div>
     </div>
+    <div class="right">
+      <div class="right-box right-top">
 
-    <el-table
-      :data="tableData"
-      :span-method="objectSpanMethod"
-      style="width: 100%; margin-top: 20px"
-      :cell-style="{ textAlign: 'center', border: '0.5px solid rgb(123, 143, 175, 0.5)', padding: '10px 0', }"
-      :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
-      :empty-text="$t('EMPTY_TEXT')"
-    >
-      <el-table-column prop="CertType" :label="$t('COLUMN_CERT_TYPE')"></el-table-column>
-      <el-table-column prop="CertValidDate" :label="$t('COLUMN_CERT_VALID_DATE')"></el-table-column>
-      <el-table-column prop="CertAlarm" :label="$t('COLUMN_CERT_ALARM')"></el-table-column>
-      <el-table-column prop="CrlStatus" :label="$t('COLUMN_CRL_STATUS')"></el-table-column>
-    </el-table>
-
-    <div class="home-operation">
-      <el-upload
-        class="upload-demo"
-        action="/datamanager/v1/import"
-        :file-list="fileList"
-        style="display: inline-block;"
-        :before-upload="handleBeforeUpload"
-        :show-file-list="false"
-        :on-success="handleUploadSuccess"
-        :on-error="handleUploadError"
-        >
-        <el-button style="margin-left: 10px;" type="primary">{{ $t('BUTTON_UPLOAD') }}</el-button>
-      </el-upload>
-
-      <el-button
-        type="primary"
-        plain
-        style="margin-left: 10px;"
-        @click="handleDownload"
-      >
-        {{ $t('BUTTON_DOWNLOAD') }}
-      </el-button>
+        <div class="sbutton">
+          <div class="title">{{ $t("TOOL_INFO") }}</div>
+        </div>
+        <div class="top-button">
+            <el-button type="text" icon="add-icon" style="color:#D3DCE9">{{ $t('BUTTON_UPLOAD') }}</el-button>
+            <el-button type="text" icon="add-icon" style="color:#D3DCE9">{{ $t('BUTTON_DOWNLOAD') }}</el-button>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("VERSION") }}</div>
+          <div class="right_info">{{ version }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("HEALTH_STATUS") }}</div>
+          <div class="right_info">{{ healthStatus }}</div>
+        </div>
+      </div>
+      <div class="right-box">
+        <div class="title">{{ $t("CERT_INFO") }}</div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CERT_TYPE") }}</div>
+          <div class="right_info">{{ tableData[0].CertType }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CERT_VALID_DATE") }}</div>
+          <div class="right_info">{{ tableData[0].CertValidDate }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CERT_ALARM") }}</div>
+          <div class="right_info">{{ tableData[0].CertAlarm }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CRL_STATUS") }}</div>
+          <div class="right_info">{{ tableData[0].CrlStatus }}</div>
+        </div>
+      </div>
+      <div class="right-box">
+        <div class="title">{{ $t("CERT_INFO") }}</div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CERT_TYPE") }}</div>
+          <div class="right_info">{{ tableData[1].CertType }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CERT_VALID_DATE") }}</div>
+          <div class="right_info">{{ tableData[1].CertValidDate }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CERT_ALARM") }}</div>
+          <div class="right_info">{{ tableData[1].CertAlarm }}</div>
+        </div>
+        <div class="info-block">
+          <div class="right_name">{{ $t("COLUMN_CRL_STATUS") }}</div>
+          <div class="right_info">{{ tableData[1].CrlStatus }}</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { fetchVersion, fetchHealthStatus, fetchCertStatus, exportFile } from '@/service/home.js'
+import { fetchDataSize, fetchVersion, fetchHealthStatus, fetchCertStatus, exportFile } from '@/service/home.js'
+import {fetchUser} from '@/service/user.js'
 
 export default {
   name: 'home',
   data () {
     return {
-      username: '',
-      password: '',
+      useramount: 0,
+      datasize: 0,
       version: '',
       tableData: [],
       healthStatus: '',
@@ -81,6 +94,14 @@ export default {
   },
   methods: {
     queryData() {
+      fetchUser({})
+        .then(res => {
+              this.useramount = res.data.data.total
+          })
+      // fetchDataSize()
+      //   .then(res => {
+      //     this.datasize = res.data.data.size
+      //   })
       fetchVersion()
         .then(resVersion => {
           if(resVersion.data.status === '31000022') {
@@ -204,42 +225,114 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.main{
+.home{
   width: 100%;
   height: 100%;
   background: url(../assets/bg_user_home.png) center no-repeat;
   background-size: cover;
   position: absolute;
+  padding: 64px 24px 24px;
+  display: flex;
+  flex-direction: row;
+  overflow: auto;
 }
 
-.home-operation {
-  margin-top: 20px;
+
+.left {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 6px;
+  min-width: 855px;
 }
-  .info-block {
-      background-color: #1f2329;
-      height: 64px;
-      border-radius: 4px;
-      padding: 16px 24px;
-      margin-top: 10px;
-  }
+.left-box {
+  padding: 0 57px;
+  height: 108px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+.first-left:before {
+  content: '';
+  width: 1px;
+  height: 40px;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  margin-top: -20px;
+  background: #8D98AA;
+}
+.left-name {
+  font-size: 21px;
+  color: #8D98AA;
+  line-height: 30px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-align: center;
+}
+.left-num {
+  font-size: 54px;
+  color: #FFFFFF;
+  line-height: 80px;
+  font-weight: 400;
+  text-align: center;
+  letter-spacing: 0;
+}
 
-  .info-col {
-      display: flex;
-      vertical-align: center;
-  }
-  .info-subitem {
-      display: inline-block;
-  }
+.right {
+  width: 348px;
+  min-width: 348px;
+  letter-spacing: 0;
+  font-size: 12px;
+  color: #8D98AA;
+}
 
-  .info-subitem-title {
-      margin-left: 10px;
-      font-size: 14px;
-      color: #6A6A6A;
-  }
 
-  .info-subitem-text {
-      margin-left: 10px;
-      font-size: 32px;
-      color: #6A6A6A;
-  }
-  </style>
+.title {
+  font-size: 16px;
+  align-items: center;
+  color: #FFFFFE;
+  letter-spacing: 0;
+  line-height: 24px;
+  font-weight: 400;
+}
+
+.top-button {
+  align-items: center;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+
+.right_name {
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #8D98AA;
+}
+
+.right_info {
+  font-size: 20px;
+  line-height: 30px;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: #FFFFFE;
+}
+
+.right-box {
+  background: #2A2F37;
+  border-radius: 6px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.info-block {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+</style>
