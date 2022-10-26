@@ -3,7 +3,7 @@
         <template v-for="nav in navList">
             <div class="nav-item" v-if="nav.isShow" @click="jumpNav(nav)">
                 <div class="nav-wrap">
-                    <img :src="require('@/assets/icon/'+nav.icon)" class="nav-icon"/>
+                    <img :src="require('@/assets/icon/'+nav.icon)" class="nav-icon" style="margin: 2px;"/>
                     <span class="nav-text">{{ $t(nav.label) }}</span>
                 </div>
             </div>
@@ -89,8 +89,8 @@ export default {
 }
 
 .nav-text {
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 14px;
+    line-height: 20px;
     font-weight: 400;
     vertical-align: middle;
     color: #FFFFFE;

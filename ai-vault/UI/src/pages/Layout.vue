@@ -54,7 +54,7 @@ export default {
 .main-content {
   margin-left: 240px;
   padding: 66px 24px 0 24px;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 80px);
 }
 </style>
 <style>

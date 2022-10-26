@@ -16,7 +16,7 @@
 
         <el-button
               type="primary"
-              icon="add-icon"
+              icon="el-icon-circle-plus-outline"
               class="button-add"
               @click="handleConfirmAddUser"
           >
@@ -366,18 +366,4 @@ export default {
     font-weight: 500;
 }
 
-</style>
-
-<style>
-.add-icon {
-    background: url(../../assets/icon/icon_user_add.png) center no-repeat;
-    font-size: 16px;
-    background-size: cover;
-}
-
-.add-icon:before{
-    content: "替";
-    font-size: 16px;
-    visibility: hidden;
-}
 </style>

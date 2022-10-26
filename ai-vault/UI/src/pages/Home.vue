@@ -17,8 +17,19 @@
           <div class="title">{{ $t("TOOL_INFO") }}</div>
         </div>
         <div class="top-button">
-            <el-button type="text" icon="add-icon" style="color:#D3DCE9">{{ $t('BUTTON_UPLOAD') }}</el-button>
-            <el-button type="text" icon="add-icon" style="color:#D3DCE9">{{ $t('BUTTON_DOWNLOAD') }}</el-button>
+            <el-upload
+              class="upload-demo"
+              action="/datamanager/v1/import"
+              :file-list="fileList"
+              style="display: inline-block;"
+              :before-upload="handleBeforeUpload"
+              :show-file-list="false"
+              :on-success="handleUploadSuccess"
+              :on-error="handleUploadError"
+              >
+              <el-button type="text" icon="el-icon-upload2" style="color:#D3DCE9">{{ $t('BUTTON_UPLOAD') }}</el-button>
+            </el-upload>
+            <el-button type="text" icon="el-icon-download" :loading='isDownloading' style="color:#D3DCE9" @click="handleDownload">{{ $t('BUTTON_DOWNLOAD') }}</el-button>
         </div>
         <div class="info-block">
           <div class="right_name">{{ $t("VERSION") }}</div>
@@ -33,38 +44,38 @@
         <div class="title">{{ $t("CERT_INFO") }}</div>
         <div class="info-block">
           <div class="right_name">{{ $t("COLUMN_CERT_TYPE") }}</div>
-          <div class="right_info">{{ tableData[0].CertType }}</div>
+          <div class="right_info">{{ mgmtcert.CertType }}</div>
         </div>
         <div class="info-block">
           <div class="right_name">{{ $t("COLUMN_CERT_VALID_DATE") }}</div>
-          <div class="right_info">{{ tableData[0].CertValidDate }}</div>
+          <div class="right_info">{{ mgmtcert.CertValidDate }}</div>
         </div>
         <div class="info-block">
           <div class="right_name">{{ $t("COLUMN_CERT_ALARM") }}</div>
-          <div class="right_info">{{ tableData[0].CertAlarm }}</div>
+          <div class="right_info">{{ mgmtcert.CertAlarm }}</div>
         </div>
         <div class="info-block">
           <div class="right_name">{{ $t("COLUMN_CRL_STATUS") }}</div>
-          <div class="right_info">{{ tableData[0].CrlStatus }}</div>
+          <div class="right_info">{{ mgmtcert.CrlStatus }}</div>
         </div>
       </div>
       <div class="right-box">
         <div class="title">{{ $t("CERT_INFO") }}</div>
         <div class="info-block">
           <div class="right_name">{{ $t("COLUMN_CERT_TYPE") }}</div>
-          <div class="right_info">{{ tableData[1].CertType }}</div>
+          <div class="right_info">{{ svccert.CertType }}</div>
         </div>
         <div class="info-block">
           <div class="right_name">{{ $t("COLUMN_CERT_VALID_DATE") }}</div>
-          <div class="right_info">{{ tableData[1].CertValidDate }}</div>
+          <div class="right_info">{{ svccert.CertValidDate }}</div>
         </div>
         <div class="info-block">
           <div class="right_name">{{ $t("COLUMN_CERT_ALARM") }}</div>
-          <div class="right_info">{{ tableData[1].CertAlarm }}</div>
+          <div class="right_info">{{ svccert.CertAlarm }}</div>
         </div>
         <div class="info-block">
           <div class="right_name">{{ $t("COLUMN_CRL_STATUS") }}</div>
-          <div class="right_info">{{ tableData[1].CrlStatus }}</div>
+          <div class="right_info">{{ svccert.CrlStatus }}</div>
         </div>
       </div>
     </div>
@@ -87,6 +98,19 @@ export default {
       spanArr: [],
       position: 0,
       fileList: [],
+      isDownloading: false,
+      mgmtcert: {
+        CertType: '管理面',
+        CertValidDate: '',
+        CertAlarm: '',
+        CrlStatus: '',
+      },
+      svccert: {
+        CertType: '服务面',
+        CertValidDate: '',
+        CertAlarm: '',
+        CrlStatus: '',
+      }
     }
   },
   mounted() {
@@ -140,34 +164,17 @@ export default {
       let mgmtArr = this.tableData.filter(item => item.CertType === 'MGMT')
       let svcArr = this.tableData.filter(item => item.CertType !== 'MGMT')
       this.tableData = mgmtArr.concat(svcArr)
-
       this.tableData.forEach((item, index) => {
-          item.CertType = {'MGMT': '管理面' , 'SVC': '服务面'}[item.CertType]
-          item.CertAlarm = item.CertAlarm === '' ? '正常' : '不正常'
-          item.CrlStatus = item.CrlStatus === 'No CRL certificate has been imported.' ? '未导入' : '已导入'
-          if(index === 0) {
-              this.spanArr.push(1)
-              this.position = 0
-          } else {
-              if(this.tableData[index].CertType === this.tableData[index - 1].CertType) {
-                  this.spanArr[this.position] += 1;
-                  this.spanArr.push(0)
-              } else {
-                  this.spanArr.push(1)
-                  this.position = index
-              }
-          }
+        if(item.CertType === 'MGMT') {
+          this.mgmtcert.CertAlarm = item.CertAlarm === '' ? '正常' : '不正常'
+          this.mgmtcert.CrlStatus = item.CrlStatus === 'No CRL certificate has been imported.' ? '未导入' : '已导入'
+          this.mgmtcert.CertValidDate = item.CertValidDate
+        }else {
+        }
+          this.svccert.CertAlarm = item.CertAlarm === '' ? '正常' : '不正常'
+          this.svccert.CrlStatus = item.CrlStatus === 'No CRL certificate has been imported.' ? '未导入' : '已导入'
+          this.svccert.CertValidDate = item.CertValidDate
       })
-    },
-    objectSpanMethod({ row, column, rowIndex, columnIndex }) {
-      if (columnIndex === 0) {
-          const _row = this.spanArr[rowIndex]
-          const _col = _row > 0 ? 1 : 0;
-          return {
-              rowspan: _row,
-              colspan: _col
-          }
-      }
     },
     handleBeforeUpload(file) {
       const isZip = file.type.indexOf('zip') > -1;
@@ -182,6 +189,8 @@ export default {
       return isZip && isLt50M;
     },
     handleDownload() {
+      this.isDownloading=true
+      console.log(this.isDownloading)
       exportFile()
         .then(res => {
           if (res.headers['content-disposition'] === undefined) {
@@ -208,6 +217,7 @@ export default {
             window.URL.revokeObjectURL(url);
           }
         })
+      this.isDownloading=false
     },
     handleUploadSuccess(response, file, fileList) {
       if(response.status === "00000000") {
@@ -226,7 +236,6 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .home{
-  padding: 64px 24px 24px;
   display: flex;
   flex-direction: row;
   overflow: auto;
@@ -311,8 +320,8 @@ export default {
 }
 
 .right_info {
-  font-size: 20px;
-  line-height: 30px;
+  font-size: 16px;
+  line-height: 20px;
   letter-spacing: 0;
   font-weight: 400;
   color: #FFFFFE;
