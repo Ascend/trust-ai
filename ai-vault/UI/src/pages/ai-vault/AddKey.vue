@@ -176,15 +176,19 @@ export default {
                                     reader.onload = (e) => {
                                         let res = JSON.parse(e.target.result);
                                         console.log('res:', res);
-                                        if(res.status === '00002000') {
+                                        if(res.data.status === '00002000') {
                                             this.$message.error({
                                                 message: this.$t('ERR_PARAMS_CHECK_FAILED'),
                                             })
-                                        } else if(res.status === '31000008') {
+                                        } else if(res.data.status === '31000022') {
+                                            this.$message.error({
+                                              message: this.$t('ERR_SYSTEM_BUSY'),
+                                            })
+                                        } else if(res.data.status === '31000008') {
                                             this.$message.error({
                                                 message: this.$t('ERR_ADD_MK'),
                                             })
-                                        } else if(res.status === '31000003') {
+                                        } else if(res.data.status === '31000003') {
                                             this.$message.error({
                                                 message: this.$t('ERR_MAX_MK'),
                                             })
@@ -235,6 +239,10 @@ export default {
                                     this.$message.error({
                                         message: this.$t('ERR_ADD_PSK_MK_NOT_EXIST'),
                                     })
+                                } else if(res.data.status === '31000022') {
+                                  this.$message.error({
+                                    message: this.$t('ERR_SYSTEM_BUSY'),
+                                  })
                                 } else if(res.data.status === '31000006') {
                                     this.$message.error({
                                         message: this.$t('ERR_NOT_MEET_PASSWORD_COMPLEXY'),
