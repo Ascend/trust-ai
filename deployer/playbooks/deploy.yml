@@ -38,21 +38,29 @@
       stat:
         path: /opt/cert
       register: dir_result
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
 
     - name: clean resources
       file:
         state: absent
         path: /opt/cert
-      when: server is undefined and dir_result.stat.exists
+      when:
+        - server is undefined and dir_result.stat|d("") != "" and dir_result.stat.exists
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: move ca files first
       shell: cp -r {{ resources_dir }}/cert /opt
-      when: server is undefined and ansible_connection != "local"
+      when:
+        - server is undefined and ansible_connection != "local"
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: move ca files second
       shell: cp -r {{ resources_dir }}/cert /opt
-      when: server is undefined and ansible_connection == "local"
+      when:
+        - server is undefined and ansible_connection == "local"
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: set cert dir permission
       file:
@@ -61,7 +69,9 @@
         group: HwHiAiUser
         mode: 0700
         recurse: no
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: set cafile permission first
       file:
@@ -69,7 +79,9 @@
         owner: HwHiAiUser
         group: HwHiAiUser
         mode: 0600
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: set cafile permission second
       file:
@@ -77,21 +89,29 @@
         owner: HwHiAiUser
         group: HwHiAiUser
         mode: 0600
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
 
     - name: Check whether the docker network aiguard exists
       shell: docker network ls | grep aiguard | wc -l
       register: aiguard_result
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: docker create network aiguard
       shell: docker network create aiguard
-      when: server is undefined and aiguard_result.stdout == "0"
+      when:
+        - server is undefined and aiguard_result.stdout|d("") != "" and aiguard_result.stdout == "0"
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: get CfsIP
       shell: docker network inspect aiguard | grep Gateway|cut -d'"' -f4
       register: cfsip
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: Configuring the cfs service
       shell: |
@@ -99,7 +119,9 @@
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s SERVER -n CfsPort -v {{ cfs_port }}
       environment:
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: Configuring the aivault service
       shell: |
@@ -108,38 +130,52 @@
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s AIVAULT_SERVER -n AiVaultCaPath -v /opt/cert/ca.pem
       environment:
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: Check whether the TlsCertPath directory exists
       stat:
         path: /opt/tlscert
       register: tlscert_result
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: create TlsCertPath
       shell: mkdir /opt/tlscert
-      when: server is undefined and not tlscert_result.stat.exists
+      when:
+        - server is undefined and tlscert_result.stat|d("") != "" and not tlscert_result.stat.exists
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: Check whether the TlsBackupCertPath directory exists
       stat:
         path: /opt/tlscertbak
       register: tlscertbak_result
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: create TlsBackupCertPath
       shell: mkdir /opt/tlscertbak
-      when: server is undefined and not tlscertbak_result.stat.exists
+      when:
+        - server is undefined and tlscertbak_result.stat|d("") != "" and not tlscertbak_result.stat.exists
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: Start kmsagent service
       shell: npu-smi set -t key-manage -s start
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: Generate kmsagent.csr
       shell: |
         {{ kmsagent_path }} tls get-csr "rsa:4096:sha256" "{{ cert_op_param }}" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
       environment:
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: Copy kmsagent.csr from remote host to local
       fetch:
@@ -148,7 +184,7 @@
       when: server is undefined and ansible_connection != "local"
     
     - name: Generate kmsagent.pem
-      shell: python3 {{ resources_dir }}/../certs.py
+      shell: python3 {{ resources_dir }}/../certs.py {{ remoteonly }}
       when: server is undefined and ansible_connection == "local"
     
     - name: copy kmsagent.pem to remote hosts
@@ -163,7 +199,9 @@
         {{ kmsagent_path }} tls set-cert "/opt/tlscert/tmp/kmsagent.pem /opt/cert/ca.pem" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
       environment:
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
 
     - name: set TlsCertPath directory permission
       file:
@@ -171,7 +209,9 @@
         owner: HwHiAiUser
         group: HwHiAiUser
         recurse: yes
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: set TlsBackupCertPath directory permission
       file:
@@ -179,21 +219,29 @@
         owner: HwHiAiUser
         group: HwHiAiUser
         recurse: yes
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: restart the kmsagent service
       shell: |
         npu-smi set -t key-manage -s stop
         npu-smi set -t key-manage -s start
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: Check the running state of kmsagent
       shell: npu-smi info -t key-manage
       register: kmsagent_stat
-      when: server is undefined
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: message
       debug:
         msg:
           - "{{ kmsagent_stat | default('NOT DEFINED') }}"
-      when: server is undefined and kmsagent_stat.changed
+      when:
+        - server is undefined and kmsagent_stat.changed
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")

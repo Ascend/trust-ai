@@ -1,0 +1,157 @@
+- name: yum install haveged
+  shell: rpm -ivh --force --nodeps --replacepkgs {{ resources_dir }}/centos_{{ ansible_architecture }}/*.rpm
+  register: sys_result
+  when:
+    - ansible_pkg_mgr == "yum" or ansible_pkg_mgr == "dnf"
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: message
+  debug: var=sys_result
+  when:
+    - sys_result.changed
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: apt install haveged
+  shell: export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical; dpkg --force-all -i {{ resources_dir }}/ubuntu_{{ ansible_architecture }}/*.deb
+  register: sys_result
+  when:
+    - ansible_pkg_mgr == "apt"
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: message
+  debug: var=sys_result
+  when:
+    - sys_result.changed
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: enable haveged
+  shell: systemctl enable haveged
+  when: ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: start haveged
+  shell: systemctl start haveged
+  when: ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: check haveged status
+  shell: systemctl is-active haveged
+  register: haveged_status
+  when: ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: message
+  debug:
+    msg:
+      - "haveged status is {{ haveged_status.stdout }}"
+  when: ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: find docker command
+  shell: command -v docker | wc -l
+  register: docker_exists
+  when: ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: install docker
+  shell: |
+    \cp -f {{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/docker/* /usr/bin/
+    \cp -af {{ resources_dir }}/docker.service /etc/systemd/system
+  when:
+    - docker_exists.stdout is defined and docker_exists.stdout == '0'
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: Check docker status
+  shell: systemctl is-active docker
+  register: docker_status
+  changed_when: false
+  failed_when: false
+  ignore_errors: yes
+  when: ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: start docker
+  shell: |
+    setenforce 0 &> /dev/null
+    systemctl enable docker.service
+    systemctl daemon-reload
+    systemctl restart docker
+    setenforce 1 &> /dev/null || true
+  when:
+    - (docker_exists.stdout is defined and docker_exists.stdout == '0') or (docker_status.stdout is defined and docker_status.stdout != "active")
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: Check docker status again
+  shell: systemctl is-active docker
+  register: docker_status_again
+  changed_when: false
+  failed_when: false
+  ignore_errors: yes
+  when: ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: message
+  debug:
+    msg:
+      - "docker status is {{ docker_status_again.stdout }}"
+  when: ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: find aivault image
+  stat:
+    dest: "{{ resources_dir }}/aivault_{{ ansible_architecture }}.tar"
+  register: aivault_image
+  when:
+    - server is defined
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: docker load aivault image
+  shell: docker load < {{ resources_dir }}/aivault_{{ ansible_architecture }}.tar
+  when:
+    - server is defined and aivault_image.stat.exists
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: message
+  debug:
+    msg:
+      - "can not find aivault_{{ ansible_architecture }}.tar, load image skipped"
+  when:
+    - server is defined and not aivault_image.stat.exists
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: find fuse-plugin
+  stat:
+    dest: "{{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh"
+  register: fuse_plugin
+  when:
+    - server is undefined
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: install fuse-plugin
+  shell: bash {{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh
+  when:
+    - server is undefined and fuse_plugin.stat is defined and fuse_plugin.stat.exists
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: message
+  debug:
+    msg:
+      - "can not find fuse-plugin package, fuse-plugin install skipped"
+  when:
+    - server is undefined and fuse_plugin.stat is defined and not fuse_plugin.stat.exists
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: Check fuse-plugin status
+  shell: ps -ef | grep aiguard-plugin | grep -v "grep" | wc -l
+  register: fuse_plugin_status
+  when:
+    - server is undefined
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: message
+  debug:
+    msg:
+      - "fuse-plugin run successfully"
+  when:
+    - server is undefined and fuse_plugin_status.stdout is defined and fuse_plugin_status.stdout != '0'
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: message
+  debug:
+    msg:
+      - "fuse-plugin run failed"
+  when:
+    - server is undefined and fuse_plugin_status.stdout is defined and fuse_plugin_status.stdout == '0'
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
