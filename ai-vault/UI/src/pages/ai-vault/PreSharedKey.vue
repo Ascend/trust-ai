@@ -60,8 +60,8 @@
               {{$t('CONFIRM_DELETE_KEY_TIP')}}{{$t('CONFIRM_DELETE_TIP')}} {{ selectedRow.PSKName }}?
           </div>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="isDelete = false">{{$t('BTN_CANCEL')}}</el-button>
-                <el-button type="primary" @click="handleDelete">{{$t('BTN_OK')}}</el-button>
+                <el-button class="dialog-button" @click="isDelete = false">{{$t('BTN_CANCEL')}}</el-button>
+                <el-button class="dialog-button" type="primary" @click="handleDelete">{{$t('BTN_OK')}}</el-button>
             </span>
         </el-dialog>
     </div>

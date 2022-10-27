@@ -17,18 +17,7 @@
           <div class="title">{{ $t("TOOL_INFO") }}</div>
         </div>
         <div class="top-button">
-            <el-upload
-              class="upload-demo"
-              action="/datamanager/v1/import"
-              :file-list="fileList"
-              style="display: inline-block;"
-              :before-upload="handleBeforeUpload"
-              :show-file-list="false"
-              :on-success="handleUploadSuccess"
-              :on-error="handleUploadError"
-              >
-              <el-button type="text" icon="el-icon-upload2" :loading="isUploading" style="color:#D3DCE9">{{ $t('BUTTON_UPLOAD') }}</el-button>
-            </el-upload>
+            <el-button type="text" icon="el-icon-upload2" :loading="isUploading" style="color:#D3DCE9" @click="isConfirmUploading=true">{{ $t('BUTTON_UPLOAD') }}</el-button>
             <el-button type="text" icon="el-icon-download" :loading="isDownloading" style="color:#D3DCE9" @click="handleDownload">{{ $t('BUTTON_DOWNLOAD') }}</el-button>
         </div>
         <div class="info-block">
@@ -36,10 +25,23 @@
           <div class="right_info">{{ version }}</div>
         </div>
         <div class="info-block">
-          <div class="right_name">{{ $t("HEALTH_STATUS") }}</div>
-          <div class="right_info" style="display: flex;">
-            <img src="@/assets/icon/healthy.svg" style="margin-right: 10px">
-            <div>{{ healthStatus }}</div>
+          <div class="right_name">{{ $t("HEALTH_STATUS") }}</div>        
+          <div class="health_info" style="margin-top:5px">
+            <div class="ai-vault-healthy" style="display: flex; flex-direction: column; align-items: center;">
+              <img v-if="this.isAhealth" src="@/assets/icon/healthy.svg" style="margin:8px">
+              <img v-else src="@/assets/icon/nohealthy.svg" style="margin:8px">
+              <div>Ai-Vault</div>
+            </div> 
+            <div class="user-manager-healthy" style="display: flex; flex-direction: column; align-items: center;">
+              <img v-if="this.isUhealth" src="@/assets/icon/healthy.svg" style="margin:8px">
+              <img v-else src="@/assets/icon/nohealthy.svg" style="margin:8px">
+              <div>User-Manager</div>
+            </div>
+            <div class="data-manager-healthy" style="display: flex; flex-direction: column; align-items: center;">
+              <img v-if="this.isDhealth" src="@/assets/icon/healthy.svg" style="margin:8px">
+              <img v-else src="@/assets/icon/nohealthy.svg" style="margin:8px">
+              <div>Data-Manager</div>
+            </div>       
           </div>
         </div>
       </div>
@@ -82,6 +84,34 @@
         </div>
       </div>
     </div>
+
+    <el-dialog
+        :title="$t('UPLOAD_RISK')"
+        :visible.sync= "isConfirmUploading"
+        width="28%"
+        :close-on-click-modal="false"
+        :modal="false"
+        >
+          <div class="dialog-tip">
+            <div style="margin-left: 16px; margin-right: 16px"><img src="@/assets/icon/warn.svg"></div>
+            {{$t('CONFIRM_UPLOAD_TIP')}}
+          </div>
+          <span slot="footer" class="dialog-footer">
+              <el-button @click="isConfirmUploading = false" class="dialog-button">{{$t('BTN_CANCEL')}}</el-button>
+              <el-upload
+                class="upload-demo"
+                action="/datamanager/v1/import"
+                :file-list="fileList"
+                style="display: inline-block;"
+                :before-upload="handleBeforeUpload"
+                :show-file-list="false"
+                :on-success="handleUploadSuccess"
+                :on-error="handleUploadError"
+              >
+              <el-button type="primary" @click="isConfirmUploading = false" class="dialog-button">{{$t('BUTTON_UPLOAD') }}</el-button>
+            </el-upload></span>
+        </el-dialog>
+
   </div>
 </template>
 
@@ -95,31 +125,32 @@ export default {
     return {
       useramount: 0,
       datasize: 0,
-      version: '',
+      version: '***',
       tableData: [],
-      healthStatus: '',
+      isAhealth: false,
+      isUhealth: false,
+      isDhealth: false,
       tmpVersion: '',
       tmpTableData: [],
-      tmpHealthStatus: '',
+      tmpHealthStatus: '',      
       isQueryVersion: false,
       isQueryCert: false,
       isQueryHealth: false,
-      spanArr: [],
-      position: 0,
       fileList: [],
+      isConfirmUploading: false,
       isUploading: false,
       isDownloading: false,
       mgmtcert: {
         CertType: '管理面',
-        CertValidDate: '',
-        CertAlarm: '',
-        CrlStatus: '',
+        CertValidDate: '***',
+        CertAlarm: '***',
+        CrlStatus: '***',
       },
       svccert: {
         CertType: '服务面',
-        CertValidDate: '',
-        CertAlarm: '',
-        CrlStatus: '',
+        CertValidDate: '***',
+        CertAlarm: '***',
+        CrlStatus: '***',
       }
     }
   },
@@ -130,21 +161,19 @@ export default {
     isQueryVersion(newValue, oldValue) {
       if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
         this.version = this.tmpVersion
-        this.healthStatus = this.tmpHealthStatus
-        this.tableData = this.tmpTableData
       }
     },
     isQueryHealth(newValue, oldValue) {
       if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
-        this.version = this.tmpVersion
-        this.healthStatus = this.tmpHealthStatus
-        this.tableData = this.tmpTableData
+        if(this.tmpHealthStatus === '健康') {
+          this.isAhealth=true
+        } else {
+          this.isAhealth=false
+        }
       }
     },
     isQueryCert(newValue, oldValue) {
       if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
-        this.version = this.tmpVersion
-        this.healthStatus = this.tmpHealthStatus
         this.tableData = this.tmpTableData
         this.handleSpan()
       }
@@ -154,14 +183,26 @@ export default {
     handleGetUserAmount() {
       fetchUser({})
         .then(res => {
-                this.useramount = res.data.data.total
-            })
+          if(res.data.status === '00000000') {
+            this.useramount = res.data.data.total
+            this.isUhealth = true
+          } else {
+            this.useramount = 0
+            this.isUhealth = false
+          }
+        })
     },
     handleGetDataSize() {
       fetchDataSize({})
         .then(res => {
-                this.datasize = (res.data.data.size / 1024 /1024).toFixed(2)
-            })
+          if(res.data.status === '00000000') {
+            this.datasize = (res.data.data.size / 1024 /1024).toFixed(2)
+            this.isDhealth = true
+          } else {
+            this.datasize = 0
+            this.isDhealth = false
+          }
+        })
     },
     queryVersion() {
       fetchVersion()
@@ -253,34 +294,27 @@ export default {
       }
       return isZip && isLt50M;
     },
-    handleDownload() {
+    async handleDownload() {
       this.isDownloading=true;
-      exportFile()
-        .then(res => {
-          if (res.headers['content-disposition'] === undefined) {
-            let reader = new FileReader();
-            reader.onload = (e) => {
-                let res = JSON.parse(e.target.result);
-                if(res.status === '41000002') {
-                    this.$message.error({
-                        message: this.$t('ERR_DOWNLOAD'),
-                    })
-                }
-            }
-            reader.readAsText(res.data)
-          } else {
-            let blob = new Blob([res.data], {type: 'application/json'})
-            let filename = res.headers['content-disposition'].split(';')[1].split('=')[1];
-            let link = document.createElement('a');
-            link.style.display = 'none';
-
-            const url = window.URL || window.webkitURL || window.moxURL;
-            link.href = url.createObjectURL(blob);
-            link.download = filename;
-            link.click();
-            window.URL.revokeObjectURL(url);
-          }
-        })
+      const res = await exportFile()
+      let blob = new Blob([res.data], {type: 'application/zip'})
+      let filename = res.headers['content-disposition'].split(';')[1].split('=')[1];
+      if(window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveBlob(
+          blob,
+          filename
+        );
+        console.log(1)
+      } else {
+        const url = window.URL || window.webkitURL || window.moxURL;
+        let link = document.createElement('a');
+        link.href = url.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
       this.isDownloading=false;
     },
     handleUploadSuccess(response, file, fileList) {
@@ -307,6 +341,14 @@ export default {
   overflow: auto;
 }
 
+.health_info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  font-size: 12px;
+  line-height: 16px;
+}
 
 .left {
   flex-grow: 1;

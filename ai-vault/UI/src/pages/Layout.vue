@@ -61,4 +61,27 @@ export default {
 .main-content {
   color: #fffffe;
 }
+.el-dialog__header{
+  border-bottom: 1px solid #3E4551;
+}
+.el-dialog__title {
+  font-size: 16px;
+  color: #FFFFFE;
+  line-height: 24px;
+  font-weight: 500;
+}
+.el-dialog__footer {
+  text-align: center;
+}
+.dialog-button {
+  font-size: 14px;
+  line-height: 18px;
+  padding: 5px 15px;
+}
+.dialog-tip {
+  font-size: 12px;
+  color: #CFD5DD;
+  display: flex;
+}
+
 </style>

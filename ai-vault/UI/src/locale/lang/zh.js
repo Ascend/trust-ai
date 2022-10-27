@@ -47,6 +47,7 @@ export default {
     OPERATION_DELETE: '删除',
     EMPTY_TEXT: '暂无数据',
     RESET_PASSWORD: '重置密码',
+    UPLOAD_RISK: '上传提示',
 
     //表单
     PLACEHOLDER_USERNAME: '请输入用户名',
@@ -81,6 +82,7 @@ export default {
     CONFIRM_DELETE: '删除提醒',
     CONFIRM_DELETE_TIP: '请确认是否要删除',
     CONFIRM_DELETE_KEY_TIP: '删除后将无法加解密模型。',
+    CONFIRM_UPLOAD_TIP: '上传文件会覆盖相同命名文件，并重启进程。请确认是否要进行此操作？',
 
     // Message
     ERR_LOGIN: '用户名或密码错误',
@@ -128,6 +130,7 @@ export default {
     ADD_PSK: '新建预共享密钥',
     ADD_MK_TIP: '新建成功后将自动下载主密钥，请妥善保管主密钥，主密钥丢失将无法找回',
     ADD_PSK_TIP: '主密钥与预共享密钥一一对应。新建完成将弹出“预共享密钥”弹窗，请留意保存',
+    ADD_USER_TIP: '用户总数最多为500',
 
     // Tooltip
     TIP_ADD_USER_USERNAME: '长度为[1, 32]，仅支持数字、字母、下划线和”-“字符。必须以字母开头。',

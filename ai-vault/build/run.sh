@@ -26,4 +26,30 @@ mkdir -p /home/AiVault/.ai-vault/nginx/logs
 python3 ../data-manager/run.py &
 
 # 启动user-manager
-python3 ../user-manager/run.py
+python3 ../user-manager/run.py &
+
+# 监测程序是否正常运行中
+while true
+do
+   num1=`ps -u AiVault -ef|grep "../ai-vault  run -ip ${ip} -mgmtPort 5000 -servicePort 5001"|grep -v grep|wc -l`
+   if test $[num1] -ne $[1]
+   then
+     exit 1
+   fi
+   num2=`ps -u AiVault -ef|grep "/usr/local/openresty/nginx/sbin/nginx -p /home/AiVault/.ai-vault/nginx/ -c conf/nginx.conf"|grep -v grep|wc -l`
+   if test $[num2] -ne $[1]
+   then
+     exit 1
+   fi
+   num3=`ps -u AiVault -ef|grep "python3 ../data-manager/run.py"|grep -v grep|wc -l`
+   if test $[num3] -ne $[1]
+   then
+     exit 1
+   fi
+   num4=`ps -u AiVault -ef|grep "python3 ../user-manager/run.py" |grep -v grep|wc -l`
+   if test $[num4] -ne $[1]
+   then
+     exit 1
+   fi
+   sleep 10
+done
