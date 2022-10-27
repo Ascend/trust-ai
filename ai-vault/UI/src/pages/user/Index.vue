@@ -7,7 +7,7 @@
         <div class="file-body-top">
         <div class="menu">
           <div class="name-wrapper">
-          <img class="back-up" src="@/assets/icon/icon_user_amount.png" />
+          <img class="back-up" src="@/assets/icon/icon_user2.png" />
         <div class="margin">{{ $t('USER_AMOUNT') }}</div>
          <div class="num"> {{ useramount }} </div>
         </div>
@@ -320,7 +320,7 @@ export default {
     line-height: 16px;
     flex: 1;
     flex-shrink: 0;
-    background: #333333;
+    background: #1f2329;
 }
 .menu:last-child{
     margin-right: 0;
