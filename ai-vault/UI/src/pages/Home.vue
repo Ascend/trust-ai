@@ -25,10 +25,23 @@
           <div class="right_info">{{ version }}</div>
         </div>
         <div class="info-block">
-          <div class="right_name">{{ $t("HEALTH_STATUS") }}</div>
-          <div class="right_info" style="display: flex;">
-            <img src="@/assets/icon/healthy.svg" style="margin-right: 10px">
-            <div>{{ healthStatus }}</div>
+          <div class="right_name">{{ $t("HEALTH_STATUS") }}</div>        
+          <div class="health_info" style="margin-top:5px">
+            <div class="ai-vault-healthy" style="display: flex; flex-direction: column; align-items: center;">
+              <img v-if="this.isAhealth" src="@/assets/icon/healthy.svg" style="margin:8px">
+              <img v-else src="@/assets/icon/nohealthy.svg" style="margin:8px">
+              <div>Ai-Vault</div>
+            </div> 
+            <div class="user-manager-healthy" style="display: flex; flex-direction: column; align-items: center;">
+              <img v-if="this.isUhealth" src="@/assets/icon/healthy.svg" style="margin:8px">
+              <img v-else src="@/assets/icon/nohealthy.svg" style="margin:8px">
+              <div>User-Manager</div>
+            </div>
+            <div class="data-manager-healthy" style="display: flex; flex-direction: column; align-items: center;">
+              <img v-if="this.isDhealth" src="@/assets/icon/healthy.svg" style="margin:8px">
+              <img v-else src="@/assets/icon/nohealthy.svg" style="margin:8px">
+              <div>Data-Manager</div>
+            </div>       
           </div>
         </div>
       </div>
@@ -112,12 +125,14 @@ export default {
     return {
       useramount: 0,
       datasize: 0,
-      version: '',
+      version: '***',
       tableData: [],
-      healthStatus: '',
+      isAhealth: false,
+      isUhealth: false,
+      isDhealth: false,
       tmpVersion: '',
       tmpTableData: [],
-      tmpHealthStatus: '',
+      tmpHealthStatus: '',      
       isQueryVersion: false,
       isQueryCert: false,
       isQueryHealth: false,
@@ -127,15 +142,15 @@ export default {
       isDownloading: false,
       mgmtcert: {
         CertType: '管理面',
-        CertValidDate: '',
-        CertAlarm: '',
-        CrlStatus: '',
+        CertValidDate: '***',
+        CertAlarm: '***',
+        CrlStatus: '***',
       },
       svccert: {
         CertType: '服务面',
-        CertValidDate: '',
-        CertAlarm: '',
-        CrlStatus: '',
+        CertValidDate: '***',
+        CertAlarm: '***',
+        CrlStatus: '***',
       }
     }
   },
@@ -150,7 +165,11 @@ export default {
     },
     isQueryHealth(newValue, oldValue) {
       if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
-        this.healthStatus = this.tmpHealthStatus
+        if(this.tmpHealthStatus === '健康') {
+          this.isAhealth=true
+        } else {
+          this.isAhealth=false
+        }
       }
     },
     isQueryCert(newValue, oldValue) {
@@ -164,14 +183,26 @@ export default {
     handleGetUserAmount() {
       fetchUser({})
         .then(res => {
-                this.useramount = res.data.data.total
-            })
+          if(res.data.status === '00000000') {
+            this.useramount = res.data.data.total
+            this.isUhealth = true
+          } else {
+            this.useramount = 0
+            this.isUhealth = false
+          }
+        })
     },
     handleGetDataSize() {
       fetchDataSize({})
         .then(res => {
-                this.datasize = (res.data.data.size / 1024 /1024).toFixed(2)
-            })
+          if(res.data.status === '00000000') {
+            this.datasize = (res.data.data.size / 1024 /1024).toFixed(2)
+            this.isDhealth = true
+          } else {
+            this.datasize = 0
+            this.isDhealth = false
+          }
+        })
     },
     queryVersion() {
       fetchVersion()
@@ -310,6 +341,14 @@ export default {
   overflow: auto;
 }
 
+.health_info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  font-size: 12px;
+  line-height: 16px;
+}
 
 .left {
   flex-grow: 1;
