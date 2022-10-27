@@ -179,8 +179,8 @@ function process_deploy() {
     fi
     local deploy_play
     deploy_play=${BASE_DIR}/playbooks/deploy.yml
-    echo "ansible-playbook -i ./inventory_file playbooks/deploy.yml -e hosts_name=ascend -e aivault_ip=${aivault_ip} -e aivault_port=${aivault_port} -e cfs_port=${cfs_port} -e cert_op_param=${cert_op_param} ${DEBUG_CMD}"
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e cert_op_param="${cert_op_param}" ${DEBUG_CMD}
+    echo "ansible-playbook -i ./inventory_file playbooks/deploy.yml -e hosts_name=ascend -e aivault_ip=${aivault_ip} -e aivault_port=${aivault_port} -e cfs_port=${cfs_port} -e cert_op_param=${cert_op_param} -e remoteonly=${remoteonly} ${DEBUG_CMD}"
+    ansible-playbook -i "${BASE_DIR}"/inventory_file "${deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e cert_op_param="${cert_op_param} -e remoteonly=${remoteonly}" ${DEBUG_CMD}
 }
 
 function process_check() {
@@ -211,15 +211,17 @@ function print_usage() {
     echo "--modify                modify the time on the remote environments"
     echo "--python-dir            Specify a directory with Python version greater than or equal to 3.7,default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
+    echo "--remoteonly            only remote nodes perform configuration tasks"
     echo "--subject               set CA request subject"
     echo "                        example: '/CN=Example Root CA'"
     echo "--verbose               print verbose"
     echo ""
-    echo "e.g., ./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --cert-op-param={param} --subject={param} --python-dir={python_dir}"
+    echo "e.g., ./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --cert-op-param={param} --subject={param} --remoteonly  --python-dir={python_dir}"
 }
 
 DEBUG_CMD=""
 python_dir="/usr/local/python3.7.5"
+remoteonly=n
 
 function parse_script_args() {
     if [ $# = 0 ]; then
@@ -278,6 +280,10 @@ function parse_script_args() {
             if [ "${python_dir: -1}" = / ]; then
                 python_dir="${python_dir%?}"
             fi
+            shift
+            ;;
+        --remoteonly)
+            remoteonly=y
             shift
             ;;
         --check)
