@@ -173,21 +173,25 @@ export default {
                                     let reader = new FileReader();
                                     reader.onload = (e) => {
                                         let res = JSON.parse(e.target.result);
-                                        if(res.data.status === '00002000') {
+                                        if(res.status === '00002000') {
                                             this.$message.error({
                                                 message: this.$t('ERR_PARAMS_CHECK_FAILED'),
                                             })
-                                        } else if(res.data.status === '31000022') {
+                                        } else if(res.status === '31000022') {
                                             this.$message.error({
                                               message: this.$t('ERR_SYSTEM_BUSY'),
                                             })
-                                        } else if(res.data.status === '31000008') {
+                                        } else if(res.status === '31000008') {
                                             this.$message.error({
                                                 message: this.$t('ERR_ADD_MK'),
                                             })
-                                        } else if(res.data.status === '31000003') {
+                                        } else if(res.status === '31000003') {
                                             this.$message.error({
                                                 message: this.$t('ERR_MAX_MK'),
+                                            })
+                                        } else {
+                                            this.$message.error({
+                                                message: this.$t('ERR_ADD'),
                                             })
                                         }
                                     }
@@ -209,8 +213,8 @@ export default {
                                 }
                             })
                     } else {
-                      this.mkName = this.pskForm.MKName
-                      this.pskName = this.pskForm.PSKName
+                        this.mkName = this.pskForm.MKName
+                        this.pskName = this.pskForm.PSKName
                         postPSK(this.pskForm)
                             .then(res => {
                                 if(res.data.status === '00000000') {
@@ -240,10 +244,6 @@ export default {
                                   this.$message.error({
                                     message: this.$t('ERR_SYSTEM_BUSY'),
                                   })
-                                } else if(res.data.status === '31000006') {
-                                    this.$message.error({
-                                        message: this.$t('ERR_NOT_MEET_PASSWORD_COMPLEXY'),
-                                    })
                                 } else {
                                     this.$message.error({
                                         message: this.$t('ERR_ADD'),
