@@ -153,7 +153,9 @@ function zip_extract() {
 }
 
 function download_haveged_and_docker() {
-    python3 download.py
+    if ! python3 download.py; then
+        return 1
+    fi
     tar -xf "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_x86_64/
     rm -f "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker*.tgz
     tar -xf "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_aarch64/
@@ -168,7 +170,7 @@ function process_deploy() {
         return 1
     fi
     zip_extract
-    if ! download_haveged_and_docker;then
+    if ! download_haveged_and_docker; then
         log_error "download files failed"
         return 1
     fi
@@ -204,13 +206,13 @@ function print_usage() {
     echo "--aivault-port          specify the port of aivault"
     echo "--cfs-port              specify the port of cfs"
     echo "--cert-op-param         parameter for the user info"
-    echo "                        example: yanfabu|chengdu|sichuan|Huawei|CN"
+    echo "                        example: 'yanfabu|chengdu|sichuan|Huawei|CN'"
     echo "--check                 check time on all environments"
     echo "--modify                modify the time on the remote environments"
     echo "--python-dir            Specify a directory with Python version greater than or equal to 3.7,default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
     echo "--subject               set CA request subject"
-    echo "                        example: /CN=Example Root CA"
+    echo "                        example: '/CN=Example Root CA'"
     echo "--verbose               print verbose"
     echo ""
     echo "e.g., ./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --cert-op-param={param} --subject={param} --python-dir={python_dir}"

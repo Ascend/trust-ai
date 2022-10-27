@@ -33,7 +33,7 @@ def download_files(url_dict, retry_time=3):
             print("connection reset by peer, retry...")
         finally:
             pass
-    return False
+        return False
 
 
 def check_dir(filepath):
