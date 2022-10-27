@@ -26,7 +26,7 @@ mkdir -p /home/AiVault/.ai-vault/nginx/logs
 python3 ../data-manager/run.py &
 
 # 启动user-manager
-python3 ../user-manager/run.py
+python3 ../user-manager/run.py &
 
 # 监测程序是否正常运行中
 while true
