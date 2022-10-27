@@ -7,7 +7,7 @@
             @click="handleAddMainKey"
         >
             {{ $t('BUTTON_ADD') }}
-      </el-button>
+       </el-button>
         <div class="tab-main-operation">
             <el-input
                 type="text"

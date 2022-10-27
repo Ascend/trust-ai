@@ -1,29 +1,28 @@
 <template>
-    <div style="margin-bottom: 20px;">
-      <div class="user-amount">
+    <div style="margin-bottom: 20px; overflow: auto;">
+        <div class="user-amount">
             {{ $t('NAV_USER') }}
         </div>
 
-        <div class="file-body-top">
         <div class="menu">
           <div class="name-wrapper">
           <img class="back-up" src="@/assets/icon/icon_user2.png" />
-        <div class="margin">{{ $t('USER_AMOUNT') }}</div>
-         <div class="num"> {{ useramount }} </div>
-        </div>
+          <div class="user-margin">{{ $t('USER_AMOUNT') }}</div>
+          <div class="num"> {{ useramount }} </div>
           </div>
-             </div>
+        </div>
 
-        <el-button
+        <div style="margin-top: 16px;">
+            <el-button
               type="primary"
               icon="el-icon-circle-plus-outline"
               class="button-add"
               @click="handleConfirmAddUser"
-          >
+            >
                   {{ $t('BUTTON_ADD_USER') }}
-         </el-button>
+            </el-button>
 
-        <div class="user-operation">
+            <div class="user-operation">
             <el-input
                 type="text"
                 prefix-icon="el-icon-search"
@@ -39,18 +38,21 @@
                 class="button-refresh"
                 @click="handleSearch"
             ></el-button>
-        </div>
+            </div>
 
-        <div style="background:#1f2329; margin-top: 70px;">
-            <el-table
+            <div style="background:#1f2329;">
+            <div style="padding: 0 24px;">
+                <el-table
                 :data="userData"
-                style="width: 100%; margin-top: 40px; margin-bottom: 5px; font-size: 12px; border-radius: 4px;padding: 24px;"
+                style="width: 100%;"
+                :highlight-current-row="true"
                 :cell-style="{ textAlign: 'center', padding: '10px 0', }"
                 :header-cell-style="{ textAlign: 'center', padding: '10px 0', }"
                 :empty-text="$t('EMPTY_TEXT')"
+                max-height="600"
                 :height="tableHeight"
                 @sort-change="handleSortUserTable"
-            >
+                >
                 <el-table-column prop="UserID" :label="$t('COLUMN_USER_ID')" sortable="custom"></el-table-column>
                 <el-table-column prop="UserName" :label="$t('COLUMN_USER_NAME')"></el-table-column>
                 <el-table-column prop="Role" :label="$t('COLUMN_USER_TYPE')"></el-table-column>
@@ -65,7 +67,8 @@
                         </el-button>
                     </template>
                 </el-table-column>
-            </el-table>
+                </el-table>
+            </div>
             <el-pagination
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
@@ -73,10 +76,11 @@
                 :page-size="pageParams.PageSize"
                 :total="userPagination.total"
                 layout="total, prev, pager, next, jumper"
-                style="padding-bottom: 20px;"
+                style="padding-bottom: 24px; margin-bottom: 24px; margin-left: 24px;"
             >
             </el-pagination>
-        </div>
+            </div>
+        </div>    
 
         <el-dialog
             :title="indexOperation === 'resetPWD' ? $t('RESET_PASSWORD') : $t('CONFIRM_DELETE')"
@@ -299,18 +303,14 @@ export default {
 </script>
 
 <style scoped>
-.file-body-top{
-  display: flex;
-  margin-bottom: 16px;
-}
 
 .menu{
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    min-width: 200px;
-    max-width: 400px;
+    min-width: 100px;
+    max-width: 300px;
     height: 56px;
     padding-left: 25px;
     padding-right: 24px;
@@ -339,36 +339,42 @@ export default {
       margin-right: 8px;
     }
 
-.num{
+    
+.user-margin {
+    margin-left: 8px;
     font-size: 12px;
     color: #FFFFFE;
     letter-spacing: 0;
-    text-align: right;
+    line-height: 16px;
+    font-weight: 700;
+}
+.num{
+    font-size: 16px;
+    color: #FFFFFE;
+    letter-spacing: 0;
     line-height: 24px;
     font-weight: 700;
-    margin-left: 300px;
+    margin-left: 196px;
   }
 
 .button-add {
     border-radius: 2px;
-    font-size: 12px;
     float: left;
     font-size: 12px;
     color: #FFFFFF;
     letter-spacing: 0;
     text-align: center;
-    line-height: 16px;
     font-weight: 500;
+    margin-top: 24px;
+    margin-left: 24px;
 }
 
-.margin {
-  margin-left: 8px;
-}
 
 .user-operation {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    margin-top: 24px;
+    margin-right: 24px;
     float: right;
 }
 
