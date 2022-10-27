@@ -229,7 +229,7 @@ export default {
     },
     fetchData() {
       this.handleGetUserAmount()
-      // this.handleGetDataSize()
+      this.handleGetDataSize()
       this.queryVersion()
     },
     handleSpan() {
