@@ -56,15 +56,6 @@
     - docker_exists.stdout is defined and docker_exists.stdout == '0'
     - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
 
-- name: start docker
-  shell: |
-    systemctl enable docker.service
-    systemctl daemon-reload
-    systemctl restart docker
-  when:
-    - docker_exists.stdout is defined and docker_exists.stdout == '0'
-    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
-
 - name: Check docker status
   shell: systemctl is-active docker
   register: docker_status
@@ -73,10 +64,29 @@
   ignore_errors: yes
   when: ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
 
+- name: start docker
+  shell: |
+    setenforce 0 &> /dev/null
+    systemctl enable docker.service
+    systemctl daemon-reload
+    systemctl restart docker
+    setenforce 1 &> /dev/null || true
+  when:
+    - (docker_exists.stdout is defined and docker_exists.stdout == '0') or (docker_status.stdout is defined and docker_status.stdout != "active")
+    - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: Check docker status again
+  shell: systemctl is-active docker
+  register: docker_status_again
+  changed_when: false
+  failed_when: false
+  ignore_errors: yes
+  when: ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
 - name: message
   debug:
     msg:
-      - "docker status is {{ docker_status.stdout }}"
+      - "docker status is {{ docker_status_again.stdout }}"
   when: ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
 
 - name: find aivault image
