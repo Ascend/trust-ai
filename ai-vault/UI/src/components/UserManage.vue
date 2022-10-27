@@ -7,23 +7,29 @@
         :modal="false"
         :before-close="handleClose"
     >
-        <el-form v-if="currOperation === 'addUser'" :model="addUserForm" :rules="addUserRules" ref="addUserForm">
-            <el-form-item :label="$t('COLUMN_USER_NAME')" prop="UserName" :label-width="formLabelWidth">
-                <el-tooltip :content="$t('TIP_ADD_USER_USERNAME')" placement="right">
-                    <el-input v-model="addUserForm.UserName" class="inp-psw" :placeholder="$t('PLACEHOLDER_USERNAME')" autocomplete="off"></el-input>
-                </el-tooltip>
-            </el-form-item>
-            <el-form-item :label="$t('NEW_PSW')" prop="Password" :label-width="formLabelWidth">
-                <el-tooltip :content="$t('TIP_PASSWORD')" placement="right">
-                    <el-input v-model="addUserForm.Password" type="password" class="inp-psw" :placeholder="$t('PLACEHOLDER_CURRENT_PASSWORD')" autocomplete="off"></el-input>
-                </el-tooltip>
-            </el-form-item>
-            <el-form-item :label="$t('CONFIRM_PSW')" prop="PasswordConfirm" :label-width="formLabelWidth">
-                <el-tooltip :content="$t('TIP_PASSWORD')" placement="right">
-                    <el-input v-model="addUserForm.PasswordConfirm" @keyup.enter.native="handleSubmitAddUser('addUserForm')" type="password" class="inp-psw" :placeholder="$t('PLACEHOLDER_CONFIRM_PASSWORD')" autocomplete="off"></el-input>
-                </el-tooltip>
-            </el-form-item>
-        </el-form>
+        <div v-if="currOperation === 'addUser'">
+            <div style="background: rgba(0,119,255,0.2); border-radius: 2px; display: flex; padding-bottom: 8px; padding-top: 8px; margin-bottom: 24px">
+                <div style="margin-left: 8px;"><img src="@/assets/icon/remind.svg"></div>
+                <div style="margin-left: 8px;">{{ $t('ADD_USER_TIP')}}</div>
+            </div>
+            <el-form  :model="addUserForm" :rules="addUserRules" ref="addUserForm">
+                <el-form-item :label="$t('COLUMN_USER_NAME')" prop="UserName" :label-width="formLabelWidth">
+                    <el-tooltip :content="$t('TIP_ADD_USER_USERNAME')" placement="right">
+                        <el-input v-model="addUserForm.UserName" class="inp-psw" :placeholder="$t('PLACEHOLDER_USERNAME')" autocomplete="off"></el-input>
+                    </el-tooltip>
+                </el-form-item>
+                <el-form-item :label="$t('NEW_PSW')" prop="Password" :label-width="formLabelWidth">
+                    <el-tooltip :content="$t('TIP_PASSWORD')" placement="right">
+                        <el-input v-model="addUserForm.Password" type="password" class="inp-psw" :placeholder="$t('PLACEHOLDER_CURRENT_PASSWORD')" autocomplete="off"></el-input>
+                    </el-tooltip>
+                </el-form-item>
+                <el-form-item :label="$t('CONFIRM_PSW')" prop="PasswordConfirm" :label-width="formLabelWidth">
+                    <el-tooltip :content="$t('TIP_PASSWORD')" placement="right">
+                        <el-input v-model="addUserForm.PasswordConfirm" @keyup.enter.native="handleSubmitAddUser('addUserForm')" type="password" class="inp-psw" :placeholder="$t('PLACEHOLDER_CONFIRM_PASSWORD')" autocomplete="off"></el-input>
+                    </el-tooltip>
+                </el-form-item>
+            </el-form>
+        </div>
         <el-form v-else :model="changePswForm" :rules="changePswRules" ref="changePswForm">
             <el-form-item :label="$t('CURRENT_PSW')" prop="Password" :label-width="formLabelWidth">
                 <el-input v-model="changePswForm.Password" type="password" class="inp-psw" :placeholder="$t('PLACEHOLDER_CURRENT_PASSWORD')" autocomplete="off"></el-input>
@@ -40,8 +46,8 @@
             </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
-            <el-button @click="handleCancel">{{$t('BTN_CANCEL')}}</el-button>
-            <el-button type="primary" @click="currOperation === 'addUser' ? handleSubmitAddUser('addUserForm') : handleSubmitChangePassword('changePswForm')">{{$t('BTN_OK')}}</el-button>
+            <el-button class="dialog-button" @click="handleCancel">{{$t('BTN_CANCEL')}}</el-button>
+            <el-button class="dialog-button" type="primary" @click="currOperation === 'addUser' ? handleSubmitAddUser('addUserForm') : handleSubmitChangePassword('changePswForm')">{{$t('BTN_OK')}}</el-button>
         </span>
     </el-dialog>
 </template>

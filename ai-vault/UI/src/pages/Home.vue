@@ -17,18 +17,7 @@
           <div class="title">{{ $t("TOOL_INFO") }}</div>
         </div>
         <div class="top-button">
-            <el-upload
-              class="upload-demo"
-              action="/datamanager/v1/import"
-              :file-list="fileList"
-              style="display: inline-block;"
-              :before-upload="handleBeforeUpload"
-              :show-file-list="false"
-              :on-success="handleUploadSuccess"
-              :on-error="handleUploadError"
-              >
-              <el-button type="text" icon="el-icon-upload2" :loading="isUploading" style="color:#D3DCE9">{{ $t('BUTTON_UPLOAD') }}</el-button>
-            </el-upload>
+            <el-button type="text" icon="el-icon-upload2" :loading="isUploading" style="color:#D3DCE9" @click="isConfirmUploading=true">{{ $t('BUTTON_UPLOAD') }}</el-button>
             <el-button type="text" icon="el-icon-download" :loading="isDownloading" style="color:#D3DCE9" @click="handleDownload">{{ $t('BUTTON_DOWNLOAD') }}</el-button>
         </div>
         <div class="info-block">
@@ -82,6 +71,34 @@
         </div>
       </div>
     </div>
+
+    <el-dialog
+        :title="$t('UPLOAD_RISK')"
+        :visible.sync= "isConfirmUploading"
+        width="28%"
+        :close-on-click-modal="false"
+        :modal="false"
+        >
+          <div class="dialog-tip">
+            <div style="margin-left: 16px; margin-right: 16px"><img src="@/assets/icon/warn.svg"></div>
+            {{$t('CONFIRM_UPLOAD_TIP')}}
+          </div>
+          <span slot="footer" class="dialog-footer">
+              <el-button @click="isConfirmUploading = false" class="dialog-button">{{$t('BTN_CANCEL')}}</el-button>
+              <el-upload
+                class="upload-demo"
+                action="/datamanager/v1/import"
+                :file-list="fileList"
+                style="display: inline-block;"
+                :before-upload="handleBeforeUpload"
+                :show-file-list="false"
+                :on-success="handleUploadSuccess"
+                :on-error="handleUploadError"
+              >
+              <el-button type="primary" @click="isConfirmUploading = false" class="dialog-button">{{$t('BUTTON_UPLOAD') }}</el-button>
+            </el-upload></span>
+        </el-dialog>
+
   </div>
 </template>
 
@@ -104,9 +121,8 @@ export default {
       isQueryVersion: false,
       isQueryCert: false,
       isQueryHealth: false,
-      spanArr: [],
-      position: 0,
       fileList: [],
+      isConfirmUploading: false,
       isUploading: false,
       isDownloading: false,
       mgmtcert: {
@@ -130,21 +146,15 @@ export default {
     isQueryVersion(newValue, oldValue) {
       if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
         this.version = this.tmpVersion
-        this.healthStatus = this.tmpHealthStatus
-        this.tableData = this.tmpTableData
       }
     },
     isQueryHealth(newValue, oldValue) {
       if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
-        this.version = this.tmpVersion
         this.healthStatus = this.tmpHealthStatus
-        this.tableData = this.tmpTableData
       }
     },
     isQueryCert(newValue, oldValue) {
       if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
-        this.version = this.tmpVersion
-        this.healthStatus = this.tmpHealthStatus
         this.tableData = this.tmpTableData
         this.handleSpan()
       }
@@ -219,7 +229,7 @@ export default {
     },
     fetchData() {
       this.handleGetUserAmount()
-      this.handleGetDataSize()
+      // this.handleGetDataSize()
       this.queryVersion()
     },
     handleSpan() {
@@ -253,34 +263,27 @@ export default {
       }
       return isZip && isLt50M;
     },
-    handleDownload() {
+    async handleDownload() {
       this.isDownloading=true;
-      exportFile()
-        .then(res => {
-          if (res.headers['content-disposition'] === undefined) {
-            let reader = new FileReader();
-            reader.onload = (e) => {
-                let res = JSON.parse(e.target.result);
-                if(res.status === '41000002') {
-                    this.$message.error({
-                        message: this.$t('ERR_DOWNLOAD'),
-                    })
-                }
-            }
-            reader.readAsText(res.data)
-          } else {
-            let blob = new Blob([res.data], {type: 'application/json'})
-            let filename = res.headers['content-disposition'].split(';')[1].split('=')[1];
-            let link = document.createElement('a');
-            link.style.display = 'none';
-
-            const url = window.URL || window.webkitURL || window.moxURL;
-            link.href = url.createObjectURL(blob);
-            link.download = filename;
-            link.click();
-            window.URL.revokeObjectURL(url);
-          }
-        })
+      const res = await exportFile()
+      let blob = new Blob([res.data], {type: 'application/zip'})
+      let filename = res.headers['content-disposition'].split(';')[1].split('=')[1];
+      if(window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveBlob(
+          blob,
+          filename
+        );
+        console.log(1)
+      } else {
+        const url = window.URL || window.webkitURL || window.moxURL;
+        let link = document.createElement('a');
+        link.href = url.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
       this.isDownloading=false;
     },
     handleUploadSuccess(response, file, fileList) {

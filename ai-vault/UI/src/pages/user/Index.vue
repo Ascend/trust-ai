@@ -79,7 +79,7 @@
         </div>
 
         <el-dialog
-            :title="$t('CONFIRM_DELETE')"
+            :title="indexOperation === 'resetPWD' ? $t('RESET_PASSWORD') : $t('CONFIRM_DELETE')"
             :visible.sync= "isDelorReset"
             width="28%"
             :close-on-click-modal="false"
@@ -97,12 +97,13 @@
                     </el-tooltip>
                 </el-form-item>
             </el-form>
-            <div v-else>
-                {{$t('CONFIRM_DELETE_TIP')}} {{ selectedRow.UserName }}?
+            <div v-else class="dialog-tip">
+                <div style="margin-left: 16px; margin-right: 16px"><img src="@/assets/icon/warn.svg"></div>
+                {{$t('CONFIRM_DELETE_TIP')}}: {{ selectedRow.UserName }}?
             </div>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="isDelorReset = false">{{$t('BTN_CANCEL')}}</el-button>
-                <el-button type="primary" @click="indexOperation === 'resetPWD' ? handleSubmitResetPassword() : handleDelete()">{{$t('BTN_OK')}}</el-button>
+                <el-button class="dialog-button" @click="isDelorReset = false">{{$t('BTN_CANCEL')}}</el-button>
+                <el-button class="dialog-button" type="primary" @click="indexOperation === 'resetPWD' ? handleSubmitResetPassword() : handleDelete()">{{$t('BTN_OK')}}</el-button>
             </span>
         </el-dialog>
 
@@ -167,9 +168,11 @@ export default {
     },
     watch: {
         isDelorReset(newValue, oldValue) {
-            this.$nextTick(()=>{
-                this.$refs.resetPswForm.resetFields();
-            })
+            if(this.indexOperation === 'resetPWD'){
+                this.$nextTick(()=>{
+                    this.$refs.resetPswForm.resetFields();
+                })
+            }
         }
     },
     mounted() {
