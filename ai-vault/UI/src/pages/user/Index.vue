@@ -70,7 +70,6 @@
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
                 :current-page.sync="pageParams.CurrentPage"
-                :hide-on-single-page=true
                 :page-size="pageParams.PageSize"
                 :total="userPagination.total"
                 layout="total, prev, pager, next, jumper"
