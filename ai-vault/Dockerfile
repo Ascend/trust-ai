@@ -6,7 +6,7 @@ RUN apt-get update
 RUN apt-get install build-essential -y
 RUN apt-get install libssl1.1 -y
 RUN apt-get install zlib* -y
-RUN apt-get install psmisc -y
+RUN apt-get install procps -y
 RUN apt-get install sqlite3 -y
 RUN apt-get install python3 -y
 RUN apt-get install python3-pip -y
