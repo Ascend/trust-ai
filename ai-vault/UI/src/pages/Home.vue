@@ -132,7 +132,7 @@ export default {
       isDhealth: false,
       tmpVersion: '',
       tmpTableData: [],
-      tmpHealthStatus: '',      
+      tmpHealthStatus: false,      
       isQueryVersion: false,
       isQueryCert: false,
       isQueryHealth: false,
@@ -161,19 +161,35 @@ export default {
     isQueryVersion(newValue, oldValue) {
       if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
         this.version = this.tmpVersion
-      }
-    },
-    isQueryHealth(newValue, oldValue) {
-      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
-        if(this.tmpHealthStatus === '健康') {
+        if(this.tmpHealthStatus === 'ok') {
           this.isAhealth=true
         } else {
           this.isAhealth=false
         }
+        this.tableData = this.tmpTableData
+        this.handleSpan()
+      }
+    },
+    isQueryHealth(newValue, oldValue) {
+      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+        this.version = this.tmpVersion
+        if(this.tmpHealthStatus === 'ok') {
+          this.isAhealth=true
+        } else {
+          this.isAhealth=false
+        }
+        this.tableData = this.tmpTableData
+        this.handleSpan()
       }
     },
     isQueryCert(newValue, oldValue) {
       if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+        this.version = this.tmpVersion
+        if(this.tmpHealthStatus === 'ok') {
+          this.isAhealth=true
+        } else {
+          this.isAhealth=false
+        }
         this.tableData = this.tmpTableData
         this.handleSpan()
       }
@@ -233,7 +249,7 @@ export default {
               clearTimeout(timerHealth)
             }, 1000);
           } else {
-            this.tmpHealthStatus = res.data.msg === 'ok' ? '健康' : '不健康'
+            this.tmpHealthStatus = res.data.msg
             this.isQueryHealth = true
           }
         })
