@@ -13,7 +13,7 @@ export LD_LIBRARY_PATH=/home/AiVault/.ai-vault/lib:$LD_LIBRARY_PATH
 ip=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6|awk '{print $2}'|tr -d "addr:"`
 
 # 启动AI-VAULT
-../ai-vault  run -ip ${ip} -mgmtPort 5000 -servicePort 5001 &
+../ai-vault run -ip ${ip} -mgmtPort 5000 -servicePort 5001 &
 
 sed -i "s/docker_ip/${ip}/g" /home/AiVault/.ai-vault/nginx/conf/nginx.conf
 sed -i "s/docker_ip/${ip}/g" /home/AiVault/.ai-vault/user-manager/configuration/install_param.json
@@ -31,7 +31,7 @@ python3 ../user-manager/run.py &
 # 监测程序是否正常运行中
 while true
 do
-   num1=`ps -u AiVault -ef|grep "../ai-vault  run -ip ${ip} -mgmtPort 5000 -servicePort 5001"|grep -v grep|wc -l`
+   num1=`ps -u AiVault -ef|grep "../ai-vault run -ip ${ip} -mgmtPort 5000 -servicePort 5001"|grep -v grep|wc -l`
    if test $[num1] -ne $[1]
    then
      exit 1
