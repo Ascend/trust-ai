@@ -3,7 +3,7 @@
   gather_facts: false
   tasks:
     - name: get local time
-      shell: echo $(date +%s)
+      shell: echo $(($(date +%s)-1))
       register: local_time
       when: ansible_connection == "local"
     

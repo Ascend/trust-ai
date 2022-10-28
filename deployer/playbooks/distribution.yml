@@ -4,7 +4,11 @@
     first_host: "{{ groups[hosts_name][0] }}"
   tasks:
     - name: make tar package for remote
-      shell: tar -zcf ~/resources.tar ../resources
+      shell: tar -zcf ~/resources.tar ../resources --exclude=../resources/aivault
+      when: not (host_count == "1" and first_host == "localhost")
+    
+    - name: make tar package for aivault server
+      shell: tar -zcf ~/aivault.tar ../resources/aivault
       when: not (host_count == "1" and first_host == "localhost")
 
 - hosts: '{{ hosts_name }}'
@@ -47,3 +51,16 @@
         dest: ~/
         copy: no
       when: ansible_connection != "local"
+    
+    - name: copy aivault image to aivault host
+      copy:
+        src: ~/aivault.tar
+        dest: ~/
+      when: server is defined
+    
+    - name: uncompress on aivault server
+      unarchive:
+        src: ~/aivault.tar
+        dest: ~/
+        copy: no
+      when: server is defined

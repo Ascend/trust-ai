@@ -150,6 +150,15 @@ function zip_extract() {
             rm -f "$zip_file"
         fi
     done
+
+    if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" != 0 ]; then
+        if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ]; then
+            log_error "can not find aivault image"
+            return 1
+        fi
+        mkdir -p "${BASE_DIR}"/resources/aivault
+        mv "${BASE_DIR}"/resources/aivault*.tar "${BASE_DIR}"/resources/aivault
+    fi
 }
 
 function download_haveged_and_docker() {
@@ -169,7 +178,9 @@ function process_deploy() {
         print_usage
         return 1
     fi
-    zip_extract
+    if ! zip_extract; then
+        return 1
+    fi
     if ! download_haveged_and_docker; then
         log_error "download files failed"
         return 1
