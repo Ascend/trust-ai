@@ -27,21 +27,14 @@
         <div class="info-block">
           <div class="right_name">{{ $t("HEALTH_STATUS") }}</div>        
           <div class="health_info" style="margin-top:5px">
-            <div class="ai-vault-healthy" style="display: flex; flex-direction: column; align-items: center;">
-              <img v-if="this.isAhealth" src="@/assets/icon/healthy.svg" style="margin:8px">
-              <img v-else src="@/assets/icon/nohealthy.svg" style="margin:8px">
-              <div>Ai-Vault</div>
-            </div> 
-            <div class="user-manager-healthy" style="display: flex; flex-direction: column; align-items: center;">
-              <img v-if="this.isUhealth" src="@/assets/icon/healthy.svg" style="margin:8px">
-              <img v-else src="@/assets/icon/nohealthy.svg" style="margin:8px">
-              <div>User-Manager</div>
-            </div>
-            <div class="data-manager-healthy" style="display: flex; flex-direction: column; align-items: center;">
-              <img v-if="this.isDhealth" src="@/assets/icon/healthy.svg" style="margin:8px">
-              <img v-else src="@/assets/icon/nohealthy.svg" style="margin:8px">
-              <div>Data-Manager</div>
-            </div>       
+              <div v-if="this.isAhealth" style="display: flex; flex-direction: row;">
+                <img src="@/assets/icon/healthy.svg" style="margin:8px">
+                <div style="font-size:20px; line-height:30px; font-weight:400; letter-spacing: 0; color: #FFFFFE;margin:8px">健康</div>
+              </div>
+              <div v-else style="display: flex; flex-direction: row;">
+                <img src="@/assets/icon/nohealthy.svg" style="margin:8px">
+                <div style="font-size:20px; line-height:30px; font-weight:400; letter-spacing: 0; color: #FFFFFE;margin:0 8px">不健康</div>
+              </div>            
           </div>
         </div>
       </div>
@@ -361,7 +354,6 @@ export default {
   flex-grow: 1;
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
   font-size: 12px;
   line-height: 16px;
 }
