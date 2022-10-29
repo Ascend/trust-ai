@@ -91,14 +91,14 @@
 
 - name: find aivault image
   stat:
-    dest: "{{ resources_dir }}/aivault_{{ ansible_architecture }}.tar"
+    dest: "{{ resources_dir }}/aivault/aivault_{{ ansible_architecture }}.tar"
   register: aivault_image
   when:
     - server is defined
     - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
 
 - name: docker load aivault image
-  shell: docker load < {{ resources_dir }}/aivault_{{ ansible_architecture }}.tar
+  shell: docker load < {{ resources_dir }}/aivault/aivault_{{ ansible_architecture }}.tar
   when:
     - server is defined and aivault_image.stat.exists
     - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
@@ -106,7 +106,8 @@
 - name: message
   debug:
     msg:
-      - "can not find aivault_{{ ansible_architecture }}.tar, load image skipped"
+      - "can not find aivault_{{ ansible_architecture }}.tar, load image failed"
+  failed_when: true
   when:
     - server is defined and not aivault_image.stat.exists
     - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
