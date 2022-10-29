@@ -16,7 +16,8 @@ else
 fi
 
 # 初始化用户
-useradd -d /home/AiVault -u 9001 -m AiVault || mkdir -p /home/AiVault
+useradd -d /home/AiVault -u 9001 -m AiVault
+mkdir -p /home/AiVault
 chown AiVault:AiVault -R .
 chown AiVault:AiVault -R /home/AiVault
 # 签发证书
