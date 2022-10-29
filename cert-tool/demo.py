@@ -6,6 +6,8 @@ from ssl_key import SSLKey
 if __name__ == "__main__":
     demo = SSLKey(alg_id=1)
     pwd = "abcdefghijklmnopqrstuvwxyz1234567890qwertyuiop"
-    cipher_data, csr = demo.generate(pwd)  # cipher_data(str)和csr(bytes)
+    demo.generate(pwd, file_path="./")
 
+    with open("./server.key", "rb") as kf:
+        cipher_data = kf.read()
     plain_private_key = demo.parse_cipher_data(cipher_data, pwd)

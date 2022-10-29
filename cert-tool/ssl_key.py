@@ -6,7 +6,6 @@ import hashlib
 import struct
 import OpenSSL
 import OpenSSL.crypto
-from base64 import b64decode, b64encode
 from collections import namedtuple
 
 from aes import AES
@@ -95,7 +94,7 @@ class SSLKey:
             return False
         return True
 
-    def _write_file(self, key_text: str, csr_text: bytes, path: str):
+    def _write_file(self, key_text: bytes, csr_text: bytes, path: str):
         """
         Write cipher_key and csr to file.
         If file exists, this func will overwrite the file.
@@ -106,7 +105,7 @@ class SSLKey:
         """
         key_path = os.path.join(path, self.KEY_NAME)
         csr_path = os.path.join(path, self.CSR_NAME)
-        with open(key_path, 'w') as kf:
+        with open(key_path, 'wb') as kf:
             kf.write(key_text)
 
         with open(csr_path, 'wb') as cf:
@@ -129,6 +128,8 @@ class SSLKey:
             raise ValueError(f"password length wrong. Current length is {len(password)}, specified length [40, 60].")
         if not self._passwd_check(password):
             raise ValueError(f"password complexity wrong.")
+        if not os.path.exists(file_path):
+            raise ValueError(f"file path '{file_path}' is not exist.")
         work_key, salt = self._pbkdf2hash(password)
         iv = os.urandom(self.IV_LEN)
         self.aes = AES(work_key, iv)
@@ -138,21 +139,17 @@ class SSLKey:
         cipher_data = self.version.to_bytes(1, "little") + self.alg_id.to_bytes(1, "little") + salt + \
                       self.iteration.to_bytes(4, "little") + gcm_tag + iv + cipher_key
 
-        cipher_text = b64encode(cipher_data).decode()
-        self._write_file(cipher_text, cipher_data, file_path)
-        return cipher_text, csr
+        self._write_file(cipher_data, csr, file_path)
 
-    def parse_cipher_data(self, cipher_text: str, password: str):
+    def parse_cipher_data(self, cipher_bytes: bytes, password: str):
         """
         parse the key from cipher
         Args:
-            cipher_text: cipher text for private key
+            cipher_bytes: cipher text for private key
             password: password for encrypt private key
         Returns:
 
         """
-        cipher_bytes = b64decode(cipher_text.encode())
-
         cipher_fields = namedtuple('ciphertext_fields',
                                    ["version", "alg_id", "salt", "iter_count", "gcm_tag", "iv", "cipher"])
         struct_format = f"<1s1s16sI16s12s{len(cipher_bytes) - self.head_len}s"
