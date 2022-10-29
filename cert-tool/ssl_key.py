@@ -6,7 +6,7 @@ import hashlib
 import struct
 import OpenSSL
 import OpenSSL.crypto
-
+from base64 import b64decode, b64encode
 from collections import namedtuple
 
 from aes import AES
@@ -20,7 +20,10 @@ class SSLKey:
     SALT_LEN = 16
     IV_LEN = 12
 
-    def __init__(self, version: int = 1, alg_id: int = 0,iteration: int = 10000,
+    KEY_NAME = 'server.key'
+    CSR_NAME = 'server.csr'
+
+    def __init__(self, version: int = 1, alg_id: int = 0, iteration: int = 10000,
                  req_name: str = "CFS", req_country: str = "CN", req_state: str = "SC", req_city: str = "Chengdu",
                  req_organization: str = "HW", req_organization_unit: str = "Ascend", req_email: str = "address"):
         self.req_name = req_name
@@ -34,6 +37,7 @@ class SSLKey:
         self.version = version
         self.alg_id = alg_id
         self.iteration = iteration
+        self.head_len = 22 + self.SALT_LEN + self.IV_LEN
 
         self.aes = None
 
@@ -41,17 +45,18 @@ class SSLKey:
         """
         create private key and csr by OpenSSL
         Returns:
-
+            private_key： private key
+            csr: csr
         """
         key = OpenSSL.crypto.PKey()
         key.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
         req = OpenSSL.crypto.X509Req()
-        req.get_subject().CN = self.req_name
-        req.get_subject().C = self.req_country
-        req.get_subject().ST = self.req_state
-        req.get_subject().L = self.req_city
-        req.get_subject().O = self.req_organization
-        req.get_subject().OU = self.req_organization_unit
+        req.get_subject().commonName = self.req_name
+        req.get_subject().countryName = self.req_country
+        req.get_subject().stateOrProvinceName = self.req_state
+        req.get_subject().localityName = self.req_city
+        req.get_subject().organizationName = self.req_organization
+        req.get_subject().organizationalUnitName = self.req_organization_unit
         req.get_subject().emailAddress = self.req_email
         req.set_pubkey(key)
         req.sign(key, 'sha256')
@@ -62,15 +67,16 @@ class SSLKey:
 
         return private_key, csr
 
-    def _pbkdf2hash(self, password: str):
+    def _pbkdf2hash(self, password: str, salt: bytes = None):
         if isinstance(password, str):
             password = password.encode()
-        salt = os.urandom(self.SALT_LEN)
+        if salt is None:
+            salt = os.urandom(self.SALT_LEN)
         work_key = hashlib.pbkdf2_hmac("sha256", password, salt, self.iteration, self.KEY_LEN[self.alg_id])
         return work_key, salt
 
     @staticmethod
-    def passwd_check(password: str):
+    def _passwd_check(password: str):
         _lower_character_reg = r'[a-z]{1,}'
         _upper_character_reg = r'[A-Z]{1,}'
         _number_reg = r'[0-9]{1,}'
@@ -89,50 +95,76 @@ class SSLKey:
             return False
         return True
 
-    def generate(self, password: str):
+    def _write_file(self, key_text: str, csr_text: bytes, path: str):
+        """
+        Write cipher_key and csr to file.
+        If file exists, this func will overwrite the file.
+        Args:
+            key_text: cipher key text
+            csr_text: csr text
+            path: file path
+        """
+        key_path = os.path.join(path, self.KEY_NAME)
+        csr_path = os.path.join(path, self.CSR_NAME)
+        with open(key_path, 'w') as kf:
+            kf.write(key_text)
+
+        with open(csr_path, 'wb') as cf:
+            cf.write(csr_text)
+
+    def generate(self, password: str, file_path="./"):
         """
         generate the cipher private_key and csr
         cipher format:
         value:  version + alg_id + salt + iter_count + gcm_tag + iv + cipher_private_key
         length: 1         1        16     4            16        12   ...
         Args:
-            password:
-
+            password: password for encrypt private key
+            file_path: key and csr file path
         Returns:
-
+            cipher_text: cipher text for private key
+            csr: csr text
         """
         if len(password) < 40 or len(password) > 64:
             raise ValueError(f"password length wrong. Current length is {len(password)}, specified length [40, 60].")
-        if not self.passwd_check(password):
+        if not self._passwd_check(password):
             raise ValueError(f"password complexity wrong.")
-        key, salt = self._pbkdf2hash(password)
+        work_key, salt = self._pbkdf2hash(password)
         iv = os.urandom(self.IV_LEN)
-        self.aes = AES(key, iv)
+        self.aes = AES(work_key, iv)
         plain_private_key, csr = self._create_csr()
         cipher_key, gcm_tag = self.aes.encrypt(plain_private_key)
 
         cipher_data = self.version.to_bytes(1, "little") + self.alg_id.to_bytes(1, "little") + salt + \
                       self.iteration.to_bytes(4, "little") + gcm_tag + iv + cipher_key
 
-        return cipher_data, csr
+        cipher_text = b64encode(cipher_data).decode()
+        self._write_file(cipher_text, cipher_data, file_path)
+        return cipher_text, csr
 
-    # def parse_cipher_data(self, cipher_data):
-    #     """
-    #
-    #     Returns:
-    #
-    #     """
-    #     CIPHER_FIELDS = namedtuple('ciphertext_fields',
-    #                                ["version", "alg_id", "salt", "iter_count", "gcm_tag", "iv", "cipher_private_key"])
-    #     STRUCT_FORMAT = ">1s1s16sI16s12s{}s".format(len(cipher_data) - 60)
-    #
-    #     cipher_data_
+    def parse_cipher_data(self, cipher_text: str, password: str):
+        """
+        parse the key from cipher
+        Args:
+            cipher_text: cipher text for private key
+            password: password for encrypt private key
+        Returns:
 
+        """
+        cipher_bytes = b64decode(cipher_text.encode())
 
+        cipher_fields = namedtuple('ciphertext_fields',
+                                   ["version", "alg_id", "salt", "iter_count", "gcm_tag", "iv", "cipher"])
+        struct_format = f"<1s1s16sI16s12s{len(cipher_bytes) - self.head_len}s"
 
-if __name__ == "__main__":
-    test = SSLKey()
-    pwd = "abcdefghijklmnopqrstuvwxyz1234567890qwertyuiop"
-    a, b = test.generate(pwd)
-    print(a)
-    print(b)
+        cipher_bytes_dict = cipher_fields(*struct.unpack(struct_format, cipher_bytes))
+        if self.alg_id != int.from_bytes(cipher_bytes_dict.alg_id, "little"):
+            raise ValueError("cipher header alg_id error")
+        if self.iteration != cipher_bytes_dict.iter_count:
+            raise ValueError("cipher header iteration error")
+        work_key, _ = self._pbkdf2hash(password, cipher_bytes_dict.salt)
+
+        palin_private_key = AES(work_key, cipher_bytes_dict.iv).\
+            decrypt(cipher_bytes_dict.cipher, cipher_bytes_dict.gcm_tag)
+
+        return palin_private_key

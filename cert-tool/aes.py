@@ -1,7 +1,7 @@
 # coding: UTF-8
 # Copyright (c) 2022. Huawei Technologies Co., Ltd. ALL rights reserved.
-
 import ctypes
+import platform
 from ctypes import c_char_p, c_void_p, c_uint64, c_int, POINTER
 
 
@@ -31,9 +31,9 @@ class AES:
             init_vector: iv for encrypt or decrypt (require bytes)
         """
         if not isinstance(key, bytes):
-            raise ValueError(f"Invalid AES key type {type(key)}")
+            raise ValueError(f"Invalid AES key type {type(key)}, require bytes")
         if not isinstance(init_vector, bytes):
-            raise ValueError(f"Invalid AES iv type {type(key)}")
+            raise ValueError(f"Invalid AES iv type {type(key)}, require bytes")
         if len(key) == self.AES_128_KEY_LEN:
             self.alg_id = 0
         elif len(key) == self.AES_256_KEY_LEN:
@@ -61,7 +61,8 @@ class AES:
 
         AES.libcrypto.OPENSSL_config.argtypes = (c_char_p, )
 
-        if hasattr(AES.libcrypto, "OPENSSL_init-crypto"):
+        if hasattr(AES.libcrypto, "OPENSSL_init_"
+                                  "crypto"):
             AES.libcrypto.OPENSSL_init_crypto.argtypes = (c_uint64, c_void_p)
             AES.libcrypto.OPENSSL_init_crypto(AES.OPENSSL_INIT_FLAG, None)
         else:
@@ -119,7 +120,7 @@ class AES:
         Returns:
             encrypted data and GCM tag
         """
-        ctx = self.libcrypto.EVP_CIPHER_CTX_nex()
+        ctx = self.libcrypto.EVP_CIPHER_CTX_new()
         if ctx is None:
             raise ValueError("encrypt init failed")
 
