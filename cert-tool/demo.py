@@ -11,3 +11,4 @@ if __name__ == "__main__":
     with open("./server.key", "rb") as kf:
         cipher_data = kf.read()
     plain_private_key = demo.parse_cipher_data(cipher_data, pwd)
+    print(plain_private_key)
