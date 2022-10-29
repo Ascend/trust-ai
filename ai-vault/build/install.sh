@@ -16,8 +16,9 @@ else
 fi
 
 # 初始化用户
-useradd -d /home/AiVault -u 9001 -m AiVault
+useradd -d /home/AiVault -u 9001 -m AiVault || mkdir -p /home/AiVault
 chown AiVault:AiVault -R .
+chown AiVault:AiVault -R /home/AiVault
 # 签发证书
 export LD_LIBRARY_PATH=/home/AiVault/lib:$LD_LIBRARY_PATH
 
