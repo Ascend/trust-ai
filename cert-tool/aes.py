@@ -1,7 +1,6 @@
 # coding: UTF-8
 # Copyright (c) 2022. Huawei Technologies Co., Ltd. ALL rights reserved.
 import ctypes
-import platform
 from ctypes import c_char_p, c_void_p, c_uint64, c_int, POINTER
 
 
