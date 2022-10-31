@@ -29,7 +29,7 @@
                 </el-form-item>
                 <el-form-item :label="$t('USER_PASSWORD')" prop="Password" :label-width="formLabelWidth">
                     <el-tooltip :content="$t('TIP_KEY_PASSWORD')" placement="right">
-                        <el-input v-model="mkForm.Password" type="password" class="inp-add" :placeholder="$t('PLACEHOLDER_MK_PASSWORD')" autocomplete="off"></el-input>
+                        <el-input v-model="mkForm.Password" type="password" show-password class="inp-add" :placeholder="$t('PLACEHOLDER_MK_PASSWORD')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
                 <el-form-item :label="$t('COMMENT')" prop="MKRemarks" :label-width="formLabelWidth">
@@ -52,7 +52,7 @@
                 </el-form-item>
                 <el-form-item :label="$t('USER_PASSWORD')" prop="Password" :label-width="formLabelWidth">
                     <el-tooltip :content="$t('TIP_KEY_PASSWORD')" placement="right">
-                        <el-input v-model="pskForm.Password" type="password" class="inp-add" :placeholder="$t('PLACEHOLDER_KEY_PASSWORD')" autocomplete="off"></el-input>
+                        <el-input v-model="pskForm.Password" type="password" show-password class="inp-add" :placeholder="$t('PLACEHOLDER_KEY_PASSWORD')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
                 <el-form-item :label="$t('COMMENT')" prop="PSKRemarks" :label-width="formLabelWidth">
@@ -64,35 +64,6 @@
             <span slot="footer" class="dialog-footer">
                 <el-button v-no-more-click class="dialog-button" @click="handleCancel(currPage === 'mk' ? 'mkForm' : 'pskForm')">{{$t('BTN_CANCEL')}}</el-button>
                 <el-button v-no-more-click class="dialog-button" type="primary" @click="handleSubmitAdd(currPage === 'mk' ? 'mkForm' : 'pskForm')">{{$t('BTN_OK')}}</el-button>
-            </span>
-        </el-dialog>
-        <el-dialog
-            :visible.sync="isCopy"
-            :title="$t('PSK_TITLE')"
-            width="500px"
-            :close-on-click-modal="false"
-            :modal="false"
-        >
-          <div style="background: rgba(249,118,17,0.2);border-radius: 2px;display: flex; padding-bottom: 8px; padding-top: 8px">
-            <div style="margin-left: 8px"><img src="@/assets/icon/alarm-orange.svg"></div>
-            <div style="margin-left: 8px">{{ $t('PSK_TIPS')}}</div>
-          </div>
-          <el-form label-width="120px" style="margin-top: 20px">
-            <el-form-item label="绑定的主密钥">
-              <el-input v-model="mkName" disabled></el-input>
-            </el-form-item>
-            <el-form-item label="预共享密钥名">
-              <el-input v-model="pskName" disabled></el-input>
-            </el-form-item>
-            <el-form-item label="预共享密钥">
-              <el-input v-model="copyText" type="textarea" :rows="12" style="height: auto"></el-input>
-            </el-form-item>
-          </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button v-no-more-click class="dialog-button" type="primary" @click="handleCopy" v-clipboard:copy="copyText"
-                           v-clipboard:success="handleCopy"
-                >{{$t('BTN_COPY')}}</el-button>
-                <el-button v-no-more-click class="dialog-button" @click="handleCancelCopy">{{$t('BTN_CANCEL')}}</el-button>
             </span>
         </el-dialog>
     </div>
@@ -110,8 +81,6 @@ export default {
     },
     data() {
         return {
-            isCopy: false,
-            copyText: '',
             mkForm: {
                 MKName: '',
                 MKUsage: '',
@@ -218,8 +187,17 @@ export default {
                         postPSK(this.pskForm)
                             .then(res => {
                                 if(res.data.status === '00000000') {
-                                    this.copyText = res.data.data.PSK
-                                    this.isCopy = true
+                                    let blob = new Blob([res.data.data.PSK], {type: 'application/none'})
+                                    let filename = "aiguard-preshared-key"
+                                    let link = document.createElement('a');
+                                    link.style.display = 'none';
+                                    const url = window.URL || window.webkitURL || window.moxURL;
+                                    link.href = url.createObjectURL(blob);
+                                    link.download = filename;
+                                    link.click();
+                                    window.URL.revokeObjectURL(url);
+                                    this.$emit('handleRefresh', 'psk')
+
                                 } else if(res.data.status === '31000009') {
                                     this.$message.error({
                                         message: this.$t('ERR_ADD_PSK'),
@@ -249,7 +227,6 @@ export default {
                                         message: this.$t('ERR_ADD'),
                                     })
                                 }
-                                this.$emit('handleRefresh', 'psk')
                             })
                     }
                     this.handleCancel(this.currPage === 'mk' ? 'mkForm' : 'pskForm')
@@ -263,13 +240,6 @@ export default {
                 this.$refs[formName].resetFields();
                 this.$emit('handleCancelAdd')
             })
-        },
-        handleCancelCopy() {
-            this.isCopy = false
-        },
-        async handleCopy() {
-            await this.$copyText(this.copyText);
-            this.isCopy = false
         },
         handleClose() {
             this.$emit('handleCancelAdd')
