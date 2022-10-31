@@ -126,9 +126,11 @@ export default {
     watch: {
         currPage(newVal, oldVal) {
             let formName = this.currPage === 'mk' ? 'mkForm' : 'pskForm'
-            this.$nextTick(()=>{
-                this.$refs[formName].resetFields();
-            })
+            if (this.$refs[formName]) {
+                this.$nextTick(()=>{
+                    this.$refs[formName].resetFields();
+                })
+            }
         }
     },
     methods: {

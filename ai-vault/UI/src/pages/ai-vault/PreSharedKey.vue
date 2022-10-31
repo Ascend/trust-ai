@@ -123,9 +123,11 @@ export default {
             fetchPreSharedKey(params)
               .then(res => {
                 const format = 'YYYY-MM-DD HH:mm:ss';
-                res.data.data.data.forEach(item => {
-                    item.PSKCreateTime = moment(item.PSKCreateTime).format(format)
-                })
+                if (res.data.data.data) {
+                    res.data.data.data.forEach(item => {
+                        item.PSKCreateTime = moment(item.PSKCreateTime).format(format)
+                    })
+                }    
                 this.tableData = res.data.data.data
               })
         },
