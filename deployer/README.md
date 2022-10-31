@@ -11,7 +11,7 @@ KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 7. 运行环境时间需要校准到正确的UTC时间。
 8. 请确保各节点的根目录有足够的磁盘空间以正常进行批量配置。
 ## 批量配置
-1. 基于密钥认证的ssh连接，本工具运行前请确认系统中未安装paramiko（ansible在某些情况下会使用paramiko，其配置不当容易引起安全问题）。配置其他设备的ip地址，编辑inventory_file文件，aivault服务所在节点只会安装haveged和docker，须配置变量server='aivault', 格式如下：
+1. 基于密钥认证的ssh连接，本工具运行前请确认系统中未安装paramiko（ansible在某些情况下会使用paramiko，其配置不当容易引起安全问题）。配置其他设备的ip地址，编辑inventory_file文件，aivault服务所在节点不会进行KMSAgent配置，仅安装haveged、docker和导入ai-vault镜像，须配置变量server='aivault', 格式如下：
 
    ```
    [ascend]
@@ -44,9 +44,10 @@ KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 ## KMSAgent批量配置流程
 1. 执行`rm -f /etc/localtime && cp /usr/share/zoneinfo/UTC /etc/localtime`将主节点即本工具所在环境的时间设置为UTC时间，再参考命令`date -s '2022-10-13 12:00:00'`校准系统时间，请以实际情况进行校准。
 2. 从[晟腾镜像仓库](https://ascendhub.huawei.com/#/index)拉取aivault镜像（镜像的架构与待配置的aivault环境的架构相同）,镜像拉取完成后进入工具的resources目录，执行`docker save ascendhub.huawei.com/public-ascendhub/ai-vault-arm:{version} > aivault_aarch64.tar`或`docker save ascendhub.huawei.com/public-ascendhub/ai-vault-x86:{version} > aivault_x86_64.tar`将镜像保存到工具的resources目录（请将**version**替换成对应的版本，只需要下载ai-vault服务节点相同架构的镜像）。
-3. 执行`./kmsagent.sh --check --python-dir={python_dir}`可查看带配置设备的连通性，并检查所有设备的系统时间。由于证书的导入要求时间在一段区间内才能成功导入，该步骤会提示用户哪些环境需要修改系统时间才能成功导入KMSAgent证书。如果有不想修改系统时间的环境，请编辑inventory_file文件，将对应环境的配置删除，之后运行工具也不会对其进行配置。
-4. 执行`./kmsagent.sh --modify --python-dir={python_dir}`进行系统时间的修改，该步骤会修改步骤2提示环境的系统时间。如果某些环境不修改时间，请删除相关配置。
-5. 执行`./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --cert-op-param={param} --subject={param} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书，会要求用户输入ca.key的密钥（长度不能小于6位），并进行第二次确认，之后在生成kmsagent.pem时会再次要求用户输入ca.key的密钥。
+3. 请从[官网](https://gitee.com/ascend/trust-ai/releases)获取Ascend-mindxdl-aiguard_plugin_{version}_linux-{arch}.zip文件，然后将其放到工具的resources目录(可选)。
+4. 执行`./kmsagent.sh --check --python-dir={python_dir}`可查看带配置设备的连通性，并检查所有设备的系统时间。由于证书的导入要求时间在一段区间内才能成功导入，该步骤会提示用户哪些环境需要修改系统时间才能成功导入KMSAgent证书。如果有不想修改系统时间的环境，请编辑inventory_file文件，将对应环境的配置删除，之后运行工具也不会对其进行配置。
+5. 执行`./kmsagent.sh --modify --python-dir={python_dir}`进行系统时间的修改，该步骤会修改步骤2提示环境的系统时间。如果某些环境不修改时间，请删除相关配置。
+6. 执行`./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --cert-op-param={param} --subject={param} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书，会要求用户输入ca.key的密钥（长度不能小于6位），并进行第二次确认，之后在生成kmsagent.pem时会再次要求用户输入ca.key的密钥。
 
 ## 参数说明
 
@@ -62,7 +63,8 @@ KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 | --cert-op-param | 指定kmsagent.csr的用户信息，参考格式：`"yanfabu\|chengdu\|sichuan\|Huawei\|CN"`。                                           |
 | --check         | 检查环境，确保master节点安装好可用的python3、ansible等组件，并检查与待配置设备的连通性及设备的系统时间。                        |
 | --modify        | 修改远程节点的系统时间到UTC时间。                                                                                           |
-| --python-dir    | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5 |
+| --python-dir    | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
+| --remoteonly    | 仅远程节点执行kmsagent批量配置任务。                                                                                         |
 | --subject       | 设置CA请求的主题，参考格式：`"/CN=Example Root CA"`。                                                                       |
 | --verbose       | 打印详细信息。                                                                                                              |
 
