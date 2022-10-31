@@ -46,8 +46,8 @@
             </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
-            <el-button class="dialog-button" @click="handleCancel">{{$t('BTN_CANCEL')}}</el-button>
-            <el-button class="dialog-button" type="primary" @click="currOperation === 'addUser' ? handleSubmitAddUser('addUserForm') : handleSubmitChangePassword('changePswForm')">{{$t('BTN_OK')}}</el-button>
+            <el-button v-no-more-click class="dialog-button" @click="handleCancel">{{$t('BTN_CANCEL')}}</el-button>
+            <el-button v-no-more-click class="dialog-button" type="primary" @click="currOperation === 'addUser' ? handleSubmitAddUser('addUserForm') : handleSubmitChangePassword('changePswForm')">{{$t('BTN_OK')}}</el-button>
         </span>
     </el-dialog>
 </template>

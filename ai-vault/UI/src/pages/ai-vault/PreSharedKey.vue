@@ -1,6 +1,7 @@
 <template>
     <div>
         <el-button
+            v-no-more-click
             type="primary"
             icon="el-icon-circle-plus-outline"
             class="btn-add"
@@ -20,6 +21,7 @@
                 @keyup.enter.native="fetchData"
             ></el-input>
             <el-button
+                v-no-more-click
                 icon="el-icon-refresh"
                 class="button-refresh"
                 @click="fetchData"
@@ -42,7 +44,7 @@
             <el-table-column prop="PSKRemarks" :label="$t('COLUMN_REMARKS')"></el-table-column>
             <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')">
                 <template slot-scope="scope">
-                    <el-button @click="handleConfirmDelete(scope.row)" type="text" plain size="small">
+                    <el-button v-no-more-click @click="handleConfirmDelete(scope.row)" type="text" plain size="small">
                         {{ $t('OPERATION_DELETE') }}
                     </el-button>
                 </template>
@@ -60,8 +62,8 @@
               {{$t('CONFIRM_DELETE_KEY_TIP')}}{{$t('CONFIRM_DELETE_TIP')}} {{ selectedRow.PSKName }}?
           </div>
             <span slot="footer" class="dialog-footer">
-                <el-button class="dialog-button" @click="isDelete = false">{{$t('BTN_CANCEL')}}</el-button>
-                <el-button class="dialog-button" type="primary" @click="handleDelete">{{$t('BTN_OK')}}</el-button>
+                <el-button v-no-more-click class="dialog-button" @click="isDelete = false">{{$t('BTN_CANCEL')}}</el-button>
+                <el-button v-no-more-click class="dialog-button" type="primary" @click="handleDelete">{{$t('BTN_OK')}}</el-button>
             </span>
         </el-dialog>
     </div>

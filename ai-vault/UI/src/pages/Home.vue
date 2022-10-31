@@ -17,8 +17,8 @@
           <div class="title">{{ $t("TOOL_INFO") }}</div>
         </div>
         <div class="top-button">
-            <el-button type="text" icon="el-icon-upload2" :loading="isUploading" style="color:#D3DCE9" @click="isConfirmUploading=true">{{ $t('BUTTON_UPLOAD') }}</el-button>
-            <el-button type="text" icon="el-icon-download" :loading="isDownloading" style="color:#D3DCE9" @click="handleDownload">{{ $t('BUTTON_DOWNLOAD') }}</el-button>
+            <el-button v-no-more-click type="text" icon="el-icon-upload2" :loading="isUploading" style="color:#D3DCE9" @click="isConfirmUploading=true">{{ $t('BUTTON_UPLOAD') }}</el-button>
+            <el-button v-no-more-click type="text" icon="el-icon-download" :loading="isDownloading" style="color:#D3DCE9" @click="handleDownload">{{ $t('BUTTON_DOWNLOAD') }}</el-button>
         </div>
         <div class="info-block">
           <div class="right_name">{{ $t("VERSION") }}</div>
@@ -90,7 +90,7 @@
             {{$t('CONFIRM_UPLOAD_TIP')}}
           </div>
           <span slot="footer" class="dialog-footer">
-              <el-button @click="isConfirmUploading = false" class="dialog-button">{{$t('BTN_CANCEL')}}</el-button>
+              <el-button v-no-more-click @click="isConfirmUploading = false" class="dialog-button">{{$t('BTN_CANCEL')}}</el-button>
               <el-upload
                 class="upload-demo"
                 action="/datamanager/v1/import"
@@ -101,7 +101,7 @@
                 :on-success="handleUploadSuccess"
                 :on-error="handleUploadError"
               >
-              <el-button type="primary" @click="isConfirmUploading = false" class="dialog-button">{{$t('BUTTON_UPLOAD') }}</el-button>
+              <el-button v-no-more-click type="primary" @click="isConfirmUploading = false" class="dialog-button">{{$t('BUTTON_UPLOAD') }}</el-button>
             </el-upload></span>
         </el-dialog>
 

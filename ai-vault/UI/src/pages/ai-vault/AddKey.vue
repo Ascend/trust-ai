@@ -62,8 +62,8 @@
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button class="dialog-button" @click="handleCancel(currPage === 'mk' ? 'mkForm' : 'pskForm')">{{$t('BTN_CANCEL')}}</el-button>
-                <el-button class="dialog-button" type="primary" @click="handleSubmitAdd(currPage === 'mk' ? 'mkForm' : 'pskForm')">{{$t('BTN_OK')}}</el-button>
+                <el-button v-no-more-click class="dialog-button" @click="handleCancel(currPage === 'mk' ? 'mkForm' : 'pskForm')">{{$t('BTN_CANCEL')}}</el-button>
+                <el-button v-no-more-click class="dialog-button" type="primary" @click="handleSubmitAdd(currPage === 'mk' ? 'mkForm' : 'pskForm')">{{$t('BTN_OK')}}</el-button>
             </span>
         </el-dialog>
         <el-dialog
@@ -89,10 +89,10 @@
             </el-form-item>
           </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button class="dialog-button" type="primary" @click="handleCopy" v-clipboard:copy="copyText"
+                <el-button v-no-more-click class="dialog-button" type="primary" @click="handleCopy" v-clipboard:copy="copyText"
                            v-clipboard:success="handleCopy"
                 >{{$t('BTN_COPY')}}</el-button>
-                <el-button class="dialog-button" @click="handleCancelCopy">{{$t('BTN_CANCEL')}}</el-button>
+                <el-button v-no-more-click class="dialog-button" @click="handleCancelCopy">{{$t('BTN_CANCEL')}}</el-button>
             </span>
         </el-dialog>
     </div>

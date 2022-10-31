@@ -21,7 +21,7 @@
         class="login-inp"
         @keyup.enter="handleLogin"
       />
-      <el-button type="primary" @click="handleLogin">{{ $t('LOGIN') }}</el-button>
+      <el-button v-no-more-click type="primary" @click="handleLogin">{{ $t('LOGIN') }}</el-button>
     </div>
     <div class="footer-copyright">{{copyright}} </div>
   </div>
