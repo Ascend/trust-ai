@@ -8,9 +8,8 @@
       when: not (host_count == "1" and first_host == "localhost")
     
     - name: make tar package for aivault server
-      shell: tar -zcf ~/aivault.tar ../resources/aivault
+      shell: tar -zcf ~/aivault.tar ../resources/aivault*.tar
       when: not (host_count == "1" and first_host == "localhost")
-
 - hosts: '{{ hosts_name }}'
   tasks:
     - name: check when set server

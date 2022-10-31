@@ -50,16 +50,10 @@
         - server is undefined and dir_result.stat|d("") != "" and dir_result.stat.exists
         - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
-    - name: move ca files first
+    - name: copy ca files
       shell: cp -r {{ resources_dir }}/cert /opt
       when:
-        - server is undefined and ansible_connection != "local"
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
-    
-    - name: move ca files second
-      shell: cp -r {{ resources_dir }}/cert /opt
-      when:
-        - server is undefined and ansible_connection == "local"
+        - server is undefined
         - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
     
     - name: set cert dir permission
@@ -170,7 +164,7 @@
     
     - name: Generate kmsagent.csr
       shell: |
-        {{ kmsagent_path }} tls get-csr "rsa:4096:sha256" "{{ cert_op_param }}" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
+        {{ kmsagent_path }} tls get-csr "rsa:4096:sha256" "KMSAgent|chengdu|sichuan|Ascend|CN" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
       environment:
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
       when:

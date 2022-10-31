@@ -81,22 +81,6 @@ function set_permission() {
     chmod 400 "${BASE_DIR}"/*.log.? 2>/dev/null
 }
 
-function check_inventory() {
-    local pass1
-    pass1=$(grep -c ansible_ssh_pass "${BASE_DIR}"/inventory_file)
-    local pass2
-    pass2=$(grep -c ansible_sudo_pass "${BASE_DIR}"/inventory_file)
-    local pass3
-    pass3=$(grep -c ansible_become_pass "${BASE_DIR}"/inventory_file)
-    local pass_cnt
-    pass_cnt=$((pass1 + pass2 + pass3))
-    if [ ${pass_cnt} == 0 ]; then
-        return
-    fi
-    log_error "The inventory_file contains password, please use the SSH key instead"
-    return 1
-}
-
 function bootstrap() {
     if [ "$(find "${python_dir}"/bin -name "python3.[7|8|9]" 2>/dev/null)" ] && [ "$(find "${python_dir}"/bin -name "ansible")" ]; then
         export PATH=${python_dir}/bin:$PATH
@@ -123,7 +107,7 @@ function generate_ca_cert() {
     echo ""
     if [ "${passout}" = "${passout2}" ]; then
         openssl genrsa -passout pass:"${passout2}" -aes256 -out "${BASE_DIR}"/resources/cert/ca.key 4096 2>/dev/null &&
-            openssl req -new -key "${BASE_DIR}"/resources/cert/ca.key -subj "${subject}" -out ca.csr -passin pass:"${passout2}" &&
+            openssl req -new -key "${BASE_DIR}"/resources/cert/ca.key -subj "/CN=Aiguard Root CA" -out ca.csr -passin pass:"${passout2}" &&
             openssl x509 -req -in ca.csr -signkey "${BASE_DIR}"/resources/cert/ca.key -days 3650 -extfile openssl.cnf -extensions v3_ca -out "${BASE_DIR}"/resources/cert/ca.pem -passin pass:"${passout2}" 2>/dev/null
         local result_status=$?
         if [ $result_status -ne 0 ]; then
@@ -156,8 +140,7 @@ function zip_extract() {
             log_error "can not find aivault image"
             return 1
         fi
-        mkdir -p "${BASE_DIR}"/resources/aivault
-        mv "${BASE_DIR}"/resources/aivault*.tar "${BASE_DIR}"/resources/aivault
+        cp "${BASE_DIR}"/../ai-vault/build/install.sh "${BASE_DIR}"/resources/
     fi
 }
 
@@ -173,7 +156,7 @@ function download_haveged_and_docker() {
 }
 
 function process_deploy() {
-    if [ -z "${aivault_ip}" ] || [ -z "${aivault_port}" ] || [ -z "${cfs_port}" ] || [ -z "${cert_op_param}" ] || [ -z "${subject}" ] || [ -z "${python_dir}" ]; then
+    if [ -z "${aivault_ip}" ] || [ -z "${python_dir}" ]; then
         log_error "parameter error"
         print_usage
         return 1
@@ -190,8 +173,8 @@ function process_deploy() {
     fi
     local deploy_play
     deploy_play=${BASE_DIR}/playbooks/deploy.yml
-    echo "ansible-playbook -i ./inventory_file playbooks/deploy.yml -e hosts_name=ascend -e aivault_ip=${aivault_ip} -e aivault_port=${aivault_port} -e cfs_port=${cfs_port} -e cert_op_param=${cert_op_param} -e remoteonly=${remoteonly} ${DEBUG_CMD}"
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e cert_op_param="${cert_op_param} -e remoteonly=${remoteonly}" ${DEBUG_CMD}
+    echo "ansible-playbook -i ./inventory_file playbooks/deploy.yml -e hosts_name=ascend -e aivault_ip=${aivault_ip} -e aivault_port=${aivault_port} -e cfs_port=${cfs_port} -e remoteonly=${remoteonly} ${DEBUG_CMD}"
+    ansible-playbook -i "${BASE_DIR}"/inventory_file "${deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e remoteonly="${remoteonly}" ${DEBUG_CMD}
 }
 
 function process_check() {
@@ -214,24 +197,22 @@ function print_usage() {
     echo "options:"
     echo "-h, --help              show this help message and exit"
     echo "--aivault-ip            specify the IP address of aivault"
-    echo "--aivault-port          specify the port of aivault"
-    echo "--cfs-port              specify the port of cfs"
-    echo "--cert-op-param         parameter for the user info"
-    echo "                        example: 'yanfabu|chengdu|sichuan|Huawei|CN'"
+    echo "--aivault-port          specify the port of aivault, default is 5001"
+    echo "--cfs-port              specify the port of cfs, default is 2022"
     echo "--check                 check time on all environments"
     echo "--modify                modify the time on the remote environments"
-    echo "--python-dir            Specify a directory with Python version greater than or equal to 3.7,default is /usr/local/python3.7.5"
+    echo "--python-dir            Specify a directory with Python version greater than or equal to 3.7, default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
     echo "--remoteonly            only remote nodes perform configuration tasks"
-    echo "--subject               set CA request subject"
-    echo "                        example: '/CN=Example Root CA'"
     echo "--verbose               print verbose"
     echo ""
-    echo "e.g., ./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --cert-op-param={param} --subject={param} --remoteonly  --python-dir={python_dir}"
+    echo "e.g., ./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --remoteonly  --python-dir={python_dir}"
 }
 
 DEBUG_CMD=""
 python_dir="/usr/local/python3.7.5"
+aivault_port=5001
+cfs_port=2022
 remoteonly=n
 
 function parse_script_args() {
@@ -263,7 +244,7 @@ function parse_script_args() {
         --aivault-port=*)
             aivault_port=$(echo "$1" | cut -d"=" -f2)
             if [ "$(echo "${aivault_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${aivault_port}" -lt 1024 ] || [ "${aivault_port}" -gt 65535 ]; then
-                log_error "The input value of [aivault-port] is invalid, and value from 1024 to 65535 is available."
+                log_error "The input value of [aivault-port] is invalid, and value from 1024 to 65535 is available.The default is 5001."
                 print_usage
                 return 1
             fi
@@ -272,18 +253,10 @@ function parse_script_args() {
         --cfs-port=*)
             cfs_port=$(echo "$1" | cut -d"=" -f2)
             if [ "$(echo "${cfs_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${cfs_port}" -lt 1024 ] || [ "${cfs_port}" -gt 65535 ]; then
-                log_error "The input value of [cfs-port] is invalid, and value from 1024 to 65535 is available."
+                log_error "The input value of [cfs-port] is invalid, and value from 1024 to 65535 is available.The default is 2022."
                 print_usage
                 return 1
             fi
-            shift
-            ;;
-        --cert-op-param=*)
-            cert_op_param=$(echo "$1" | cut -d"=" -f2)
-            shift
-            ;;
-        --subject=*)
-            subject=$(echo "$1" | cut -c11-)
             shift
             ;;
         --python-dir=*)
@@ -336,15 +309,14 @@ main() {
     if [[ ${parse_script_args_status} != 0 ]]; then
         return ${parse_script_args_status}
     fi
-    check_inventory
-    local check_inventory_status=$?
-    if [[ ${check_inventory_status} != 0 ]]; then
-        return ${check_inventory_status}
-    fi
     bootstrap
     local bootstrap_status=$?
     if [ ${bootstrap_status} != 0 ]; then
         return ${bootstrap_status}
+    fi
+    if [ "$(grep -c ansible_ssh_pass "${BASE_DIR}"/inventory_file)" == 0 ]; then
+        eval "$(ssh-agent -s)"
+        ssh-add
     fi
     if [ "${check_flag}" = "y" ]; then
         process_check
