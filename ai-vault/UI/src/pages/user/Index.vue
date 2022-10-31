@@ -14,6 +14,7 @@
 
         <div style="margin-top: 16px;">
             <el-button
+              v-no-more-click
               type="primary"
               icon="el-icon-circle-plus-outline"
               class="button-add"
@@ -34,6 +35,7 @@
                 @keyup.enter.native="handleSearch"
             ></el-input>
             <el-button
+                v-no-more-click
                 icon="el-icon-refresh"
                 class="button-refresh"
                 @click="handleSearch"
@@ -59,10 +61,10 @@
                 <el-table-column prop="CreateTime" :label="$t('COLUMN_CREATE_TIME')" sortable="custom"></el-table-column>
                 <el-table-column prop="operation" :label="$t('COLUMN_OPERATION')" width="240">
                     <template slot-scope="scope">
-                        <el-button @click="handleConfirmReset(scope.row)" type="text" :disabled="scope.row.RoleID === 1" size="small">
+                        <el-button @click="handleConfirmReset(scope.row)" :disabled="scope.row.RoleID === 1" type="text" size="small">
                             {{ $t('RESET_PASSWORD') }}
                         </el-button>
-                        <el-button @click="handleConfirmDelete(scope.row)" type="text" :disabled="scope.row.RoleID === 1" size="small">
+                        <el-button @click="handleConfirmDelete(scope.row)" :disabled="scope.row.RoleID === 1" type="text" size="small">
                             {{ $t('OPERATION_DELETE') }}
                         </el-button>
                     </template>
@@ -106,8 +108,8 @@
                 {{$t('CONFIRM_DELETE_TIP')}}: {{ selectedRow.UserName }}?
             </div>
             <span slot="footer" class="dialog-footer">
-                <el-button class="dialog-button" @click="isDelorReset = false">{{$t('BTN_CANCEL')}}</el-button>
-                <el-button class="dialog-button" type="primary" @click="indexOperation === 'resetPWD' ? handleSubmitResetPassword() : handleDelete()">{{$t('BTN_OK')}}</el-button>
+                <el-button v-no-more-click class="dialog-button" @click="isDelorReset = false">{{$t('BTN_CANCEL')}}</el-button>
+                <el-button v-no-more-click class="dialog-button" type="primary" @click="indexOperation === 'resetPWD' ? handleSubmitResetPassword() : handleDelete()">{{$t('BTN_OK')}}</el-button>
             </span>
         </el-dialog>
 
@@ -254,9 +256,13 @@ export default {
                         this.$message.error({
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_CONNECT_AIVAULT'),
                         })
-                    } else{
+                    } else if(res.data.status === '21000009') {
                         this.$message.error({
                             message: this.$t('ERR_DELETE') + '。' + this.$t('ERR_DELETE_USER'),
+                        })
+                    } else {
+                        this.$message.error({
+                            message: this.$t('ERR_DELETE') + '。',
                         })
                     }
                 })
