@@ -118,7 +118,7 @@
     mkdir -p {{ resources_dir }}/AiVault/.ai-vault
     cp -f {{ resources_dir }}/cert/* {{ resources_dir }}/AiVault/.ai-vault
     cp -f {{ resources_dir }}/install.sh {{ resources_dir }}/AiVault/
-    bash {{ resources_dir }}/AiVault/install.sh
+    bash {{ resources_dir }}/AiVault/install.sh {{ passin }}
   when: server is defined and load_result.rc == 0
   
 

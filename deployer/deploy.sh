@@ -77,7 +77,7 @@ function rotate_log() {
 function set_permission() {
     chmod 750 "${BASE_DIR}" "${BASE_DIR}"/playbooks/ "${BASE_DIR}"/resources
     chmod 600 "${BASE_DIR}"/*.log "${BASE_DIR}"/inventory_file "${BASE_DIR}"/config/ansible.cfg "${BASE_DIR}"/config/certs.py "${BASE_DIR}"/config/openssl.cnf 2>/dev/null
-    chmod 500 "${BASE_DIR}"/kmsagent.sh 2>/dev/null
+    chmod 500 "${BASE_DIR}"/deploy.sh 2>/dev/null
     chmod 400 "${BASE_DIR}"/*.log.? 2>/dev/null
 }
 
@@ -95,7 +95,6 @@ function bootstrap() {
 function generate_ca_cert() {
     mkdir -p "${BASE_DIR}"/resources/cert/ && chmod 750 "${BASE_DIR}"/resources/cert/
     local passout
-    local passout2
     openssl rand -writerand ~/.rnd
     read -srp "Enter pass phrase for ca.key:" passout
     echo ""
@@ -171,21 +170,18 @@ function process_deploy() {
     fi
     local deploy_play
     deploy_play=${BASE_DIR}/playbooks/deploy.yml
-    echo "ansible-playbook -i ./inventory_file playbooks/deploy.yml -e hosts_name=ascend -e aivault_ip=${aivault_ip} -e aivault_port=${aivault_port} -e cfs_port=${cfs_port} -e remoteonly=${remoteonly} ${DEBUG_CMD}"
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e remoteonly="${remoteonly}" ${DEBUG_CMD}
+    ansible-playbook -i "${BASE_DIR}"/inventory_file "${deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e passin="${passout2}" -e remoteonly="${remoteonly}" ${DEBUG_CMD}
 }
 
 function process_check() {
     local check_play
     check_play=${BASE_DIR}/playbooks/check.yml
-    echo "ansible-playbook -i ./inventory_file playbooks/check.yml -e hosts_name=ascend ${DEBUG_CMD}"
     ansible-playbook -i "${BASE_DIR}"/inventory_file "${check_play}" -e hosts_name=ascend ${DEBUG_CMD}
 }
 
 function process_modify() {
     local modify_play
     modify_play=${BASE_DIR}/playbooks/modify.yml
-    echo "ansible-playbook -i ./inventory_file playbooks/modify.yml -e hosts_name=ascend ${DEBUG_CMD}"
     ansible-playbook -i "${BASE_DIR}"/inventory_file "${modify_play}" -e hosts_name=ascend ${DEBUG_CMD}
 }
 
@@ -242,7 +238,7 @@ function parse_script_args() {
         --aivault-port=*)
             aivault_port=$(echo "$1" | cut -d"=" -f2)
             if [ "$(echo "${aivault_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${aivault_port}" -lt 1024 ] || [ "${aivault_port}" -gt 65535 ]; then
-                log_error "The input value of [aivault-port] is invalid, and value from 1024 to 65535 is available.The default is 5001."
+                log_error "The input value of [aivault-port] is invalid, and value from 1024 to 65535 is available."
                 print_usage
                 return 1
             fi
@@ -251,7 +247,7 @@ function parse_script_args() {
         --cfs-port=*)
             cfs_port=$(echo "$1" | cut -d"=" -f2)
             if [ "$(echo "${cfs_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${cfs_port}" -lt 1024 ] || [ "${cfs_port}" -gt 65535 ]; then
-                log_error "The input value of [cfs-port] is invalid, and value from 1024 to 65535 is available.The default is 2022."
+                log_error "The input value of [cfs-port] is invalid, and value from 1024 to 65535 is available."
                 print_usage
                 return 1
             fi
