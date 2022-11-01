@@ -55,11 +55,8 @@ def read_json(jsonfile):
 
 
 if __name__ == "__main__":
-    # check whether resources file exits
-    check_dir("resources")
-
-    # load json file
-    json_path = "download_url.json"
+    cur_dir = os.path.dirname(__file__)
+    json_path = "%s/download_url.json" % cur_dir
     dict_json = read_json(json_path)
 
     # download files

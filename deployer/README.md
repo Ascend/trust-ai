@@ -47,7 +47,7 @@ KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 3. 请从[官网](https://gitee.com/ascend/trust-ai/releases)获取Ascend-mindxdl-aiguard_plugin_{version}_linux-{arch}.zip文件，然后将其放到工具的resources目录(可选)。
 4. 执行`./kmsagent.sh --check --python-dir={python_dir}`可查看带配置设备的连通性，并检查所有设备的系统时间。由于证书的导入要求时间在一段区间内才能成功导入，该步骤会提示用户哪些环境需要修改系统时间才能成功导入KMSAgent证书。如果有不想修改系统时间的环境，请编辑inventory_file文件，将对应环境的配置删除，之后运行工具也不会对其进行配置。
 5. 执行`./kmsagent.sh --modify --python-dir={python_dir}`进行系统时间的修改，该步骤会修改步骤2提示环境的系统时间。如果某些环境不修改时间，请删除相关配置。
-6. 执行`./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --cert-op-param={param} --subject={param} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书，会要求用户输入ca.key的密钥（长度不能小于6位），并进行第二次确认，之后在生成kmsagent.pem时会再次要求用户输入ca.key的密钥。
+6. 执行`./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书，会要求用户输入ca.key的密钥（长度不能小于6位），并进行第二次确认，之后在生成kmsagent.pem时会再次要求用户输入ca.key的密钥。
 
 ## 参数说明
 
@@ -58,14 +58,12 @@ KMSAgent批量配置工具，用于批量配置KMSAgent服务。
 | :-------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | --help  -h      | 查询帮助信息。                                                                                                              |
 | --aivault-ip    | 指定aivault服务的ip地址。                                                                                                   |
-| --aivault-port  | 指定aivault服务的端口。                                                                                                     |
-| --cfs-port      | 指定cfs服务的端口。                                                                                                         |
-| --cert-op-param | 指定kmsagent.csr的用户信息，参考格式：`"yanfabu\|chengdu\|sichuan\|Huawei\|CN"`。                                           |
+| --aivault-port  | 指定aivault服务的端口，默认5001。                                                                                            |
+| --cfs-port      | 指定cfs服务的端口，默认是2022。                                                                                               |
 | --check         | 检查环境，确保master节点安装好可用的python3、ansible等组件，并检查与待配置设备的连通性及设备的系统时间。                        |
 | --modify        | 修改远程节点的系统时间到UTC时间。                                                                                           |
 | --python-dir    | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
 | --remoteonly    | 仅远程节点执行kmsagent批量配置任务。                                                                                         |
-| --subject       | 设置CA请求的主题，参考格式：`"/CN=Example Root CA"`。                                                                       |
 | --verbose       | 打印详细信息。                                                                                                              |
 
 ## 注意事项

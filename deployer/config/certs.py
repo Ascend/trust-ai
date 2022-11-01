@@ -7,11 +7,11 @@ import sys
 
 class Cert:
     def __init__(self):
-        self.cur_dir = os.path.dirname(os.path.realpath(__file__))
+        self.code_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         self.remoteonly = sys.argv[1]
 
     def generate_cert(self):
-        kmsagent_csr_dir = f"{self.cur_dir}/resources/*/opt/tlscert/tmp/kmsagent.csr"
+        kmsagent_csr_dir = f"{self.code_dir}/resources/*/opt/tlscert/tmp/kmsagent.csr"
         local_csr_dir = "/opt/tlscert/tmp/kmsagent.csr"
         csr_list = glob.glob(kmsagent_csr_dir)
         if csr_list:
@@ -58,9 +58,9 @@ class Cert:
                 "-in",
                 csr_dir,
                 "-CA",
-                f"{self.cur_dir}/resources/cert/ca.pem",
+                f"{self.code_dir}/resources/cert/ca.pem",
                 "-CAkey",
-                f"{self.cur_dir}/resources/cert/ca.key",
+                f"{self.code_dir}/resources/cert/ca.key",
                 "-CAcreateserial",
                 "-out",
                 f"{out_dir}/kmsagent.pem",
@@ -71,7 +71,7 @@ class Cert:
                 "-set_serial",
                 "01",
                 "-extfile",
-                f"{self.cur_dir}/openssl.cnf",
+                f"{self.code_dir}/config/openssl.cnf",
                 "-passin",
                 f"pass:{passin}",
             ],

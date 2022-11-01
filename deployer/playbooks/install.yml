@@ -91,14 +91,15 @@
 
 - name: find aivault image
   stat:
-    dest: "{{ resources_dir }}/aivault/aivault_{{ ansible_architecture }}.tar"
+    dest: "{{ resources_dir }}/aivault_{{ ansible_architecture }}.tar"
   register: aivault_image
   when:
     - server is defined
     - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
 
 - name: docker load aivault image
-  shell: docker load < {{ resources_dir }}/aivault/aivault_{{ ansible_architecture }}.tar
+  shell: docker load < {{ resources_dir }}/aivault_{{ ansible_architecture }}.tar
+  register: load_result
   when:
     - server is defined and aivault_image.stat.exists
     - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
@@ -111,6 +112,15 @@
   when:
     - server is defined and not aivault_image.stat.exists
     - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+
+- name: start the ai-vault service
+  shell: |
+    mkdir -p {{ resources_dir }}/AiVault/.ai-vault
+    cp -f {{ resources_dir }}/cert/* {{ resources_dir }}/AiVault/.ai-vault
+    cp -f {{ resources_dir }}/install.sh {{ resources_dir }}/AiVault/
+    bash {{ resources_dir }}/AiVault/install.sh {{ passin }}
+  when: server is defined and load_result.rc == 0
+  
 
 - name: find fuse-plugin
   stat:
