@@ -10,7 +10,7 @@ LOG_SIZE_THRESHOLD=$((20 * 1024 * 1024))
 readonly LOG_SIZE_THRESHOLD
 
 if [ -z "${ASNIBLE_CONFIG}" ]; then
-    export ANSIBLE_CONFIG=$BASE_DIR/ansible.cfg
+    export ANSIBLE_CONFIG=$BASE_DIR/config/ansible.cfg
 fi
 if [ -z "${ASNIBLE_LOG_PATH}" ]; then
     export ANSIBLE_LOG_PATH=$BASE_DIR/kmsagent.log
@@ -76,7 +76,7 @@ function rotate_log() {
 
 function set_permission() {
     chmod 750 "${BASE_DIR}" "${BASE_DIR}"/playbooks/ "${BASE_DIR}"/resources
-    chmod 600 "${BASE_DIR}"/*.log "${BASE_DIR}"/inventory_file "${BASE_DIR}"/ansible.cfg "${BASE_DIR}"/certs.py "${BASE_DIR}"/openssl.cnf 2>/dev/null
+    chmod 600 "${BASE_DIR}"/*.log "${BASE_DIR}"/inventory_file "${BASE_DIR}"/config/ansible.cfg "${BASE_DIR}"/config/certs.py "${BASE_DIR}"/config/openssl.cnf 2>/dev/null
     chmod 500 "${BASE_DIR}"/kmsagent.sh 2>/dev/null
     chmod 400 "${BASE_DIR}"/*.log.? 2>/dev/null
 }
@@ -108,7 +108,7 @@ function generate_ca_cert() {
     if [ "${passout}" = "${passout2}" ]; then
         openssl genrsa -passout pass:"${passout2}" -aes256 -out "${BASE_DIR}"/resources/cert/ca.key 4096 2>/dev/null &&
             openssl req -new -key "${BASE_DIR}"/resources/cert/ca.key -subj "/CN=Aiguard Root CA" -out ca.csr -passin pass:"${passout2}" &&
-            openssl x509 -req -in ca.csr -signkey "${BASE_DIR}"/resources/cert/ca.key -days 3650 -extfile openssl.cnf -extensions v3_ca -out "${BASE_DIR}"/resources/cert/ca.pem -passin pass:"${passout2}" 2>/dev/null
+            openssl x509 -req -in ca.csr -signkey "${BASE_DIR}"/resources/cert/ca.key -days 3650 -extfile "${BASE_DIR}"/config/openssl.cnf -extensions v3_ca -out "${BASE_DIR}"/resources/cert/ca.pem -passin pass:"${passout2}" 2>/dev/null
         local result_status=$?
         if [ $result_status -ne 0 ]; then
             log_error "The CA certificate is generated failed"
@@ -140,19 +140,17 @@ function zip_extract() {
             log_error "can not find aivault image"
             return 1
         fi
-        cp "${BASE_DIR}"/../ai-vault/build/install.sh "${BASE_DIR}"/resources/
     fi
 }
 
 function download_haveged_and_docker() {
-    if ! python3 download.py; then
+    if ! python3 "${BASE_DIR}"/downloader/download.py; then
         return 1
     fi
     tar -xf "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_x86_64/
     rm -f "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker*.tgz
     tar -xf "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_aarch64/
     rm -f "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker*.tgz
-    cp "${BASE_DIR}"/docker.service "${BASE_DIR}"/resources/
 }
 
 function process_deploy() {
