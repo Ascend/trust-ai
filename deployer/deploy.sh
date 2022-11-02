@@ -114,6 +114,7 @@ function generate_ca_cert() {
             return 1
         fi
         echo "The CA certificate is generated successfully"
+        rm -f "${BASE_DIR}"/ca.csr
     else
         log_error "The CA certificate is generated failed"
         return 1
@@ -122,7 +123,6 @@ function generate_ca_cert() {
 
 function zip_extract() {
     zip_list=$(find "${BASE_DIR}"/resources -name "*.zip")
-    rm -rf "${BASE_DIR}"/resources/fuse_*
     for zip_file in $zip_list; do
         if [[ $zip_file =~ x86_64.zip ]]; then
             unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_and_docker_x86_64
@@ -133,6 +133,11 @@ function zip_extract() {
             rm -f "$zip_file"
         fi
     done
+
+    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_x86_64/
+    rm -f "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker*.tgz
+    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_aarch64/
+    rm -f "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker*.tgz
 
     if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" != 0 ]; then
         if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" -gt 1 ]; then
@@ -147,26 +152,25 @@ function zip_extract() {
 }
 
 function download_haveged_and_docker() {
+    rm -rf "${BASE_DIR}"/resources/fuse_*
     if ! python3 "${BASE_DIR}"/downloader/download.py; then
         return 1
     fi
-    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_x86_64/
-    rm -f "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker*.tgz
-    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_aarch64/
-    rm -f "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker*.tgz
 }
 
 function process_deploy() {
-    if [ -z "${aivault_ip}" ] || [ -z "${python_dir}" ]; then
+    if [ -z "${python_dir}" ]; then
         log_error "parameter error"
         print_usage
         return 1
     fi
-    if ! zip_extract; then
-        return 1
+    if [ "${offline}" = n ]; then
+        if ! download_haveged_and_docker; then
+            log_error "download files failed"
+            return 1
+        fi
     fi
-    if ! download_haveged_and_docker; then
-        log_error "download files failed"
+    if ! zip_extract; then
         return 1
     fi
     if ! generate_ca_cert; then
@@ -199,7 +203,8 @@ function print_usage() {
     echo "--cfs-port              specify the port of cfs, default is 2022"
     echo "--check                 check time on all environments"
     echo "--modify                modify the time on the remote environments"
-    echo "--python-dir            Specify a directory with Python version greater than or equal to 3.7, default is /usr/local/python3.7.5"
+    echo "--offline               offline mode, haveged and docker will not be downloaded"
+    echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
     echo "--remoteonly            only remote nodes perform configuration tasks"
     echo "--verbose               print verbose"
@@ -211,6 +216,7 @@ DEBUG_CMD=""
 python_dir="/usr/local/python3.7.5"
 aivault_port=5001
 cfs_port=2022
+offline=n
 remoteonly=n
 
 function parse_script_args() {
@@ -266,6 +272,10 @@ function parse_script_args() {
             ;;
         --remoteonly)
             remoteonly=y
+            shift
+            ;;
+        --offline)
+            offline=y
             shift
             ;;
         --check)

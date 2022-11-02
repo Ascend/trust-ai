@@ -3,18 +3,20 @@
 KMSAgent批量配置工具，用于批量安装haveged、docker、配置KMSAgent服务及配置aivault服务。
 ## 环境要求
 1. 仅支持root用户使用工具。
-2. 工具所在的环境即master节点需要安装python和ansible，且3.7<= python版本 <=3.9，python库cryptography==3.3.2，ansible-core==2.11.9。
-3. 加密工具运行环境需要安装开源OpenSSL工具，且版本>=1.1.1n，并且<3.0.0。
-4. 请确保待配置环境已经安装包含KMSAgent的驱动，安装好后，可以使用KMSAgent服务。
-5. 确保工具所在环境已经安装docker，且版本>=18.09。
-6. 仅支持Ubuntu 18.04/20.04、CentOS8.2及Euler2.10操作系统，x86_64和aarch64架构均支持。
-7. 请确保各节点的根目录有足够的磁盘空间以正常进行批量配置。
-8. 运行环境时间需要校准到正确的UTC时间，执行`rm -f /etc/localtime && cp /usr/share/zoneinfo/UTC /etc/localtime`将主节点即本工具所在环境的时间设置为UTC时间，再参考命令`date -s '2022-10-13 12:00:00'`校准系统时间，请以实际情况进行校准。
-9.  从[晟腾镜像仓库](https://ascendhub.huawei.com/#/index)拉取aivault镜像（只需要下载与aivault服务节点相同架构的镜像）,镜像拉取完成后进入工具的resources目录，执行`docker save ascendhub.huawei.com/public-ascendhub/ai-vault-arm:{version} > aivault_aarch64.tar`或`docker save ascendhub.huawei.com/public-ascendhub/ai-vault-x86:{version} > aivault_x86_64.tar`将镜像保存到工具的resources目录（请将**version**替换成对应的版本）。
-10. 请从[官网](https://gitee.com/ascend/trust-ai/releases)获取Ascend-mindxdl-aiguard_plugin_{version}_linux-{arch}.zip文件，然后将其放到工具的resources目录(可选)。
+2. master节点即工具所在环境需要有网络，或者需要一个有网络的环境下载依赖。
+3. 工具所在的环境即master节点需要安装python和ansible，且3.7<= python版本 <=3.9，python库cryptography==3.3.2，ansible-core==2.11.9。
+4. 加密工具运行环境需要安装开源OpenSSL工具，且版本>=1.1.1n，并且<3.0.0。
+5. 请确保待配置环境已经安装包含KMSAgent的驱动，安装好后，可以使用KMSAgent服务。
+6. 确保工具所在环境已经安装docker，且版本>=18.09。
+7. 仅支持Ubuntu 18.04/20.04、CentOS8.2及Euler2.10操作系统，x86_64和aarch64架构均支持。
+8. 请确保各节点的根目录有足够的磁盘空间以正常进行批量配置。
+9. 运行环境时间需要校准到正确的UTC时间，执行`rm -f /etc/localtime && cp /usr/share/zoneinfo/UTC /etc/localtime`将主节点即本工具所在环境的时间设置为UTC时间，再参考命令`date -s '2022-10-24 00:00:00'`校准系统时间，请以实际情况进行校准。
+10. 从[晟腾镜像仓库](https://ascendhub.huawei.com/#/index)拉取aivault镜像（只需要下载与aivault服务节点相同架构的镜像）,镜像拉取完成后进入工具的resources目录，执行`docker save ascendhub.huawei.com/public-ascendhub/ai-vault-arm:{version} > aivault_aarch64.tar`或`docker save ascendhub.huawei.com/public-ascendhub/ai-vault-x86:{version} > aivault_x86_64.tar`将镜像保存到工具的resources目录（请将**version**替换成对应的版本）。
+11. 请从[官网](https://gitee.com/ascend/trust-ai/releases)获取Ascend-mindxdl-aiguard_plugin_{version}_linux-{arch}.zip文件，然后将其放到工具的resources目录(可选)。
 
 ## 工具获取与安装
 点击右上角“克隆/下载”按钮，然后点击下方“下载zip”，下载后将zip传到Linux环境上解压使用。建议解压zip包前将环境umask设置成077，并只放到/root目录下解压、使用工具。
+如果master节点没有网络，用户须在有网络的环境（该环境安装python，且3.7<= python版本 <= 3.9）解压zip包后双击**start_download.bat**文件进行依赖下载，下载完成后将整个工具传到master节点。
 ## 批量配置
 本工具运行前请确认系统中未安装paramiko（ansible在某些情况下会使用paramiko，其配置不当容易引起安全问题）。可使用基于密钥认证的ssh连接和账户密码的ssh连接方式，参考如下1-2步骤（使用其中一种方式即可，推荐基于密钥认证的ssh连接方式）。
 1. 基于密钥认证的ssh连接，编辑inventory_file文件，配置其他设备的ip地址，其中aivault服务所在节点最多有一个，该节点不会进行KMSAgent配置，仅安装haveged、docker和导入aivault镜像，该节点须配置变量server='aivault'。inventory_file文件格式如下：
@@ -60,6 +62,7 @@ KMSAgent批量配置工具，用于批量安装haveged、docker、配置KMSAgent
 | --cfs-port     | 指定cfs服务的端口，默认是2022。                                                                                               |
 | --check        | 检查环境，确保master节点安装好可用的python3、ansible等组件，并检查与待配置设备的连通性及设备的系统时间。                      |
 | --modify       | 修改远程节点的系统时间到UTC时间。                                                                                             |
+| --offline      | 离线模式，不会下载haveged和docker                                                                                           |
 | --python-dir   | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
 | --remoteonly   | 仅远程节点执行kmsagent批量配置任务。                                                                                          |
 | --verbose      | 打印详细信息。                                                                                                                |
