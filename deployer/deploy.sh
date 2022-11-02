@@ -135,6 +135,10 @@ function zip_extract() {
     done
 
     if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" != 0 ]; then
+        if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" -gt 1 ]; then
+            log_error "Only one aivault server node can be set"
+            return 1
+        fi
         if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ]; then
             log_error "can not find aivault image"
             return 1

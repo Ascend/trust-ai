@@ -7,9 +7,14 @@
       shell: tar -zcf ~/resources.tar --exclude=../resources/*.tar ../resources
       when: not (host_count == "1" and first_host == "localhost")
     
+    - name: check aivault server
+      shell: grep -c server {{ inventory_file }}
+      register: aivault_check_result
+      when: not (host_count == "1" and first_host == "localhost")
+    
     - name: make tar package for aivault server
       shell: tar -zcf ~/aivault.tar ../resources/*.tar
-      when: not (host_count == "1" and first_host == "localhost")
+      when: not (host_count == "1" and first_host == "localhost") and aivault_check_result.stdout != 0
 - hosts: '{{ hosts_name }}'
   tasks:
     - name: check when set server

@@ -1,2 +1,7 @@
 [ascend]
 localhost ansible_connection='local'
+# ip_address_1 server='aivault'
+# ip_address_2
+
+[ascend:vars]
+ansible_ssh_user='root'
