@@ -33,5 +33,5 @@
 
 - kmsagent-deployer
 
-详细介绍见[deploy](./kmsagent-deployer/README.md)
+详细介绍见[deploy](./deployer/README.md)
 
