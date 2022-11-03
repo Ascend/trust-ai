@@ -13,7 +13,7 @@ if [ -z "${ASNIBLE_CONFIG}" ]; then
     export ANSIBLE_CONFIG=$BASE_DIR/config/ansible.cfg
 fi
 if [ -z "${ASNIBLE_LOG_PATH}" ]; then
-    export ANSIBLE_LOG_PATH=$BASE_DIR/kmsagent.log
+    export ANSIBLE_LOG_PATH=$BASE_DIR/deploy.log
 fi
 if [ -z "${ASNIBLE_INVENTORY}" ]; then
     export ANSIBLE_INVENTORY=$BASE_DIR/inventory_file
@@ -30,7 +30,7 @@ function log_error() {
     local IP_N
     IP_N=$(who am i | awk '{print $NF}' | sed 's/[()]//g')
     echo "[ERROR] $*"
-    echo "${DATE_N} ${USER_N}@${IP_N} [ERROR] $*" >>"${BASE_DIR}"/kmsagent.log
+    echo "${DATE_N} ${USER_N}@${IP_N} [ERROR] $*" >>"${BASE_DIR}"/deploy.log
 }
 
 function operation_log_info() {
@@ -40,7 +40,7 @@ function operation_log_info() {
     USER_N=$(whoami)
     local IP_N
     IP_N=$(who am i | awk '{print $NF}' | sed 's/[()]//g')
-    echo "${DATE_N} ${USER_N}@${IP_N} [INFO] $*" >>"${BASE_DIR}"/kmsagent_operation.log
+    echo "${DATE_N} ${USER_N}@${IP_N} [INFO] $*" >>"${BASE_DIR}"/deploy_operation.log
 }
 
 function check_log() {
@@ -134,11 +134,13 @@ function zip_extract() {
         fi
     done
 
-    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_x86_64/
+    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_x86_64/ &>/dev/null
     rm -f "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker*.tgz
-    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_aarch64/
+    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_aarch64/ &>/dev/null
     rm -f "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker*.tgz
+}
 
+function download_haveged_and_docker() {
     if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" != 0 ]; then
         if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" -gt 1 ]; then
             log_error "Only one aivault server node can be set"
@@ -149,9 +151,7 @@ function zip_extract() {
             return 1
         fi
     fi
-}
 
-function download_haveged_and_docker() {
     rm -rf "${BASE_DIR}"/resources/fuse_*
     if ! python3 "${BASE_DIR}"/downloader/download.py; then
         return 1
@@ -170,46 +170,36 @@ function process_deploy() {
             return 1
         fi
     fi
-    if ! zip_extract; then
-        return 1
-    fi
+
+    zip_extract
     if ! generate_ca_cert; then
         return 1
     fi
-    local deploy_play
-    deploy_play=${BASE_DIR}/playbooks/deploy.yml
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e passin="${passout2}" -e remoteonly="${remoteonly}" ${DEBUG_CMD}
-}
-
-function process_check() {
-    local check_play
-    check_play=${BASE_DIR}/playbooks/check.yml
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${check_play}" -e hosts_name=ascend ${DEBUG_CMD}
-}
-
-function process_modify() {
-    local modify_play
-    modify_play=${BASE_DIR}/playbooks/modify.yml
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${modify_play}" -e hosts_name=ascend ${DEBUG_CMD}
+    local tmp_deploy_play
+    tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
+    echo "- import_playbook: check.yml" >"${tmp_deploy_play}"
+    echo "- import_playbook: deploy.yml" >>"${tmp_deploy_play}"
+    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e passin="${passout2}" -e remoteonly="${remoteonly}" ${DEBUG_CMD}
+    if [ -f "${tmp_deploy_play}" ]; then
+        rm -f "${tmp_deploy_play}"
+    fi
 }
 
 function print_usage() {
-    echo "Usage: ./kmsagent.sh <option> [args]"
+    echo "Usage: ./deploy.sh <option> [args]"
     echo ""
     echo "options:"
     echo "-h, --help              show this help message and exit"
     echo "--aivault-ip            specify the IP address of aivault"
     echo "--aivault-port          specify the port of aivault, default is 5001"
     echo "--cfs-port              specify the port of cfs, default is 2022"
-    echo "--check                 check time on all environments"
-    echo "--modify                modify the time on the remote environments"
     echo "--offline               offline mode, haveged and docker will not be downloaded"
     echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
     echo "--remoteonly            only remote nodes perform configuration tasks"
     echo "--verbose               print verbose"
     echo ""
-    echo "e.g., ./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --remoteonly  --python-dir={python_dir}"
+    echo "e.g., ./deploy.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --remoteonly  --python-dir={python_dir}"
 }
 
 DEBUG_CMD=""
@@ -278,14 +268,6 @@ function parse_script_args() {
             offline=y
             shift
             ;;
-        --check)
-            check_flag=y
-            shift
-            ;;
-        --modify)
-            modify_flag=y
-            shift
-            ;;
         --verbose)
             DEBUG_CMD="-v"
             shift
@@ -309,8 +291,8 @@ function parse_script_args() {
 }
 
 main() {
-    check_log "${BASE_DIR}"/kmsagent.log
-    check_log "${BASE_DIR}"/kmsagent_operation.log
+    check_log "${BASE_DIR}"/deploy.log
+    check_log "${BASE_DIR}"/deploy_operation.log
     set_permission
     parse_script_args "$@"
     local parse_script_args_status=$?
@@ -325,20 +307,6 @@ main() {
     if [ "$(grep -c ansible_ssh_pass "${BASE_DIR}"/inventory_file)" == 0 ]; then
         eval "$(ssh-agent -s)"
         ssh-add
-    fi
-    if [ "${check_flag}" = "y" ]; then
-        process_check
-        local process_check_status=$?
-        if [ ${process_check_status} != 0 ]; then
-            return ${process_check_status}
-        fi
-    fi
-    if [ "${modify_flag}" = "y" ]; then
-        process_modify
-        local process_modify_status=$?
-        if [ ${process_modify_status} != 0 ]; then
-            return ${process_modify_status}
-        fi
     fi
     if [ -n "${aivault_ip}" ]; then
         process_deploy
