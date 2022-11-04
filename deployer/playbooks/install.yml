@@ -166,3 +166,4 @@
   when:
     - server is undefined and fuse_plugin_status.stdout is defined and fuse_plugin_status.stdout == '0'
     - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+    - fuse_plugin.stat is defined and fuse_plugin.stat.exists
