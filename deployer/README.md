@@ -60,8 +60,6 @@ KMSAgent批量配置工具，用于批量安装haveged、docker、配置KMSAgent
 | --aivault-ip   | 指定aivault服务的ip地址。                                                                                                     |
 | --aivault-port | 指定aivault服务的端口，默认5001。                                                                                             |
 | --cfs-port     | 指定cfs服务的端口，默认是2022。                                                                                               |
-| --check        | 检查环境，确保master节点安装好可用的python3、ansible等组件，并检查与待配置设备的连通性及设备的系统时间。                      |
-| --modify       | 修改远程节点的系统时间到UTC时间。                                                                                             |
 | --offline      | 离线模式，不会下载haveged和docker                                                                                           |
 | --python-dir   | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
 | --remoteonly   | 仅远程节点执行kmsagent批量配置任务。                                                                                          |

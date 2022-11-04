@@ -44,7 +44,7 @@
     - name: end play
       fail:
         msg: "Interrupt running plabook"
-      when: result is defined and result.user_input != "yes" and result.user_input != "y"
+      when: result.user_input is defined and result.user_input != "yes" and result.user_input != "y"
       run_once: true
     
     - name: set remote UTC time
