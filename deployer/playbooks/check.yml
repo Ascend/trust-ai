@@ -18,15 +18,44 @@
       register: check_result
       when: ansible_connection != "local"
     
-    - name: set remote_time
+    - name: get the IP address where the system time needs to be modified
       set_fact:
-        remote_time: "{{ check_result.stdout }}"
-        cacheable: yes
+        modify_ip: "{{ hostvars[inventory_hostname]['inventory_hostname'] if check_result.stdout != '' }}"
       when: ansible_connection != "local"
     
-    - name: Print nodes requiring modification time
-      debug:
-        msg:
-          - "The current environment system time needs to be modified. Please confirm whether to modify it."
-          - "If you do not want to modify the environment time, delete the configuration in the inventory_file file"
+    - name: set ip_list
+      set_fact:
+        ip_list: "{{ ansible_play_hosts_all[1:] | map('extract', hostvars, ['modify_ip']) | difference(['']) }}"
+      run_once: true
+    
+    - name: print the environment where the system time needs to be modified
+      debug: var=ip_list
+      run_once: true
+    
+    - pause:
+        prompt: "Enter yes to modify the system time of the above environment and no to terminate the program. Please enter your selection [yes/no]"
+        echo: yes
+      register: result
+      until: result.user_input == "yes" or result.user_input == "y" or result.user_input == "no" or result.user_input == "n"
+      retries: 5
+      delay: 1
+      when: ansible_connection == "local" and ip_list != []
+    
+    - name: end play
+      fail:
+        msg: "Interrupt running plabook"
+      when: result.user_input is defined and result.user_input != "yes" and result.user_input != "y"
+      run_once: true
+    
+    - name: set remote UTC time
+      shell: rm -f /etc/localtime && cp /usr/share/zoneinfo/UTC /etc/localtime
+      when: ansible_connection != "local" and check_result.stdout != ""
+    
+    - name: get local time
+      shell: echo $(( $(date +%s) ))
+      register: time_result
+      when: ansible_connection == "local"
+    
+    - name: set remote time
+      shell: date -s "$(date -d "@{{ hostvars.localhost.time_result.stdout }}" "+%F %T")"
       when: ansible_connection != "local" and check_result.stdout != ""

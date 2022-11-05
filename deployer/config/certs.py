@@ -1,4 +1,3 @@
-import getpass
 import glob
 import os
 import subprocess
@@ -9,45 +8,34 @@ class Cert:
     def __init__(self):
         self.code_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         self.remoteonly = sys.argv[1]
+        self.passin = sys.argv[2]
 
     def generate_cert(self):
         kmsagent_csr_dir = f"{self.code_dir}/resources/*/opt/tlscert/tmp/kmsagent.csr"
         local_csr_dir = "/opt/tlscert/tmp/kmsagent.csr"
         csr_list = glob.glob(kmsagent_csr_dir)
         if csr_list:
-            first_csr_dir = csr_list[0]
-            while True:
-                passin = getpass.getpass("Enter pass phrase for CAkey:")
-                if not passin:
-                    continue
+            for i in csr_list:
                 subp = self.get_cert(
-                    csr_dir=first_csr_dir,
-                    out_dir=os.path.dirname(first_csr_dir),
-                    passin=passin,
+                    csr_dir=i, out_dir=os.path.dirname(i), passin=self.passin
                 )
-                if subp.returncode == 0:
-                    break
-            for i in csr_list[1:]:
-                self.get_cert(csr_dir=i, out_dir=os.path.dirname(i), passin=passin)
+                if subp.returncode != 0:
+                    raise
             if self.remoteonly == "n":
                 self.get_cert(
                     csr_dir=local_csr_dir,
                     out_dir=os.path.dirname(local_csr_dir),
-                    passin=passin,
+                    passin=self.passin,
                 )
         else:
             if self.remoteonly == "n":
-                while True:
-                    passin = getpass.getpass("Enter pass phrase for CAkey:")
-                    if not passin:
-                        continue
-                    subp = self.get_cert(
-                        csr_dir=local_csr_dir,
-                        out_dir=os.path.dirname(local_csr_dir),
-                        passin=passin,
-                    )
-                    if subp.returncode == 0:
-                        break
+                subp = self.get_cert(
+                    csr_dir=local_csr_dir,
+                    out_dir=os.path.dirname(local_csr_dir),
+                    passin=self.passin,
+                )
+                if subp.returncode != 0:
+                    raise
 
     def get_cert(self, csr_dir, out_dir, passin):
         return subprocess.run(

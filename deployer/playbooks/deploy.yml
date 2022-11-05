@@ -34,6 +34,24 @@
         cacheable: yes
       when: server is undefined
     
+    - name: check kmsagent
+      shell: "{{ kmsagent_path }} -V"
+      register: kmsagent_status
+      failed_when: false
+      environment:
+        LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+    
+    - name: message
+      fail:
+        msg: "kmsagent not found"
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - '"version" not in kmsagent_status.stdout'
+    
     - name: Check whether the cert directory exists
       stat:
         path: /opt/cert
@@ -178,7 +196,7 @@
       when: server is undefined and ansible_connection != "local"
     
     - name: Generate kmsagent.pem
-      shell: python3 {{ resources_dir }}/../config/certs.py {{ remoteonly }}
+      shell: python3 {{ resources_dir }}/../config/certs.py {{ remoteonly }} {{ passin }}
       when: server is undefined and ansible_connection == "local"
     
     - name: copy kmsagent.pem to remote hosts
