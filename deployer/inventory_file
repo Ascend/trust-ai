@@ -1,6 +1,6 @@
 [ascend]
 localhost ansible_connection='local'
-# ip_address_1 server='aivault'
+# ip_address_1
 # ip_address_2
 
 [ascend:vars]

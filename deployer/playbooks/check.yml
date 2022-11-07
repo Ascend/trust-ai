@@ -33,7 +33,7 @@
       run_once: true
     
     - pause:
-        prompt: "Enter yes to modify the system time of the above environment and no to terminate the program. Please enter your selection [yes/no]"
+        prompt: "Enter yes to modify the system time of the above environment and no to terminate the program. Please enter your selection [y]es/[n]o"
         echo: yes
       register: result
       until: result.user_input == "yes" or result.user_input == "y" or result.user_input == "no" or result.user_input == "n"

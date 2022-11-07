@@ -7,7 +7,7 @@ import sys
 class Cert:
     def __init__(self):
         self.code_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        self.remoteonly = sys.argv[1]
+        self.all = sys.argv[1]
         self.passin = sys.argv[2]
 
     def generate_cert(self):
@@ -21,14 +21,14 @@ class Cert:
                 )
                 if subp.returncode != 0:
                     raise
-            if self.remoteonly == "n":
+            if self.all == "y":
                 self.get_cert(
                     csr_dir=local_csr_dir,
                     out_dir=os.path.dirname(local_csr_dir),
                     passin=self.passin,
                 )
         else:
-            if self.remoteonly == "n":
+            if self.all == "y":
                 subp = self.get_cert(
                     csr_dir=local_csr_dir,
                     out_dir=os.path.dirname(local_csr_dir),
