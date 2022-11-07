@@ -68,7 +68,7 @@
 </template>
 
 <script>
-import { fetchMainKey, deleteMK } from '@/service/ai_vaul'
+import { fetchMainKey, deleteMK } from '@/service/ai_vault'
 import moment from 'moment'
 
 export default {

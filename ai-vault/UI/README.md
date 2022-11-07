@@ -1,4 +1,4 @@
-# ai_vaul
+# ai_vault
 
 ## Build Setup
 

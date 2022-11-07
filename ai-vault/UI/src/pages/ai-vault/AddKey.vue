@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import { postMK, postPSK} from '@/service/ai_vaul.js'
+import { postMK, postPSK} from '@/service/ai_vault.js'
 
 export default {
     components: {},

@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import { fetchPreSharedKey, deletePSK } from '@/service/ai_vaul'
+import { fetchPreSharedKey, deletePSK } from '@/service/ai_vault'
 import moment from 'moment'
 
 export default {
@@ -90,6 +90,7 @@ export default {
             tableData: [],
             isDelete: false,
             selectedRow: {},
+            page: ''
         };
     },
     mounted() {
@@ -97,6 +98,7 @@ export default {
     },
     watch: {
         currPage(newPage, oldPage) {
+            this.page = newPage
             if(newPage === 'psk') {
                 this.fetchData()
             }
@@ -110,6 +112,9 @@ export default {
             this.$emit('handleAddPSK')
         },
         fetchData() {
+            if (this.page !== 'psk') {
+                return
+            }
             let params = {
                 PageSize: 10,
                 SortBy: this.queryPreSharedKeyParams.sortBy,
