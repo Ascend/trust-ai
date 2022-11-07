@@ -154,6 +154,7 @@ function download_haveged_and_docker() {
 
     rm -rf "${BASE_DIR}"/resources/fuse_*
     if ! python3 "${BASE_DIR}"/downloader/download.py; then
+        log_error "download files failed"
         return 1
     fi
 }
@@ -166,7 +167,6 @@ function process_deploy() {
     fi
     if [ "${offline}" = n ]; then
         if ! download_haveged_and_docker; then
-            log_error "download files failed"
             return 1
         fi
     fi
@@ -179,7 +179,7 @@ function process_deploy() {
     tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
     echo "- import_playbook: check.yml" >"${tmp_deploy_play}"
     echo "- import_playbook: deploy.yml" >>"${tmp_deploy_play}"
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e passin="${passout2}" -e remoteonly="${remoteonly}" ${DEBUG_CMD}
+    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e passin="${passout2}" -e all="${all}" ${DEBUG_CMD}
     if [ -f "${tmp_deploy_play}" ]; then
         rm -f "${tmp_deploy_play}"
     fi
@@ -192,22 +192,22 @@ function print_usage() {
     echo "-h, --help              show this help message and exit"
     echo "--aivault-ip            specify the IP address of aivault"
     echo "--aivault-port          specify the port of aivault, default is 5001"
-    echo "--cfs-port              specify the port of cfs, default is 2022"
+    echo "--cfs-port              specify the port of cfs, default is 1024"
     echo "--offline               offline mode, haveged and docker will not be downloaded"
     echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
-    echo "--remoteonly            only remote nodes perform configuration tasks"
+    echo "--all                   all nodes perform configuration tasks"
     echo "--verbose               print verbose"
     echo ""
-    echo "e.g., ./deploy.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --remoteonly  --python-dir={python_dir}"
+    echo "e.g., ./deploy.sh --aivault-ip={ip} --python-dir={python_dir}"
 }
 
 DEBUG_CMD=""
 python_dir="/usr/local/python3.7.5"
 aivault_port=5001
-cfs_port=2022
+cfs_port=1024
 offline=n
-remoteonly=n
+all=n
 
 function parse_script_args() {
     if [ $# = 0 ]; then
@@ -260,8 +260,8 @@ function parse_script_args() {
             fi
             shift
             ;;
-        --remoteonly)
-            remoteonly=y
+        --all)
+            all=y
             shift
             ;;
         --offline)

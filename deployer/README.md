@@ -46,23 +46,23 @@ KMSAgent批量配置工具，用于批量安装haveged、docker、配置KMSAgent
    ```
 
 3. 默认5个并行进程数，如果待配置环境数量大于5，须修改trust-ai/deployer/config/ansible.cfg文件中的forks值，改成待配置的节点总数（可选）。
-4. 执行`./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --python-dir={python_dir} --remoteonly`进行批量配置。该步骤会生成CA证书，会要求用户输入ca.key的密钥（长度不能小于6位），并进行第二次确认。
+4. 执行`./`deploy.sh` --aivault-ip={ip} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书，会要求用户输入ca.key的密钥（长度不能小于6位），并进行第二次确认。程序启动后会对各节点的时间进行检测，如果有不满足条件的节点，会打印出来，并要求用户输入[y]es/[n]o进行确认，如果输入“y“或"yes”程序会修改不满足条件的节点的时间，如果输入“n”或“no”会终止程序。
 5. 批量配置操作完成后，请删除inventory_file文件，避免安全风险。
 
 ## 参数说明
 
-用户根据实际需要选择对应参数完成批量配置，命令为`./kmsagent.sh [options]`。
-参数说明请参见下表，表中各参数的可选参数范围可通过执行`./kmsagent.sh --help`查看。
+用户根据实际需要选择对应参数完成批量配置，命令为`./deploy.sh [options]`。
+参数说明请参见下表，表中各参数的可选参数范围可通过执行`./deploy.sh --help`查看。
 
 | 参数           | 说明                                                                                                                          |
 | :------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | --help  -h     | 查询帮助信息。                                                                                                                |
 | --aivault-ip   | 指定aivault服务的ip地址。                                                                                                     |
 | --aivault-port | 指定aivault服务的端口，默认5001。                                                                                             |
-| --cfs-port     | 指定cfs服务的端口，默认是2022。                                                                                               |
+| --cfs-port     | 指定cfs服务的端口，默认是1024。                                                                                               |
 | --offline      | 离线模式，不会下载haveged和docker                                                                                           |
 | --python-dir   | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
-| --remoteonly   | 仅远程节点执行kmsagent批量配置任务。                                                                                          |
+| --all          | 所有节点执行kmsagent批量配置任务，默认master节点不进行配置。                                                                   |
 | --verbose      | 打印详细信息。                                                                                                                |
 
 ## 注意事项
