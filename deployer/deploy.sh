@@ -10,10 +10,10 @@ LOG_SIZE_THRESHOLD=$((20 * 1024 * 1024))
 readonly LOG_SIZE_THRESHOLD
 
 if [ -z "${ASNIBLE_CONFIG}" ]; then
-    export ANSIBLE_CONFIG=$BASE_DIR/ansible.cfg
+    export ANSIBLE_CONFIG=$BASE_DIR/config/ansible.cfg
 fi
 if [ -z "${ASNIBLE_LOG_PATH}" ]; then
-    export ANSIBLE_LOG_PATH=$BASE_DIR/kmsagent.log
+    export ANSIBLE_LOG_PATH=$BASE_DIR/deploy.log
 fi
 if [ -z "${ASNIBLE_INVENTORY}" ]; then
     export ANSIBLE_INVENTORY=$BASE_DIR/inventory_file
@@ -30,7 +30,7 @@ function log_error() {
     local IP_N
     IP_N=$(who am i | awk '{print $NF}' | sed 's/[()]//g')
     echo "[ERROR] $*"
-    echo "${DATE_N} ${USER_N}@${IP_N} [ERROR] $*" >>"${BASE_DIR}"/kmsagent.log
+    echo "${DATE_N} ${USER_N}@${IP_N} [ERROR] $*" >>"${BASE_DIR}"/deploy.log
 }
 
 function operation_log_info() {
@@ -40,7 +40,7 @@ function operation_log_info() {
     USER_N=$(whoami)
     local IP_N
     IP_N=$(who am i | awk '{print $NF}' | sed 's/[()]//g')
-    echo "${DATE_N} ${USER_N}@${IP_N} [INFO] $*" >>"${BASE_DIR}"/kmsagent_operation.log
+    echo "${DATE_N} ${USER_N}@${IP_N} [INFO] $*" >>"${BASE_DIR}"/deploy_operation.log
 }
 
 function check_log() {
@@ -76,25 +76,9 @@ function rotate_log() {
 
 function set_permission() {
     chmod 750 "${BASE_DIR}" "${BASE_DIR}"/playbooks/ "${BASE_DIR}"/resources
-    chmod 600 "${BASE_DIR}"/*.log "${BASE_DIR}"/inventory_file "${BASE_DIR}"/ansible.cfg "${BASE_DIR}"/certs.py "${BASE_DIR}"/openssl.cnf 2>/dev/null
-    chmod 500 "${BASE_DIR}"/kmsagent.sh 2>/dev/null
+    chmod 600 "${BASE_DIR}"/*.log "${BASE_DIR}"/inventory_file "${BASE_DIR}"/config/ansible.cfg "${BASE_DIR}"/config/certs.py "${BASE_DIR}"/config/openssl.cnf 2>/dev/null
+    chmod 500 "${BASE_DIR}"/deploy.sh 2>/dev/null
     chmod 400 "${BASE_DIR}"/*.log.? 2>/dev/null
-}
-
-function check_inventory() {
-    local pass1
-    pass1=$(grep -c ansible_ssh_pass "${BASE_DIR}"/inventory_file)
-    local pass2
-    pass2=$(grep -c ansible_sudo_pass "${BASE_DIR}"/inventory_file)
-    local pass3
-    pass3=$(grep -c ansible_become_pass "${BASE_DIR}"/inventory_file)
-    local pass_cnt
-    pass_cnt=$((pass1 + pass2 + pass3))
-    if [ ${pass_cnt} == 0 ]; then
-        return
-    fi
-    log_error "The inventory_file contains password, please use the SSH key instead"
-    return 1
 }
 
 function bootstrap() {
@@ -111,7 +95,6 @@ function bootstrap() {
 function generate_ca_cert() {
     mkdir -p "${BASE_DIR}"/resources/cert/ && chmod 750 "${BASE_DIR}"/resources/cert/
     local passout
-    local passout2
     openssl rand -writerand ~/.rnd
     read -srp "Enter pass phrase for ca.key:" passout
     echo ""
@@ -123,14 +106,15 @@ function generate_ca_cert() {
     echo ""
     if [ "${passout}" = "${passout2}" ]; then
         openssl genrsa -passout pass:"${passout2}" -aes256 -out "${BASE_DIR}"/resources/cert/ca.key 4096 2>/dev/null &&
-            openssl req -new -key "${BASE_DIR}"/resources/cert/ca.key -subj "${subject}" -out ca.csr -passin pass:"${passout2}" &&
-            openssl x509 -req -in ca.csr -signkey "${BASE_DIR}"/resources/cert/ca.key -days 3650 -extfile openssl.cnf -extensions v3_ca -out "${BASE_DIR}"/resources/cert/ca.pem -passin pass:"${passout2}" 2>/dev/null
+            openssl req -new -key "${BASE_DIR}"/resources/cert/ca.key -subj "/CN=Aiguard Root CA" -out ca.csr -passin pass:"${passout2}" &&
+            openssl x509 -req -in ca.csr -signkey "${BASE_DIR}"/resources/cert/ca.key -days 3650 -extfile "${BASE_DIR}"/config/openssl.cnf -extensions v3_ca -out "${BASE_DIR}"/resources/cert/ca.pem -passin pass:"${passout2}" 2>/dev/null
         local result_status=$?
         if [ $result_status -ne 0 ]; then
             log_error "The CA certificate is generated failed"
             return 1
         fi
         echo "The CA certificate is generated successfully"
+        rm -f "${BASE_DIR}"/ca.csr
     else
         log_error "The CA certificate is generated failed"
         return 1
@@ -139,7 +123,6 @@ function generate_ca_cert() {
 
 function zip_extract() {
     zip_list=$(find "${BASE_DIR}"/resources -name "*.zip")
-    rm -rf "${BASE_DIR}"/resources/fuse_*
     for zip_file in $zip_list; do
         if [[ $zip_file =~ x86_64.zip ]]; then
             unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_and_docker_x86_64
@@ -151,88 +134,80 @@ function zip_extract() {
         fi
     done
 
+    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_x86_64/ &>/dev/null
+    rm -f "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker*.tgz
+    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_aarch64/ &>/dev/null
+    rm -f "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker*.tgz
+}
+
+function download_haveged_and_docker() {
     if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" != 0 ]; then
+        if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" -gt 1 ]; then
+            log_error "Only one aivault server node can be set"
+            return 1
+        fi
         if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ]; then
             log_error "can not find aivault image"
             return 1
         fi
-        mkdir -p "${BASE_DIR}"/resources/aivault
-        mv "${BASE_DIR}"/resources/aivault*.tar "${BASE_DIR}"/resources/aivault
     fi
-}
 
-function download_haveged_and_docker() {
-    if ! python3 download.py; then
+    rm -rf "${BASE_DIR}"/resources/fuse_*
+    if ! python3 "${BASE_DIR}"/downloader/download.py; then
+        log_error "download files failed"
         return 1
     fi
-    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_x86_64/
-    rm -f "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker*.tgz
-    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_aarch64/
-    rm -f "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker*.tgz
-    cp "${BASE_DIR}"/docker.service "${BASE_DIR}"/resources/
 }
 
 function process_deploy() {
-    if [ -z "${aivault_ip}" ] || [ -z "${aivault_port}" ] || [ -z "${cfs_port}" ] || [ -z "${cert_op_param}" ] || [ -z "${subject}" ] || [ -z "${python_dir}" ]; then
+    if [ -z "${python_dir}" ]; then
         log_error "parameter error"
         print_usage
         return 1
     fi
-    if ! zip_extract; then
-        return 1
+    if [ "${offline}" = n ]; then
+        if ! download_haveged_and_docker; then
+            return 1
+        fi
     fi
-    if ! download_haveged_and_docker; then
-        log_error "download files failed"
-        return 1
-    fi
+
+    zip_extract
     if ! generate_ca_cert; then
         return 1
     fi
-    local deploy_play
-    deploy_play=${BASE_DIR}/playbooks/deploy.yml
-    echo "ansible-playbook -i ./inventory_file playbooks/deploy.yml -e hosts_name=ascend -e aivault_ip=${aivault_ip} -e aivault_port=${aivault_port} -e cfs_port=${cfs_port} -e cert_op_param=${cert_op_param} -e remoteonly=${remoteonly} ${DEBUG_CMD}"
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e cert_op_param="${cert_op_param} -e remoteonly=${remoteonly}" ${DEBUG_CMD}
-}
-
-function process_check() {
-    local check_play
-    check_play=${BASE_DIR}/playbooks/check.yml
-    echo "ansible-playbook -i ./inventory_file playbooks/check.yml -e hosts_name=ascend ${DEBUG_CMD}"
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${check_play}" -e hosts_name=ascend ${DEBUG_CMD}
-}
-
-function process_modify() {
-    local modify_play
-    modify_play=${BASE_DIR}/playbooks/modify.yml
-    echo "ansible-playbook -i ./inventory_file playbooks/modify.yml -e hosts_name=ascend ${DEBUG_CMD}"
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${modify_play}" -e hosts_name=ascend ${DEBUG_CMD}
+    local tmp_deploy_play
+    tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
+    echo "- import_playbook: check.yml" >"${tmp_deploy_play}"
+    echo "- import_playbook: deploy.yml" >>"${tmp_deploy_play}"
+    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e passin="${passout2}" -e all="${all}" ${DEBUG_CMD}
+    if [ -f "${tmp_deploy_play}" ]; then
+        rm -f "${tmp_deploy_play}"
+    fi
 }
 
 function print_usage() {
-    echo "Usage: ./kmsagent.sh <option> [args]"
+    echo "Usage: ./deploy.sh <option> [args]"
     echo ""
     echo "options:"
     echo "-h, --help              show this help message and exit"
     echo "--aivault-ip            specify the IP address of aivault"
-    echo "--aivault-port          specify the port of aivault"
-    echo "--cfs-port              specify the port of cfs"
-    echo "--cert-op-param         parameter for the user info"
-    echo "                        example: 'yanfabu|chengdu|sichuan|Huawei|CN'"
-    echo "--check                 check time on all environments"
-    echo "--modify                modify the time on the remote environments"
-    echo "--python-dir            Specify a directory with Python version greater than or equal to 3.7,default is /usr/local/python3.7.5"
+    echo "--aivault-port          specify the port of aivault, default is 5001"
+    echo "--cfs-port              specify the port of cfs, default is 1024"
+    echo "--offline               offline mode, haveged and docker will not be downloaded"
+    echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
-    echo "--remoteonly            only remote nodes perform configuration tasks"
-    echo "--subject               set CA request subject"
-    echo "                        example: '/CN=Example Root CA'"
+    echo "--all                   all nodes perform configuration tasks"
     echo "--verbose               print verbose"
     echo ""
-    echo "e.g., ./kmsagent.sh --aivault-ip={ip} --aivault-port={port} --cfs-port={port} --cert-op-param={param} --subject={param} --remoteonly  --python-dir={python_dir}"
+    echo "e.g., ./deploy.sh --aivault-ip={ip} --python-dir={python_dir}"
 }
 
 DEBUG_CMD=""
 python_dir="/usr/local/python3.7.5"
-remoteonly=n
+aivault_port=5001
+cfs_port=1024
+offline=n
+all=n
 
 function parse_script_args() {
     if [ $# = 0 ]; then
@@ -278,14 +253,6 @@ function parse_script_args() {
             fi
             shift
             ;;
-        --cert-op-param=*)
-            cert_op_param=$(echo "$1" | cut -d"=" -f2)
-            shift
-            ;;
-        --subject=*)
-            subject=$(echo "$1" | cut -c11-)
-            shift
-            ;;
         --python-dir=*)
             python_dir=$(echo "$1" | cut -d"=" -f2)
             if [ "${python_dir: -1}" = / ]; then
@@ -293,16 +260,12 @@ function parse_script_args() {
             fi
             shift
             ;;
-        --remoteonly)
-            remoteonly=y
+        --all)
+            all=y
             shift
             ;;
-        --check)
-            check_flag=y
-            shift
-            ;;
-        --modify)
-            modify_flag=y
+        --offline)
+            offline=y
             shift
             ;;
         --verbose)
@@ -328,37 +291,22 @@ function parse_script_args() {
 }
 
 main() {
-    check_log "${BASE_DIR}"/kmsagent.log
-    check_log "${BASE_DIR}"/kmsagent_operation.log
+    check_log "${BASE_DIR}"/deploy.log
+    check_log "${BASE_DIR}"/deploy_operation.log
     set_permission
     parse_script_args "$@"
     local parse_script_args_status=$?
     if [[ ${parse_script_args_status} != 0 ]]; then
         return ${parse_script_args_status}
     fi
-    check_inventory
-    local check_inventory_status=$?
-    if [[ ${check_inventory_status} != 0 ]]; then
-        return ${check_inventory_status}
-    fi
     bootstrap
     local bootstrap_status=$?
     if [ ${bootstrap_status} != 0 ]; then
         return ${bootstrap_status}
     fi
-    if [ "${check_flag}" = "y" ]; then
-        process_check
-        local process_check_status=$?
-        if [ ${process_check_status} != 0 ]; then
-            return ${process_check_status}
-        fi
-    fi
-    if [ "${modify_flag}" = "y" ]; then
-        process_modify
-        local process_modify_status=$?
-        if [ ${process_modify_status} != 0 ]; then
-            return ${process_modify_status}
-        fi
+    if [ "$(grep -c ansible_ssh_pass "${BASE_DIR}"/inventory_file)" == 0 ]; then
+        eval "$(ssh-agent -s)"
+        ssh-add
     fi
     if [ -n "${aivault_ip}" ]; then
         process_deploy

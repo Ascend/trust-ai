@@ -34,13 +34,31 @@
         cacheable: yes
       when: server is undefined
     
+    - name: check kmsagent
+      shell: "{{ kmsagent_path }} -V"
+      register: kmsagent_status
+      failed_when: false
+      environment:
+        LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+    
+    - name: message
+      fail:
+        msg: "kmsagent not found"
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+        - '"version" not in kmsagent_status.stdout'
+    
     - name: Check whether the cert directory exists
       stat:
         path: /opt/cert
       register: dir_result
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
     - name: clean resources
       file:
@@ -48,19 +66,13 @@
         path: /opt/cert
       when:
         - server is undefined and dir_result.stat|d("") != "" and dir_result.stat.exists
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
-    - name: move ca files first
+    - name: copy ca files
       shell: cp -r {{ resources_dir }}/cert /opt
       when:
-        - server is undefined and ansible_connection != "local"
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
-    
-    - name: move ca files second
-      shell: cp -r {{ resources_dir }}/cert /opt
-      when:
-        - server is undefined and ansible_connection == "local"
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: set cert dir permission
       file:
@@ -71,7 +83,7 @@
         recurse: no
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: set cafile permission first
       file:
@@ -81,7 +93,7 @@
         mode: 0600
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: set cafile permission second
       file:
@@ -91,27 +103,27 @@
         mode: 0600
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
     - name: Check whether the docker network aiguard exists
       shell: docker network ls | grep aiguard | wc -l
       register: aiguard_result
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: docker create network aiguard
       shell: docker network create aiguard
       when:
         - server is undefined and aiguard_result.stdout|d("") != "" and aiguard_result.stdout == "0"
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: get CfsIP
       shell: docker network inspect aiguard | grep Gateway|cut -d'"' -f4
       register: cfsip
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: Configuring the cfs service
       shell: |
@@ -121,7 +133,7 @@
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: Configuring the aivault service
       shell: |
@@ -132,7 +144,7 @@
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: Check whether the TlsCertPath directory exists
       stat:
@@ -140,13 +152,13 @@
       register: tlscert_result
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: create TlsCertPath
       shell: mkdir /opt/tlscert
       when:
         - server is undefined and tlscert_result.stat|d("") != "" and not tlscert_result.stat.exists
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: Check whether the TlsBackupCertPath directory exists
       stat:
@@ -154,28 +166,28 @@
       register: tlscertbak_result
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: create TlsBackupCertPath
       shell: mkdir /opt/tlscertbak
       when:
         - server is undefined and tlscertbak_result.stat|d("") != "" and not tlscertbak_result.stat.exists
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: Start kmsagent service
       shell: npu-smi set -t key-manage -s start
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: Generate kmsagent.csr
       shell: |
-        {{ kmsagent_path }} tls get-csr "rsa:4096:sha256" "{{ cert_op_param }}" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
+        {{ kmsagent_path }} tls get-csr "rsa:4096:sha256" "KMSAgent|chengdu|sichuan|Ascend|CN" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
       environment:
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: Copy kmsagent.csr from remote host to local
       fetch:
@@ -184,7 +196,7 @@
       when: server is undefined and ansible_connection != "local"
     
     - name: Generate kmsagent.pem
-      shell: python3 {{ resources_dir }}/../certs.py {{ remoteonly }}
+      shell: python3 {{ resources_dir }}/../config/certs.py {{ all }} {{ passin }}
       when: server is undefined and ansible_connection == "local"
     
     - name: copy kmsagent.pem to remote hosts
@@ -201,7 +213,7 @@
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
     - name: set TlsCertPath directory permission
       file:
@@ -211,7 +223,7 @@
         recurse: yes
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: set TlsBackupCertPath directory permission
       file:
@@ -221,7 +233,7 @@
         recurse: yes
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: restart the kmsagent service
       shell: |
@@ -229,14 +241,14 @@
         npu-smi set -t key-manage -s start
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: Check the running state of kmsagent
       shell: npu-smi info -t key-manage
       register: kmsagent_stat
       when:
         - server is undefined
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: message
       debug:
@@ -244,4 +256,4 @@
           - "{{ kmsagent_stat | default('NOT DEFINED') }}"
       when:
         - server is undefined and kmsagent_stat.changed
-        - ansible_connection != "local" or (ansible_connection == "local" and remoteonly == "n")
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
