@@ -4,7 +4,7 @@ KMSAgent批量配置工具，用于批量安装haveged、docker、配置KMSAgent
 ## 环境要求
 1. 仅支持root用户使用工具。
 2. master节点即工具所在环境需要有网络，或者需要一个有网络的环境下载依赖。
-3. 工具所在的环境即master节点需要安装python和ansible，且3.7<= python版本 <=3.9，python库cryptography==3.3.2，ansible-core==2.11.9。
+3. 工具所在的环境需要安装python和ansible，且3.7<= python版本 <=3.9，python库cryptography==3.3.2，ansible-core==2.11.9。
 4. 加密工具运行环境需要安装开源OpenSSL工具，且版本>=1.1.1n，并且<3.0.0。
 5. 请确保待配置环境已经安装包含KMSAgent的驱动，安装好后，可以使用KMSAgent服务。
 6. 确保工具所在环境已经安装docker，且版本>=18.09。
@@ -16,7 +16,7 @@ KMSAgent批量配置工具，用于批量安装haveged、docker、配置KMSAgent
 
 ## 工具获取与安装
 点击右上角“克隆/下载”按钮，然后点击下方“下载zip”，下载后将zip传到Linux环境上解压使用。建议解压zip包前将环境umask设置成077，并只放到/root目录下解压、使用工具。
-如果master节点没有网络，用户须在有网络的环境（该环境安装python，且3.7<= python版本 <= 3.9）解压zip包后双击**start_download.bat**文件进行依赖下载，下载完成后将整个工具传到master节点。
+如果Linux环境没有网络，用户可在有网络的Windows系统上（该系统须安装python，且3.7<= python版本 <= 3.9）解压zip包，然后双击**start_download.bat**文件进行依赖下载，下载完成后将整个工具传到Linux环境上进行批量配置。
 ## 批量配置
 本工具运行前请确认系统中未安装paramiko（ansible在某些情况下会使用paramiko，其配置不当容易引起安全问题）。可使用基于密钥认证的ssh连接和账户密码的ssh连接方式，参考如下1-2步骤（使用其中一种方式即可，推荐基于密钥认证的ssh连接方式）。
 1. 基于密钥认证的ssh连接，编辑inventory_file文件，配置其他设备的ip地址，其中aivault服务所在节点最多有一个，该节点不会进行KMSAgent配置，仅安装haveged、docker和导入aivault镜像，该节点须配置变量server='aivault'。inventory_file文件格式如下：
@@ -60,7 +60,7 @@ KMSAgent批量配置工具，用于批量安装haveged、docker、配置KMSAgent
 | --aivault-ip   | 指定aivault服务的ip地址。                                                                                                     |
 | --aivault-port | 指定aivault服务的端口，默认5001。                                                                                             |
 | --cfs-port     | 指定cfs服务的端口，默认是1024。                                                                                               |
-| --offline      | 离线模式，不会下载haveged和docker                                                                                           |
+| --offline      | 离线模式，不会下载haveged和docker，工具所在的环境没有网络时须指定。                                                              |
 | --python-dir   | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
 | --all          | 所有节点执行kmsagent批量配置任务，默认master节点不进行配置。                                                                   |
 | --verbose      | 打印详细信息。                                                                                                                |
