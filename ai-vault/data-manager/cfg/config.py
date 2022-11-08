@@ -6,6 +6,7 @@ import logging
 
 WORK_DIR = os.path.dirname(os.path.realpath(__file__))
 LOG_PATH = os.path.join(os.path.dirname(WORK_DIR), "log")
+RESTART_FLAG = os.path.join(os.path.dirname(WORK_DIR), "restart_flag")
 RUN_LOG_FILE = os.path.join(LOG_PATH, "data_manager_run.log")
 LOG_MAX_SIZE = 10 * 1024 * 1024
 LOG_MAX_BACKUP_COUNT = 10
