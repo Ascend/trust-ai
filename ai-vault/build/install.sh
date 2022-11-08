@@ -31,7 +31,7 @@ fi
 
 
 # 非首次安装
-if [ -f /home/AiVault/.ai-vault ]; then
+if [ -d "/home/AiVault/.ai-vault" ]; then
   run_docker
 fi
 
