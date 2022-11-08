@@ -10,7 +10,8 @@ import psutil
 from flask import Blueprint, views, request, jsonify, send_from_directory
 
 from cfg import status_code
-from cfg.config import LOG_INFO, LOG_ERROR, RUN_LOG, AIVAULT_EXPORT_DATA_FILE, COMMON_DIR, HOME_PATH, MAX_DATA_SIZE
+from cfg.config import LOG_INFO, LOG_ERROR, RUN_LOG, AIVAULT_EXPORT_DATA_FILE, COMMON_DIR, HOME_PATH, MAX_DATA_SIZE, \
+    RESTART_FLAG
 from cfg.status_code import ERROR_MSG_MAP, EXPORT_ERROR, IMPORT_ERROR, SUCCESS, PARAM_ERROR
 
 data_manager = Blueprint("data_manager", __name__)
@@ -63,6 +64,7 @@ class ImportDataView(BaseView):
                 RUN_LOG.log(*self.err_msg(IMPORT_ERROR, "not upload zip file"))
                 return self.https_ret(PARAM_ERROR)
             # stop ai-vault
+            os.system(f"touch {RESTART_FLAG}")
             self.stop_aivault()
             zip_file = zipfile.ZipFile(file)
             for names in zip_file.namelist():
@@ -75,6 +77,8 @@ class ImportDataView(BaseView):
         except Exception as e:
             RUN_LOG.log(*self.err_msg(IMPORT_ERROR, e))
             return self.https_ret(status_code.IMPORT_ERROR)
+        finally:
+            os.system(f"rm -f {RESTART_FLAG}")
 
     def stop_aivault(self):
         pids = psutil.pids()

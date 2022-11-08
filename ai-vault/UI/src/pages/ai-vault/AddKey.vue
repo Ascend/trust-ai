@@ -12,11 +12,11 @@
                 <div style="margin-left: 8px"><img src="@/assets/icon/alarm-orange.svg"></div>
                 <div style="margin-left: 8px">{{ $t('ADD_MK_TIP')}}</div>
             </div>
-            <div v-else style="background: rgba(0,119,255,0.2);border-radius: 2px;display: flex; padding-bottom: 8px; padding-top: 8px; margin-bottom: 24px">
-                <div style="margin-left: 8px"><img src="@/assets/icon/remind.svg"></div>
+            <div v-else style="background: rgba(249,118,17,0.2);border-radius: 2px;display: flex; padding-bottom: 8px; padding-top: 8px; margin-bottom: 24px">
+                <div style="margin-left: 8px"><img src="@/assets/icon/alarm-orange.svg"></div>
                 <div style="margin-left: 8px">{{ $t('ADD_PSK_TIP')}}</div>
             </div>
-            <el-form v-if="currPage === 'mk'" :model="mkForm" :rules="mkRules" ref="mkForm">
+            <el-form v-if="currPage === 'mk'" :model="mkForm" :rules="mkRules" ref="mkForm" key="MKKey">
                 <el-form-item :label="$t('KEY_NAME')" prop="MKName" :label-width="formLabelWidth">
                     <el-tooltip :content="$t('TIP_KEY_NAME')" placement="right">
                         <el-input v-model="mkForm.MKName" class="inp-add" :placeholder="$t('PLACEHOLDER_KEY_NAME')" autocomplete="off"></el-input>
@@ -39,7 +39,7 @@
                 </el-form-item>
             </el-form>
 
-            <el-form v-else :model="pskForm" :rules="pskRules" ref="pskForm">
+            <el-form v-else :model="pskForm" :rules="pskRules" ref="pskForm" key="PSKKey">
                 <el-form-item :label="$t('PSK_NAME')" prop="PSKName" :label-width="formLabelWidth">
                     <el-tooltip :content="$t('TIP_KEY_NAME')" placement="right">
                         <el-input v-model="pskForm.PSKName" class="inp-add" :placeholder="$t('PLACEHOLDER_PSK_NAME')" autocomplete="off"></el-input>
@@ -178,7 +178,7 @@ export default {
                                     link.download = filename;
                                     link.click();
                                     window.URL.revokeObjectURL(url);
-
+                                    this.handleCancel(this.currPage === 'mk' ? 'mkForm' : 'pskForm')
                                     this.$message.success({message: this.$t('SUCCESS_ADD')})
                                     this.$emit('handleRefresh', 'mk')
                                 }
@@ -198,6 +198,7 @@ export default {
                                     link.download = filename;
                                     link.click();
                                     window.URL.revokeObjectURL(url);
+                                    this.handleCancel(this.currPage === 'mk' ? 'mkForm' : 'pskForm')
                                     this.$emit('handleRefresh', 'psk')
 
                                 } else if(res.data.status === '31000009') {
@@ -231,7 +232,7 @@ export default {
                                 }
                             })
                     }
-                    this.handleCancel(this.currPage === 'mk' ? 'mkForm' : 'pskForm')
+                    
                 } else {
                     return false
                 }

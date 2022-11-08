@@ -31,6 +31,10 @@ python3 ../user-manager/run.py &
 # 监测程序是否正常运行中
 while true
 do
+   sleep 10
+   if [ -f "/home/AiVault/.ai-vault/data-manager/restart_flag" ]; then
+     continue
+   fi
    num1=`ps -u AiVault -ef|grep "../ai-vault run -ip ${ip} -mgmtPort 5000 -servicePort 5001"|grep -v grep|wc -l`
    if test $[num1] -ne $[1]
    then
@@ -51,5 +55,4 @@ do
    then
      exit 1
    fi
-   sleep 10
 done
