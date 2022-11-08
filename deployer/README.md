@@ -63,7 +63,6 @@ KMSAgent批量配置工具，用于批量安装haveged、docker、配置KMSAgent
 | --offline      | 离线模式，不会下载haveged和docker，工具所在的环境没有网络时须指定。                                                              |
 | --python-dir   | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
 | --all          | 所有节点执行kmsagent批量配置任务，默认master节点不进行配置。                                                                   |
-| --verbose      | 打印详细信息。                                                                                                                |
 
 ## 注意事项
 1. 生成ca.key时的密钥须符合组织的安全要求。
