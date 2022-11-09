@@ -18,6 +18,7 @@ MAX_DATA_SIZE = 150 * 1024 * 1024
 HOME_PATH = os.path.expanduser('~')
 AIVAULT_EXPORT_DATA_FILE = os.path.join(HOME_PATH, 'aivault.zip')
 COMMON_DIR = os.path.join(HOME_PATH, '.ai-vault')
+IMPORT_DIR = os.path.join(HOME_PATH, '.ai-vault_bak')
 CERT_PATH = os.path.join(COMMON_DIR, "cert")
 CRT_FILE = os.path.join(CERT_PATH, "server.pem")
 KEY_FILE = os.path.join(CERT_PATH, "server.key")

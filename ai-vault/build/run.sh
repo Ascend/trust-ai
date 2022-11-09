@@ -3,7 +3,7 @@ cp -af data-manager .ai-vault/
 cp -af nginx .ai-vault/
 cp -af ai-vault .ai-vault/
 cp -af lib .ai-vault/
-chmod 700 .ai-vault/*
+chmod 700 -R .ai-vault
 
 
 cd /home/AiVault/.ai-vault/cert || exit
@@ -13,7 +13,7 @@ export LD_LIBRARY_PATH=/home/AiVault/.ai-vault/lib:$LD_LIBRARY_PATH
 ip=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6|awk '{print $2}'|tr -d "addr:"`
 
 # 启动AI-VAULT
-../ai-vault run -ip ${ip} -mgmtPort 5000 -servicePort 5001 &
+/home/AiVault/.ai-vault/ai-vault run -ip ${ip} -mgmtPort 5000 -servicePort 5001 &
 
 sed -i "s/docker_ip/${ip}/g" /home/AiVault/.ai-vault/nginx/conf/nginx.conf
 sed -i "s/docker_ip/${ip}/g" /home/AiVault/.ai-vault/user-manager/configuration/install_param.json
@@ -31,11 +31,11 @@ python3 ../user-manager/run.py &
 # 监测程序是否正常运行中
 while true
 do
-   sleep 10
    if [ -f "/home/AiVault/.ai-vault/data-manager/restart_flag" ]; then
+     sleep 10
      continue
    fi
-   num1=`ps -u AiVault -ef|grep "../ai-vault run -ip ${ip} -mgmtPort 5000 -servicePort 5001"|grep -v grep|wc -l`
+   num1=`ps -u AiVault -ef|grep "/home/AiVault/.ai-vault/ai-vault run"|grep -v grep|wc -l`
    if test $[num1] -ne $[1]
    then
      exit 1
@@ -55,4 +55,5 @@ do
    then
      exit 1
    fi
+   sleep 10
 done

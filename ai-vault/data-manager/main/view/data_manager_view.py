@@ -1,6 +1,7 @@
 # coding: UTF-8
 # Copyright (c) 2022. Huawei Technologies Co., Ltd. ALL rights reserved.
 import os
+import shutil
 import signal
 import zipfile
 import socket
@@ -11,7 +12,7 @@ from flask import Blueprint, views, request, jsonify, send_from_directory
 
 from cfg import status_code
 from cfg.config import LOG_INFO, LOG_ERROR, RUN_LOG, AIVAULT_EXPORT_DATA_FILE, COMMON_DIR, HOME_PATH, MAX_DATA_SIZE, \
-    RESTART_FLAG
+    RESTART_FLAG, IMPORT_DIR
 from cfg.status_code import ERROR_MSG_MAP, EXPORT_ERROR, IMPORT_ERROR, SUCCESS, PARAM_ERROR
 
 data_manager = Blueprint("data_manager", __name__)
@@ -68,17 +69,22 @@ class ImportDataView(BaseView):
             self.stop_aivault()
             zip_file = zipfile.ZipFile(file)
             for names in zip_file.namelist():
-                zip_file.extract(names, COMMON_DIR)
+                zip_file.extract(names, IMPORT_DIR)
             zip_file.close()
+            if os.system(f"rm -rf {COMMON_DIR}/ksf && rm -rf {COMMON_DIR}/backup && rm -rf {COMMON_DIR}/cert && rm -rf {COMMON_DIR}/user-manager && mv {IMPORT_DIR}/* {COMMON_DIR}; chmod -R 700 {COMMON_DIR}"):
+                RUN_LOG.log(*self.err_msg(IMPORT_ERROR, "copy file failed"))
+                self._start_aivault()
+                return self.https_ret(status_code.IMPORT_ERROR)
             # start aivault
             self._start_aivault()
-            RUN_LOG.log(*self.err_msg(SUCCESS, "import data successful"))
+            RUN_LOG.log(*self.info_msg("import data successful"))
             return self.https_ret(SUCCESS)
         except Exception as e:
             RUN_LOG.log(*self.err_msg(IMPORT_ERROR, e))
             return self.https_ret(status_code.IMPORT_ERROR)
         finally:
-            os.system(f"rm -f {RESTART_FLAG}")
+            os.remove(RESTART_FLAG)
+            shutil.rmtree(IMPORT_DIR)
 
     def stop_aivault(self):
         pids = psutil.pids()

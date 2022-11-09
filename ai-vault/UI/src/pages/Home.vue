@@ -332,6 +332,7 @@ export default {
       } else {
         this.$message.warning({message: this.$t('ERR_UPLOAD')})
       }
+      this.handleGetUserAmount()
       this.isUploading=false;
     },
     handleUploadError(err, file, fileList) {

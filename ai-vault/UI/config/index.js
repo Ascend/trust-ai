@@ -12,7 +12,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/api': {
-          target: 'https://xx.xx.xx.xx:9000',
+          target: 'https://42.192.48.100:9000',
           changeOrigin: true,
           pathRewrite: {
               '^/api': '/api'
@@ -20,7 +20,7 @@ module.exports = {
           secure: false,
       },
       '/AIVAULT/v1': {
-          target: 'https://xx.xx.xx.xx:9000',
+          target: 'https://42.192.48.100:9000',
           changeOrigin: true,
           pathRewrite: {
               '^/AIVAULT/v1': '/AIVAULT/v1'
@@ -28,7 +28,7 @@ module.exports = {
           secure: false,
       },
       '/usermanager/v1': {
-        target: 'https://xx.xx.xx.xx:9000',
+        target: 'https://42.192.48.100:9000',
         changeOrigin: true,
         pathRewrite: {
             '^/usermanager/v1': '/usermanager/v1'
@@ -36,7 +36,7 @@ module.exports = {
         secure: false,
       },
       '/datamanager/v1': {
-        target: 'https://xx.xx.xx.xx:9000',
+        target: 'https://42.192.48.100:9000',
         changeOrigin: true,
         pathRewrite: {
             '^/datamanager/v1': '/datamanager/v1'
