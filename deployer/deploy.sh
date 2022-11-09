@@ -141,17 +141,6 @@ function zip_extract() {
 }
 
 function download_haveged_and_docker() {
-    if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" != 0 ]; then
-        if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" -gt 1 ]; then
-            log_error "Only one aivault server node can be set"
-            return 1
-        fi
-        if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ]; then
-            log_error "can not find aivault image"
-            return 1
-        fi
-    fi
-
     rm -rf "${BASE_DIR}"/resources/fuse_*
     if ! python3 "${BASE_DIR}"/downloader/download.py; then
         log_error "download files failed"
@@ -165,6 +154,17 @@ function process_deploy() {
         print_usage
         return 1
     fi
+    if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" != 0 ]; then
+        if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" -gt 1 ]; then
+            log_error "Only one aivault server node can be set"
+            return 1
+        fi
+        if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ]; then
+            log_error "can not find aivault image"
+            return 1
+        fi
+    fi
+    
     if [ "${offline}" = n ]; then
         if ! download_haveged_and_docker; then
             return 1
