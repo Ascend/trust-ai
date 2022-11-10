@@ -2,10 +2,11 @@ import os.path
 import json
 from urllib import request
 from urllib.error import ContentTooShortError, URLError
+import ssl
 import sys
 
 
-def download_files(url_dict, retry_time=3):
+def download_files(url_dict, context, retry_time=3):
     """
     download files
     Args:
@@ -20,7 +21,7 @@ def download_files(url_dict, retry_time=3):
                 file_name = url.split("/")[-1]
                 total_path = path_name + file_name
                 print("start downloading %s ..." % file_name)
-                f = request.urlopen(url)
+                f = request.urlopen(url, context=context)
                 with open(total_path, "wb") as download:
                     download.write(f.read())
                     print("download %s successfully" % file_name)
@@ -58,11 +59,12 @@ if __name__ == "__main__":
     cur_dir = os.path.dirname(__file__)
     json_path = "%s/download_url.json" % cur_dir
     dict_json = read_json(json_path)
+    context = ssl._create_unverified_context()
 
     # download files
     for k in dict_json.keys():
         val = dict_json.get(k)
         dict_input = {k: val}
-        res = download_files(dict_input)
+        res = download_files(dict_input, context=context)
         if not res:
             sys.exit(1)
