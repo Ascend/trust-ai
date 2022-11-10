@@ -139,10 +139,12 @@ class ExportDataView(BaseView):
         try:
             z = zipfile.ZipFile(AIVAULT_EXPORT_DATA_FILE, 'w', zipfile.ZIP_DEFLATED)
             for dirpath, dirnames, filenames in os.walk(src_dir):
+                if "data-manager" in dirpath or "nginx" in dirpath:
+                    continue
                 fpath = dirpath.replace(src_dir, '')
                 fpath = fpath and fpath + os.sep or ''
                 for filename in filenames:
-                    if ".log" in filename:
+                    if ".log" in filename or ".so" in filename or filename == "ai-vault":
                         continue
                     z.write(os.path.join(dirpath, filename), fpath + filename)
         except Exception as e:
