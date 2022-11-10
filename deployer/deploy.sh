@@ -164,7 +164,13 @@ function process_deploy() {
             return 1
         fi
     fi
-    
+    local openssl_version
+    openssl_version=$(openssl version | cut -d ' ' -f2)
+    if [[ ${openssl_version:0:5} != 1.1.1 ]]; then
+        log_error "The openssl version is incorrect"
+        return 1
+    fi
+
     if [ "${offline}" = n ]; then
         if ! download_haveged_and_docker; then
             return 1

@@ -14,7 +14,7 @@
     
     - name: check time
       shell: |
-        if [ {{ hostvars.localhost.local_time.stdout }} -gt {{ remote_time.stdout }} ] || [ $(echo $(({{ hostvars.localhost.local_time.stdout }}+3650*24*60*60))) -lt {{ remote_time.stdout }} ];then echo {{ remote_time.stdout }};fi
+        if [ {{ hostvars.localhost.local_time.stdout }} -gt {{ remote_time.stdout }} ] || [ $(echo $(({{ hostvars.localhost.local_time.stdout }}+30))) -lt {{ remote_time.stdout }} ];then echo {{ remote_time.stdout }};fi
       register: check_result
       when: ansible_connection != "local"
     
