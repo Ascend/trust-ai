@@ -30,6 +30,7 @@
     
     - name: print the environment where the system time needs to be modified
       debug: var=ip_list
+      changed_when: ip_list != []
       run_once: true
     
     - pause:
