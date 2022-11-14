@@ -1,46 +1,62 @@
+- name: check haveged status
+  shell: systemctl is-active haveged
+  register: haveged_status
+  changed_when: false
+  failed_when: false
+  ignore_errors: yes
+  when: ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+
 - name: yum install haveged
-  shell: rpm -ivh --force --nodeps --replacepkgs {{ resources_dir }}/centos_{{ ansible_architecture }}/*.rpm
+  shell: rpm -ivh --force --nodeps --replacepkgs {{ resources_dir }}/rpm_{{ ansible_architecture }}/*.rpm
   register: sys_result
   when:
-    - ansible_pkg_mgr == "yum" or ansible_pkg_mgr == "dnf"
+    - ansible_pkg_mgr == "yum" or ansible_pkg_mgr == "dnf" or ansible_pkg_mgr == "zypper"
     - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+    - haveged_status.stdout is defined and haveged_status.stdout != "active"
 
 - name: message
   debug: var=sys_result
   when:
     - sys_result.changed
     - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+    - haveged_status.stdout is defined and haveged_status.stdout != "active"
 
 - name: apt install haveged
-  shell: export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical; dpkg --force-all -i {{ resources_dir }}/ubuntu_{{ ansible_architecture }}/*.deb
+  shell: export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical; dpkg --force-all -i {{ resources_dir }}/dpkg_{{ ansible_architecture }}/*.deb
   register: sys_result
   when:
     - ansible_pkg_mgr == "apt"
     - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+    - haveged_status.stdout is defined and haveged_status.stdout != "active"
 
 - name: message
   debug: var=sys_result
   when:
     - sys_result.changed
     - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+    - haveged_status.stdout is defined and haveged_status.stdout != "active"
 
 - name: enable haveged
   shell: systemctl enable haveged
-  when: ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+  when:
+    - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+    - haveged_status.stdout is defined and haveged_status.stdout != "active"
 
 - name: start haveged
   shell: systemctl start haveged
-  when: ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+  when:
+    - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+    - haveged_status.stdout is defined and haveged_status.stdout != "active"
 
-- name: check haveged status
+- name: check haveged status again
   shell: systemctl is-active haveged
-  register: haveged_status
+  register: haveged_again_status
   when: ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
 - name: message
   debug:
     msg:
-      - "haveged status is {{ haveged_status.stdout }}"
+      - "haveged status is {{ haveged_again_status.stdout }}"
   when: ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
 - name: find docker command
@@ -48,13 +64,10 @@
   register: docker_exists
   when: ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
-- name: install docker
-  shell: |
-    \cp -f {{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/docker/* /usr/bin/
-    \cp -af {{ resources_dir }}/docker.service /etc/systemd/system
-  when:
-    - docker_exists.stdout is defined and docker_exists.stdout == '0'
-    - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+- name: message
+  fail:
+    msg: "Please install docker first"
+  when: docker_exists.stdout is defined and docker_exists.stdout == '0'
 
 - name: Check docker status
   shell: systemctl is-active docker
@@ -64,15 +77,10 @@
   ignore_errors: yes
   when: ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
-- name: start docker
-  shell: |
-    setenforce 0 &> /dev/null
-    systemctl enable docker.service
-    systemctl daemon-reload
-    systemctl restart docker
-    setenforce 1 &> /dev/null || true
+- name: restart docker
+  shell: systemctl daemon-reload && systemctl restart docker
   when:
-    - (docker_exists.stdout is defined and docker_exists.stdout == '0') or (docker_status.stdout is defined and docker_status.stdout != "active")
+    - docker_status.stdout is defined and docker_status.stdout != "active"
     - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
 - name: Check docker status again
@@ -124,14 +132,14 @@
 
 - name: find fuse-plugin
   stat:
-    dest: "{{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh"
+    dest: "{{ resources_dir }}/fuse_{{ ansible_architecture }}/aiguard_plugin/install.sh"
   register: fuse_plugin
   when:
     - server is undefined
     - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
 - name: install fuse-plugin
-  shell: bash {{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh
+  shell: bash {{ resources_dir }}/fuse_{{ ansible_architecture }}/aiguard_plugin/install.sh
   when:
     - server is undefined and fuse_plugin.stat is defined and fuse_plugin.stat.exists
     - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
