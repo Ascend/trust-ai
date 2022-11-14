@@ -132,14 +132,14 @@
 
 - name: find fuse-plugin
   stat:
-    dest: "{{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh"
+    dest: "{{ resources_dir }}/fuse_{{ ansible_architecture }}/aiguard_plugin/install.sh"
   register: fuse_plugin
   when:
     - server is undefined
     - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
 - name: install fuse-plugin
-  shell: bash {{ resources_dir }}/fuse_and_docker_{{ ansible_architecture }}/aiguard_plugin/install.sh
+  shell: bash {{ resources_dir }}/fuse_{{ ansible_architecture }}/aiguard_plugin/install.sh
   when:
     - server is undefined and fuse_plugin.stat is defined and fuse_plugin.stat.exists
     - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
