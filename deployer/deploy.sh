@@ -125,22 +125,17 @@ function zip_extract() {
     zip_list=$(find "${BASE_DIR}"/resources -name "*.zip")
     for zip_file in $zip_list; do
         if [[ $zip_file =~ x86_64.zip ]]; then
-            unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_and_docker_x86_64
+            unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_x86_64
             rm -f "$zip_file"
         fi
         if [[ $zip_file =~ aarch64.zip ]]; then
-            unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_and_docker_aarch64
+            unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_aarch64
             rm -f "$zip_file"
         fi
     done
-
-    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_x86_64/ &>/dev/null
-    rm -f "${BASE_DIR}"/resources/fuse_and_docker_x86_64/docker*.tgz
-    tar -xf "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker* -C "${BASE_DIR}"/resources/fuse_and_docker_aarch64/ &>/dev/null
-    rm -f "${BASE_DIR}"/resources/fuse_and_docker_aarch64/docker*.tgz
 }
 
-function download_haveged_and_docker() {
+function download_haveged() {
     rm -rf "${BASE_DIR}"/resources/fuse_*
     if ! python3 "${BASE_DIR}"/downloader/download.py; then
         log_error "download files failed"
@@ -172,7 +167,7 @@ function process_deploy() {
     fi
 
     if [ "${offline}" = n ]; then
-        if ! download_haveged_and_docker; then
+        if ! download_haveged; then
             return 1
         fi
     fi
@@ -199,7 +194,7 @@ function print_usage() {
     echo "--aivault-ip            specify the IP address of aivault"
     echo "--aivault-port          specify the port of aivault, default is 5001"
     echo "--cfs-port              specify the port of cfs, default is 1024"
-    echo "--offline               offline mode, haveged and docker will not be downloaded"
+    echo "--offline               offline mode, haveged will not be downloaded"
     echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
     echo "--all                   all nodes perform configuration tasks"
