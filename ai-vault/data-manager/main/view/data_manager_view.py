@@ -71,7 +71,8 @@ class ImportDataView(BaseView):
             for names in zip_file.namelist():
                 zip_file.extract(names, IMPORT_DIR)
             zip_file.close()
-            if os.system(f"rm -rf {COMMON_DIR}/ksf && rm -rf {COMMON_DIR}/backup && rm -rf {COMMON_DIR}/cert && rm -rf {COMMON_DIR}/user-manager && mv {IMPORT_DIR}/* {COMMON_DIR}; chmod -R 700 {COMMON_DIR}"):
+            if os.system(f"cp -af {IMPORT_DIR}/* {COMMON_DIR}/ && chmod -R 700 {COMMON_DIR}; "
+                         f"/usr/local/openresty/nginx/sbin/nginx -p /home/AiVault/.ai-vault/nginx/ -s reload"):
                 RUN_LOG.log(*self.err_msg(IMPORT_ERROR, "copy file failed"))
                 self._start_aivault()
                 return self.https_ret(status_code.IMPORT_ERROR)
