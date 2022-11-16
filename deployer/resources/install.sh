@@ -24,9 +24,9 @@ fi
 
 # 加载镜像
 if [ "$arch" == "aarch64" ]; then
-  image="ascendhub.huawei.com/public-ascendhub/ai-vault-arm:0.0.1"
+  image="ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64"
 else
-  image="ascendhub.huawei.com/public-ascendhub/ai-vault-x86:0.0.1"
+  image="ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-x86_64"
 fi
 
 

@@ -98,7 +98,7 @@ function generate_ca_cert() {
     openssl rand -writerand ~/.rnd
     read -srp "Enter pass phrase for ca.key:" passout
     echo ""
-    if [ "${#passout}" -lt 6 ]; then
+    if [ "${#passout}" -lt 6 ] || [ "${#passout}" -gt 64 ]; then
         log_error "The CA certificate is generated failed"
         return 1
     fi
@@ -278,9 +278,8 @@ function parse_script_args() {
         esac
     done
 
-    if [ -z "${python_dir}" ]; then
-        log_error "parameter error"
-        print_usage
+    if [ -z "${aivault_ip}" ]; then
+        log_error "Parameter aivault-ip needs to be specified"
         return 1
     fi
 }
