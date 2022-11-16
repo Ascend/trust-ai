@@ -113,6 +113,7 @@ export default {
     ERR_COPY: '复制失败',
     ERR_ADD: '添加失败',
     ERR_USER_AREADY_EXIST: '该用户名已存在',
+    ERR_USER_NUM_EXCEED: '用户数量超出限制',
     ERR_PARAMS_CHECK_FAILED: '参数格式不符合要求',
     ERR_NOT_MEET_PASSWORD_COMPLEXY: '该口令不符合复杂度要求',
     ERR_UPLOAD_FILE_SIZE: '上传文件大小不能超过 50MB!',
