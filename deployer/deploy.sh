@@ -93,7 +93,6 @@ function bootstrap() {
 }
 
 function generate_ca_cert() {
-    mkdir -p "${BASE_DIR}"/resources/cert/ && chmod 750 "${BASE_DIR}"/resources/cert/
     local passout
     openssl rand -writerand ~/.rnd
     read -srp "Enter pass phrase for ca.key:" passout
@@ -173,8 +172,10 @@ function process_deploy() {
     fi
 
     zip_extract
-    if ! generate_ca_cert; then
-        return 1
+    if [ "${include_cert}" = n ]; then
+        if ! generate_ca_cert; then
+            return 1
+        fi
     fi
     local tmp_deploy_play
     tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
@@ -197,7 +198,8 @@ function print_usage() {
     echo "--offline               offline mode, haveged will not be downloaded"
     echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
-    echo "--all                   all nodes perform configuration tasks"
+    echo "--all                   all nodes perform configuration tasks,default only remote nodes"
+    echo "--include-cert          skip certificate generation when certificate exists"
     echo ""
     echo "e.g., ./deploy.sh --aivault-ip={ip} --python-dir={python_dir}"
 }
@@ -207,6 +209,7 @@ aivault_port=5001
 cfs_port=1024
 offline=n
 all=n
+include_cert=n
 
 function parse_script_args() {
     if [ $# = 0 ]; then
@@ -267,6 +270,16 @@ function parse_script_args() {
             offline=y
             shift
             ;;
+        --include-cert)
+            if [ -f "${BASE_DIR}"/resources/cert/ca.key ] && [ -f "${BASE_DIR}"/resources/cert/ca.pem ]; then
+                include_cert=y
+            else
+                log_error "Certificate not found"
+                print_usage
+                return 1
+            fi
+            shift
+            ;;
         *)
             if [ "$1" != "" ]; then
                 log_error "Unsupported parameters: $1"
@@ -284,6 +297,8 @@ function parse_script_args() {
     fi
 }
 
+have_other_node=0
+
 main() {
     check_log "${BASE_DIR}"/deploy.log
     check_log "${BASE_DIR}"/deploy_operation.log
@@ -298,7 +313,13 @@ main() {
     if [ ${bootstrap_status} != 0 ]; then
         return ${bootstrap_status}
     fi
-    if [ "$(grep -c ansible_ssh_pass "${BASE_DIR}"/inventory_file)" == 0 ]; then
+    while read -r line; do
+        if [[ ${line:0:1} =~ [1-9] ]]; then
+            have_other_node=1
+            break
+        fi
+    done <inventory_file
+    if [ ${have_other_node} == 1 ] && [ "$(grep -c ansible_ssh_pass "${BASE_DIR}"/inventory_file)" == 0 ]; then
         eval "$(ssh-agent -s)"
         ssh-add
     fi
