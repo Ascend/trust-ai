@@ -176,6 +176,8 @@ function process_deploy() {
         if ! generate_ca_cert; then
             return 1
         fi
+    else
+        read -srp "Enter pass phrase for ca.key:" passout2
     fi
     local tmp_deploy_play
     tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
@@ -199,7 +201,7 @@ function print_usage() {
     echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
     echo "--all                   all nodes perform configuration tasks,default only remote nodes"
-    echo "--include-cert          skip certificate generation when certificate exists"
+    echo "--exists-cert           skip certificate generation when certificate exists"
     echo ""
     echo "e.g., ./deploy.sh --aivault-ip={ip} --python-dir={python_dir}"
 }
@@ -270,7 +272,7 @@ function parse_script_args() {
             offline=y
             shift
             ;;
-        --include-cert)
+        --exists-cert)
             if [ -f "${BASE_DIR}"/resources/cert/ca.key ] && [ -f "${BASE_DIR}"/resources/cert/ca.pem ]; then
                 include_cert=y
             else
