@@ -46,7 +46,7 @@
    ```
 
 3. 默认5个并发数，如果待配置环境数量大于5，须修改trust-ai/deployer/config/ansible.cfg文件中的forks值，改成待配置的节点总数（可选）。
-4. 执行`./`deploy.sh` --aivault-ip={ip} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书(之后使用工具时可将之前使用工具生成的命名为ca.key和ca.pem的文件放入resources/cert目录，然后指定`--include-cert`参数跳过证书生成，使用该方式进行批量配置时需确保主节点的当前时间在ca.pem证书的有效期内），会要求用户输入ca.key的密钥（长度不能小于6位，且不能大于64位），并进行第二次确认。程序启动后会对各节点的时间进行检测，如果有不满足条件的节点，会打印出来，并要求用户输入[y]es/[n]o进行确认，如果输入“y“或"yes”程序会修改不满足条件的节点的时间，如果输入“n”或“no”会终止程序。
+4. 执行`./`deploy.sh` --aivault-ip={ip} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书(之后使用工具时可将之前使用工具生成的命名为ca.key和ca.pem的文件放入resources/cert目录，然后指定`--exists-cert`参数跳过证书生成，使用该方式进行批量配置时需确保主节点的当前时间在ca.pem证书的有效期内），会要求用户输入ca.key的密钥（长度不能小于6位，且不能大于64位），并进行第二次确认。程序启动后会对各节点的时间进行检测，如果有不满足条件的节点，会打印出来，并要求用户输入[y]es/[n]o进行确认，如果输入“y“或"yes”程序会修改不满足条件的节点的时间，如果输入“n”或“no”会终止程序。
 5. 批量配置操作完成后，请删除inventory_file文件，避免安全风险。
 
 ## 参数说明
@@ -63,7 +63,7 @@
 | --offline      | 离线模式，不会下载haveged，工具所在的环境没有网络时须指定。                                                              |
 | --python-dir   | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
 | --all          | 所有节点执行kmsagent批量配置任务，默认master节点不进行配置。                                                                   |
-| --include-cert | 证书存在时跳过证书生成。                                                                                                      |
+| --exists-cert | 证书存在时跳过证书生成。                                                                                                      |
 
 ## 注意事项
 1. 生成ca.key时的密钥须符合组织的安全要求。
