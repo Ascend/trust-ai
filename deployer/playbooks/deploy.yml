@@ -197,7 +197,7 @@
     
     - name: Generate kmsagent.pem
       shell: python3 {{ resources_dir }}/../config/certs.py {{ all }} {{ passin }}
-      when: server is undefined and ansible_connection == "local"
+      when: ansible_connection == "local"
     
     - name: copy kmsagent.pem to remote hosts
       copy:

@@ -11,7 +11,7 @@
 7. 仅支持Ubuntu 18.04/20.04、CentOS8.2及Euler2.10操作系统，x86_64和aarch64架构均支持。
 8. 请确保各节点的根目录有足够的磁盘空间以正常进行批量配置。
 9. 运行环境时间需要校准到正确的UTC时间，执行`rm -f /etc/localtime && cp /usr/share/zoneinfo/UTC /etc/localtime`将主节点即本工具所在环境的时间设置为UTC时间，再参考命令`date -s '2022-10-24 00:00:00'`校准系统时间，请以实际情况进行校准。之后如果使用之前生成的证书进行批量配置时需确保主节点的当前时间在之前生成的证书的有效期内。
-10. 从[昇腾镜像仓库](https://ascendhub.huawei.com/#/detail/ai-vault)拉取aivault镜像（只需要下载与aivault服务节点相同架构的镜像）,镜像拉取完成后进入工具的resources目录，执行`docker save ascendhub.huawei.com/public-ascendhub/ai-vault:{version} > aivault_aarch64.tar`或`docker save ascendhub.huawei.com/public-ascendhub/ai-vault:{version} > aivault_x86_64.tar`将镜像保存到工具的resources目录（请将**version**替换成对应的版本，镜像保存时的架构名需要一致）。
+10. 从[昇腾镜像仓库](https://ascendhub.huawei.com/#/detail/ai-vault)拉取aivault镜像（只需要下载与aivault服务节点相同架构的镜像）,镜像拉取完成后进入工具的resources目录，执行`docker save ascendhub.huawei.com/public-ascendhub/ai-vault:{version} > aivault_aarch64.tar`或`docker save ascendhub.huawei.com/public-ascendhub/ai-vault:{version} > aivault_x86_64.tar`将镜像保存到工具的resources目录（请将**version**替换成对应的版本，镜像保存时的架构名需要一致）。如果aivault服务所在的节点是主节点，则只需要拉取镜像，不用保存成tar文件。
 11. 请从[官网](https://gitee.com/ascend/trust-ai/releases)获取Ascend-mindxdl-aiguard_plugin_{version}_linux-{arch}.zip文件，然后将其放到工具的resources目录(可选)。
 
 ## 工具获取与安装
@@ -67,5 +67,4 @@
 
 ## 注意事项
 1. 生成ca.key时的密钥须符合组织的安全要求。
-2. master节点不能是aivault服务所在节点。
-3. 批量配置任务依赖master节点，请不要删除或注释掉master节点的配置。
+2. 批量配置任务依赖master节点，请不要删除或注释掉master节点的配置。

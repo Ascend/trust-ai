@@ -28,7 +28,14 @@ class Cert:
                     passin=self.passin,
                 )
         else:
-            if self.all == "y":
+            local_server = False
+            with open(f"{self.code_dir}/inventory_file", "r", encoding="utf-8") as f:
+                for i in f.readlines():
+                    if "local" in i:
+                        break
+                if "server" in i:
+                    local_server = True
+            if self.all == "y" and not local_server:
                 subp = self.get_cert(
                     csr_dir=local_csr_dir,
                     out_dir=os.path.dirname(local_csr_dir),

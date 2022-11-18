@@ -103,14 +103,15 @@
   register: aivault_image
   when:
     - server is defined
-    - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+    - ansible_connection != "local"
 
 - name: docker load aivault image
   shell: docker load < {{ resources_dir }}/aivault_{{ ansible_architecture }}.tar
   register: load_result
+  failed_when: load_result.rc != 0
   when:
+    - ansible_connection != "local"
     - server is defined and aivault_image.stat.exists
-    - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
 - name: message
   debug:
@@ -118,8 +119,8 @@
       - "can not find aivault_{{ ansible_architecture }}.tar, load image failed"
   failed_when: true
   when:
+    - ansible_connection != "local"
     - server is defined and not aivault_image.stat.exists
-    - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
 - name: start the ai-vault service
   shell: |
@@ -127,7 +128,7 @@
     cp -f {{ resources_dir }}/cert/* {{ resources_dir }}/AiVault/.ai-vault
     cp -f {{ resources_dir }}/install.sh {{ resources_dir }}/AiVault/
     bash {{ resources_dir }}/AiVault/install.sh {{ passin }}
-  when: server is defined and load_result.rc == 0
+  when: server is defined
   
 
 - name: find fuse-plugin
