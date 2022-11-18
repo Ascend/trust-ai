@@ -16,7 +16,10 @@
     
     - name: make tar package for aivault server
       shell: tar -zcf ~/aivault.tar ../resources/*.tar
-      when: not (host_count == "1" and first_host == "localhost") and aivault_check_result.stdout == "1"
+      when:
+        - not (host_count == "1" and first_host == "localhost")
+        - aivault_check_result.stdout == "1"
+        - ansible_connection == "local" and server is undefined
 - hosts: '{{ hosts_name }}'
   tasks:
     - name: check when set server
@@ -24,14 +27,7 @@
         msg:
           - "when set server, server must be set to aivault"
       failed_when: true
-      when: server is defined and server != 'aivault' and ansible_connection != "local"
-    
-    - name: check when local set server
-      debug:
-        msg:
-          - "The server must be undefined when the connection is local"
-      failed_when: true
-      when: server is defined and ansible_connection == "local"
+      when: server is defined and server != 'aivault'
 
     - name: clean remote resources
       file:
@@ -62,11 +58,11 @@
       copy:
         src: ~/aivault.tar
         dest: ~/
-      when: server is defined
+      when: server is defined and ansible_connection != "local"
     
     - name: uncompress on aivault server
       unarchive:
         src: ~/aivault.tar
         dest: ~/
         copy: no
-      when: server is defined
+      when: server is defined and ansible_connection != "local"

@@ -143,21 +143,17 @@ function download_haveged() {
 }
 
 function process_deploy() {
-    if [ -z "${python_dir}" ]; then
-        log_error "parameter error"
-        print_usage
+    local count_server
+    count_server=$(grep -c server "${BASE_DIR}"/inventory_file)
+    if [ "${count_server}" -gt 1 ]; then
+        log_error "Only one aivault server node can be set"
         return 1
     fi
-    if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" != 0 ]; then
-        if [ "$(grep -c server "${BASE_DIR}"/inventory_file)" -gt 1 ]; then
-            log_error "Only one aivault server node can be set"
-            return 1
-        fi
-        if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ]; then
-            log_error "can not find aivault image"
-            return 1
-        fi
+    if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ] && [ "${count_server}" -eq 1 ] && [ "$(grep server "${BASE_DIR}"/inventory_file | grep -c local)" -ne 1 ]; then
+        log_error "can not find aivault image"
+        return 1
     fi
+
     local openssl_version
     openssl_version=$(openssl version | cut -d ' ' -f2)
     if [[ ${openssl_version:0:5} != 1.1.1 ]]; then
@@ -322,8 +318,8 @@ main() {
         fi
     done <inventory_file
     if [ ${have_other_node} == 1 ] && [ "$(grep -c ansible_ssh_pass "${BASE_DIR}"/inventory_file)" == 0 ]; then
-        eval "$(ssh-agent -s)"
-        ssh-add
+        eval "$(ssh-agent -s)" >/dev/null
+        ssh-add 2>/dev/null
     fi
     if [ -n "${aivault_ip}" ]; then
         process_deploy
