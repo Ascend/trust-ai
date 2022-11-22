@@ -2,17 +2,26 @@
 ## 功能描述
 批量配置工具，用于配置aivault服务及批量安装haveged、批量配置KMSAgent服务。
 ## 环境要求
-1. 仅支持root用户使用工具。
-2. master节点即工具所在环境需要有网络，或者需要一个有网络的环境下载依赖。
-3. 工具所在的环境需要安装python和ansible，且3.7<= python版本 <=3.9，python库cryptography==3.3.2，ansible-core==2.11.9。
-4. 加密工具运行环境需要安装开源OpenSSL工具，且版本>=1.1.1n，并且<3.0.0。
-5. 请确保待配置环境已经安装包含KMSAgent的驱动，安装好后，可以使用KMSAgent服务。
-6. 确保所有待配置环境已经安装docker，且版本>=18.09。
-7. 仅支持Ubuntu 18.04/20.04、CentOS8.2及Euler2.10操作系统，x86_64和aarch64架构均支持。
-8. 请确保aivault服务节点的根目录的剩余磁盘空间在5G以上，非aivault服务节点的根目录的剩余磁盘空间在1G以上。
-9. 运行环境时间需要校准到正确的UTC时间，执行`rm -f /etc/localtime && cp /usr/share/zoneinfo/UTC /etc/localtime`将主节点即本工具所在环境的时间设置为UTC时间，再参考命令`date -s '2022-10-24 00:00:00'`校准系统时间，请以实际情况进行校准。之后如果使用之前生成的证书进行批量配置时需确保主节点的当前时间在之前生成的证书的有效期内。
-10. 从[昇腾镜像仓库](https://ascendhub.huawei.com/#/detail/ai-vault)拉取aivault镜像（只需要下载与aivault服务节点相同架构的镜像）,镜像拉取完成后进入工具的resources目录，执行`docker save ascendhub.huawei.com/public-ascendhub/ai-vault:{version} > aivault_aarch64.tar`或`docker save ascendhub.huawei.com/public-ascendhub/ai-vault:{version} > aivault_x86_64.tar`将镜像保存到工具的resources目录（请将**version**替换成对应的版本，镜像保存时的架构名需要一致）。如果aivault服务所在的节点是主节点，则只需要拉取镜像，不用保存成tar文件。
-11. 请从[官网](https://gitee.com/ascend/trust-ai/releases)获取Ascend-mindxdl-aiguard_plugin_{version}_linux-{arch}.zip文件，然后将其放到工具的resources目录(可选)。
+1. 所有节点
+   - 仅支持root用户使用。
+   - 确保所有待配置环境已经安装docker，且版本>=18.09。
+   - 支持Ubuntu 18.04/20.04、CentOS8.2、Euler2.10等操作系统，x86_64和aarch64架构均支持。
+2. 主节点
+   - 工具所在环境需要有网络，或者需要一个有网络的环境下载依赖。
+   - 确保根目录的剩余磁盘空间在2G以上。
+   - 工具所在的环境需要安装python和ansible，且3.7<= python版本 <=3.9，安装python后执行`pip3 install setuptools==65.6.0 cryptography==3.3.2 ansible-core==2.11.9`安装相关依赖，python的安装路径作为参数`--python-dir`的值。
+   - 工具运行需要开源OpenSSL工具，且版本>=1.1.1n，并且<3.0.0。
+   - 运行环境时间需要校准到正确的UTC时间。执行`rm -f /etc/localtime && cp /usr/share/zoneinfo/UTC /etc/localtime`将环境的时间设置为UTC时间，再参考命令`date -s '2022-10-24 00:00:00'`校准系统时间，请以实际情况进行校准。之后如果使用之前生成的证书进行批量配置时需确保主节点的当前时间在之前生成的证书的有效期内。
+   - 要部署aivault节点时，从[昇腾镜像仓库](https://ascendhub.huawei.com/#/detail/ai-vault)拉取aivault镜像（只需要下载与aivault服务节点相同架构的镜像）。镜像拉取完成后进入工具的resources目录，执行`docker save ascendhub.huawei.com/public-ascendhub/ai-vault:{version} > aivault_aarch64.tar`或`docker save ascendhub.huawei.com/public-ascendhub/ai-vault:{version} > aivault_x86_64.tar`将镜像保存到工具的resources目录（请将**version**替换成对应的版本，镜像保存时的架构名需要一致）。如果aivault服务所在的节点是主节点，则只需要拉取镜像，不用保存成tar文件。
+   - 请从[官网](https://gitee.com/ascend/trust-ai/releases)获取Ascend-mindxdl-aiguard_plugin_{version}_linux-{arch}.zip文件，然后将其放到工具的resources目录(可选)
+   - 主节点作为aivault节点或边缘节点时，须额外满足相关节点的环境要求。
+
+3. aivault节点
+   - 确保根目录的剩余磁盘空间在5G以上。
+
+4. 边缘节点
+   - 请确保待配置环境已经安装包含KMSAgent的驱动，安装好后，可以使用KMSAgent服务。
+   - 确保根目录的剩余磁盘空间在1G以上。
 
 ## 工具获取与安装
 点击右上角“克隆/下载”按钮，然后点击下方“下载zip”，下载后将zip传到Linux环境上解压使用。建议解压zip包前将环境umask设置成077，并只放到/root目录下解压、使用工具。
