@@ -16,7 +16,8 @@
 1.  系统创建白盒表；
 2.  将白盒表编译进工具中,之后即可使用工具 1)加密口令;2)解密口令并启动cfs。
 
-注：工具自编译需要`go >= 1.17`，且能够链接至[OpenWhiteBox](https://github.com/OpenWhiteBox/AES)以下载开源白盒组件。用户也可直接使用本仓库编译好的二进制文件。
+注：工具自编译需要`go >= 1.17`，且能够链接至[OpenWhiteBox](https://github.com/OpenWhiteBox/AES)以下载开源白盒组件。
+用户也可直接使用本仓库编译好的[二进制文件](https://gitee.com/ascend/trust-ai/releases/tag/v0.0.1)。
 
 # 3.使用说明
 
