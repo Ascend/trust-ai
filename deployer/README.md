@@ -6,7 +6,7 @@
    - 仅支持root用户使用。
    - 确保所有待配置环境已经安装docker，且版本>=18.09。
    - 支持Ubuntu 18.04/20.04、CentOS8.2、Euler2.10等操作系统，x86_64和aarch64架构均支持。
-2. 主节点
+2. 部署工具节点
    - 工具所在环境需要有网络，或者需要一个有网络的环境下载依赖。
    - 确保根目录的剩余磁盘空间在2G以上。
    - 工具所在的环境需要安装python和ansible，且3.7<= python版本 <=3.9，安装python后执行`pip3 install setuptools==65.6.0 cryptography==3.3.2 ansible-core==2.11.9`安装相关依赖，python的安装路径作为参数`--python-dir`的值。
