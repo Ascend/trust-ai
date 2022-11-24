@@ -3,7 +3,7 @@ arch="$(arch)"
 cur_dir=$(dirname "$(readlink -f "$0")")
 
 function run_docker() {
-  docker run -d --restart=always -p 9000:9000 -p 5001:5001 -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault $image bash -c /home/AiVault/run.sh
+  docker run -d --restart=always -p 9000:9000 -p $port:$port -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault $image bash -c /home/AiVault/run.sh
   sleep 3
   docker ps | grep $image | grep "Up"
   if [ $? -eq 0 ]; then
@@ -23,12 +23,10 @@ if [ $? -ne 0 ]; then
 fi
 
 # 加载镜像
-if [ $arch == "aarch64" ]; then
-  image="ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64"
-else
-  image="ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-x86_64"
-fi
+image=$2
 
+# 指定端口
+port=$1
 
 # 非首次安装
 if [ -d "/home/AiVault/.ai-vault" ]; then

@@ -21,10 +21,11 @@
    └─ca.key                 # CA私钥
 ```
 3. 执行安装命令
-`bash install.sh`
+`bash install.sh [port] [image-name]`，安装脚本接收两个参数，第一个指定端口号，第二个指定镜像名。
+例如`bash install.sh 5001 ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64`。
 
 ## 升级
-升级前请停止对应的容器，并修改安装脚本install.sh对应的镜像版本，然后按照安装步骤重新执行
+升级前请停止对应的容器，然后按照安装步骤重新执行
 
 ## 规格
 1. 用户规格：500（包含管理员）

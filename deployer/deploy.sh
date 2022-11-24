@@ -179,7 +179,7 @@ function process_deploy() {
     tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
     echo "- import_playbook: check.yml" >"${tmp_deploy_play}"
     echo "- import_playbook: deploy.yml" >>"${tmp_deploy_play}"
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e passin="${passout2}" -e all="${all}"
+    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e image_name="${image_name}" -e passin="${passout2}" -e all="${all}"
     if [ -f "${tmp_deploy_play}" ]; then
         rm -f "${tmp_deploy_play}"
     fi
@@ -193,6 +193,8 @@ function print_usage() {
     echo "--aivault-ip            specify the IP address of aivault"
     echo "--aivault-port          specify the port of aivault, default is 5001"
     echo "--cfs-port              specify the port of cfs, default is 1024"
+    echo "--image-name            specify the aivault image name"
+    echo "                        example: ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64"
     echo "--offline               offline mode, haveged will not be downloaded"
     echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
@@ -253,6 +255,15 @@ function parse_script_args() {
             fi
             shift
             ;;
+        --image-name=*)
+            image_name=$(echo "$1" | cut -d"=" -f2)
+            if $(echo "${image_name}" | grep -Evq '^[:a-z0-9._-/]*$');then
+                log_error "--image-name parameter is invalid"
+                print_usage
+                return 1
+            fi
+            shift
+            ;;
         --python-dir=*)
             python_dir=$(echo "$1" | cut -d"=" -f2)
             if [ "${python_dir: -1}" = / ]; then
@@ -291,6 +302,10 @@ function parse_script_args() {
 
     if [ -z "${aivault_ip}" ]; then
         log_error "Parameter aivault-ip needs to be specified"
+        return 1
+    fi
+    if [ -z "${image_name}" ]; then
+        log_error "Parameter image-name needs to be specified"
         return 1
     fi
 }
