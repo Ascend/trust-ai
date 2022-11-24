@@ -14,7 +14,7 @@
 │  ├─user-manager           # 用户管理参考设计
 │  └─Dockerfile             # 镜像制作Dockerfile
 ├─aiguard_plugin            # fuse device及容器权限限制插件参考设计
-└─kmsagent-deployer         # 批量依赖安装及配置工具参考设计
+└─deployer                  # 批量依赖安装及配置工具参考设计
 ```
 
 #### 介绍
@@ -31,7 +31,7 @@
 
 详细介绍见[aiguard_plugin](./aiguard_plugin/README.md)
 
-- kmsagent-deployer
+- deployer
 
 详细介绍见[deploy](./deployer/README.md)
 
