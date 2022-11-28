@@ -142,7 +142,7 @@ function download_haveged() {
     fi
 }
 
-function process_deploy() {
+function check_inventory_file_and_openssl() {
     local count_server
     count_server=$(grep -c server "${BASE_DIR}"/inventory_file)
     if [ "${count_server}" -gt 1 ]; then
@@ -153,12 +153,37 @@ function process_deploy() {
         log_error "can not find aivault image"
         return 1
     fi
+    if [ "${count_server}" -eq 1 ] && [ -z "${image_name}" ]; then
+        log_error "Parameter image-name needs to be specified"
+        return 1
+    fi
 
     local openssl_version
     openssl_version=$(openssl version | cut -d ' ' -f2)
     if [[ ${openssl_version:0:5} != 1.1.1 ]]; then
         log_error "The openssl version is incorrect"
         return 1
+    fi
+
+    local have_other_node
+    have_other_node=0
+    while read -r line; do
+        if [[ ${line:0:1} =~ [1-9] ]]; then
+            have_other_node=1
+            break
+        fi
+    done <inventory_file
+    if [ ${have_other_node} == 1 ] && [ "$(grep -c ansible_ssh_pass "${BASE_DIR}"/inventory_file)" == 0 ]; then
+        eval "$(ssh-agent -s)" >/dev/null
+        ssh-add 2>/dev/null
+    fi
+}
+
+function process_deploy() {
+    check_inventory_file_and_openssl
+    local check_inventory_file_and_openssl_status=$?
+    if [[ ${check_inventory_file_and_openssl_status} != 0 ]]; then
+        return ${check_inventory_file_and_openssl_status}
     fi
 
     if [ "${offline}" = n ]; then
@@ -257,7 +282,7 @@ function parse_script_args() {
             ;;
         --image-name=*)
             image_name=$(echo "$1" | cut -d"=" -f2)
-            if $(echo "${image_name}" | grep -Evq '^[:a-z0-9._-/]*$');then
+            if echo "${image_name}" | grep -Evq '^[:a-z0-9._/-]*$'; then
                 log_error "--image-name parameter is invalid"
                 print_usage
                 return 1
@@ -304,13 +329,7 @@ function parse_script_args() {
         log_error "Parameter aivault-ip needs to be specified"
         return 1
     fi
-    if [ -z "${image_name}" ]; then
-        log_error "Parameter image-name needs to be specified"
-        return 1
-    fi
 }
-
-have_other_node=0
 
 main() {
     check_log "${BASE_DIR}"/deploy.log
@@ -325,16 +344,6 @@ main() {
     local bootstrap_status=$?
     if [ ${bootstrap_status} != 0 ]; then
         return ${bootstrap_status}
-    fi
-    while read -r line; do
-        if [[ ${line:0:1} =~ [1-9] ]]; then
-            have_other_node=1
-            break
-        fi
-    done <inventory_file
-    if [ ${have_other_node} == 1 ] && [ "$(grep -c ansible_ssh_pass "${BASE_DIR}"/inventory_file)" == 0 ]; then
-        eval "$(ssh-agent -s)" >/dev/null
-        ssh-add 2>/dev/null
     fi
     if [ -n "${aivault_ip}" ]; then
         process_deploy
