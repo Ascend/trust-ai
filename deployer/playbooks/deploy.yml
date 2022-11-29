@@ -138,7 +138,7 @@
     - name: Configuring the aivault service
       shell: |
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s AIVAULT_SERVER -n AiVaultIP -v {{ aivault_ip }}
-        {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s AIVAULT_SERVER -n AiVaultPort -v {{ aivault_port }}
+        {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s AIVAULT_SERVER -n AiVaultPort -v {{ svc_port }}
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s AIVAULT_SERVER -n AiVaultCaPath -v /opt/cert/ca.pem
       environment:
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"

@@ -3,11 +3,11 @@ arch="$(arch)"
 cur_dir=$(dirname "$(readlink -f "$0")")
 
 function run_docker() {
-  docker run -d --restart=always -p 9000:9000 -p $port:$port -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault $image bash -c /home/AiVault/run.sh
+  docker run -d --restart=always -p $mgmt_port:9000 -p $svc_port:5001 -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault $image bash -c /home/AiVault/run.sh
   sleep 3
   docker ps | grep $image | grep "Up"
   if [ $? -eq 0 ]; then
-    echo "Install successful. Please visit https://ip:9000/"
+    echo "Install successful. Please visit https://ip:$mgmt_port/"
     exit 0
   else
     echo "Install failed, please check install step."
@@ -23,10 +23,26 @@ if [ $? -ne 0 ]; then
 fi
 
 # 加载镜像
-image=$2
+if [ -z $1 ]; then
+  echo "Invalid image name, please specify aivault image name"
+  exit 1
+else
+  image=$1
+fi
 
-# 指定端口
-port=$1
+# 指定svc端口
+if [ -z $2 ]; then
+  svc_port=5001
+else
+  svc_port=$2
+fi
+
+# 指定mgmt端口
+if [ -z $3 ]; then
+  mgmt_port=9000
+else
+  mgmt_port=$3
+fi
 
 # 非首次安装
 if [ -d "/home/AiVault/.ai-vault" ]; then
