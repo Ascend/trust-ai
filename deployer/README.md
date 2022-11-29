@@ -76,7 +76,8 @@
 | :------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | --help  -h     | 查询帮助信息。                                                                                                                |
 | --aivault-ip   | 指定aivault服务的ip地址。                                                                                                     |
-| --aivault-port | 指定aivault服务的端口，默认5001。                                                                                             |
+| --svc-port     | 指定aivault服务的端口，默认5001。                                                                                             |
+| --mgmt-port    | 指定管理aivault服务的服务器端口，默认9000。                                                                                    |
 | --cfs-port     | 指定cfs服务的端口，默认是1024。                                                                                               |
 | --offline      | 离线模式，不会下载haveged，工具所在的环境没有网络时须指定。                                                              |
 | --image-name   | 指定aivault镜像名，参考格式：`ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64`         |

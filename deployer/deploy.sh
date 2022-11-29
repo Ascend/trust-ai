@@ -204,7 +204,7 @@ function process_deploy() {
     tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
     echo "- import_playbook: check.yml" >"${tmp_deploy_play}"
     echo "- import_playbook: deploy.yml" >>"${tmp_deploy_play}"
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e aivault_port="${aivault_port}" -e cfs_port="${cfs_port}" -e image_name="${image_name}" -e passin="${passout2}" -e all="${all}"
+    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e svc_port="${svc_port}" -e mgmt_port="${mgmt_port}" -e cfs_port="${cfs_port}" -e image_name="${image_name}" -e passin="${passout2}" -e all="${all}"
     if [ -f "${tmp_deploy_play}" ]; then
         rm -f "${tmp_deploy_play}"
     fi
@@ -216,7 +216,8 @@ function print_usage() {
     echo "options:"
     echo "-h, --help              show this help message and exit"
     echo "--aivault-ip            specify the IP address of aivault"
-    echo "--aivault-port          specify the port of aivault, default is 5001"
+    echo "--svc-port              specify the port of aivault, default is 5001"
+    echo "--mgmt-port             specify the server port to manage the aivault service, default is 9000"
     echo "--cfs-port              specify the port of cfs, default is 1024"
     echo "--image-name            specify the aivault image name"
     echo "                        example: ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64"
@@ -230,7 +231,8 @@ function print_usage() {
 }
 
 python_dir="/usr/local/python3.7.5"
-aivault_port=5001
+svc_port=5001
+mgmt_port=9000
 cfs_port=1024
 offline=n
 all=n
@@ -262,10 +264,19 @@ function parse_script_args() {
             fi
             shift
             ;;
-        --aivault-port=*)
-            aivault_port=$(echo "$1" | cut -d"=" -f2)
-            if [ "$(echo "${aivault_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${aivault_port}" -lt 1024 ] || [ "${aivault_port}" -gt 65535 ]; then
-                log_error "The input value of [aivault-port] is invalid, and value from 1024 to 65535 is available."
+        --svc-port=*)
+            svc_port=$(echo "$1" | cut -d"=" -f2)
+            if [ "$(echo "${svc_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${svc_port}" -lt 1024 ] || [ "${svc_port}" -gt 65535 ]; then
+                log_error "The input value of [svc-port] is invalid, and value from 1024 to 65535 is available."
+                print_usage
+                return 1
+            fi
+            shift
+            ;;
+        --mgmt-port=*)
+            mgmt_port=$(echo "$1" | cut -d"=" -f2)
+            if [ "$(echo "${mgmt_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${mgmt_port}" -lt 1024 ] || [ "${mgmt_port}" -gt 65535 ]; then
+                log_error "The input value of [mgmt-port] is invalid, and value from 1024 to 65535 is available."
                 print_usage
                 return 1
             fi
