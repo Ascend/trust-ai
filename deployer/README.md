@@ -34,7 +34,7 @@
 
 ## 批量配置
 
-本工具运行前请确认系统中未安装paramiko（ansible在某些情况下会使用paramiko，其配置不当容易引起安全问题）。可使用基于密钥认证的ssh连接和账户密码的ssh连接方式，参考如下1-2步骤（使用其中一种方式即可，推荐基于密钥认证的ssh连接方式）。
+本工具运行前请确认系统中未安装paramiko（ansible在某些情况下会使用paramiko，其配置不当容易引起安全问题）。EulerOS等很多操作系统默认禁止root用户远程连接，所以需提前配置/etc/ssh/sshd_config中PermitRootLogin为yes（个别OS配置方法或许不同，请参考OS官方说明）。批量配置任务依赖master节点，请不要删除或注释掉master节点的配置。可使用基于密钥认证的ssh连接和账户密码的ssh连接方式，参考如下1-2步骤（使用其中一种方式即可，推荐基于密钥认证的ssh连接方式）。
 
 1. 基于密钥认证的ssh连接，编辑inventory_file文件，配置其他设备的ip地址，其中aivault服务所在节点最多有一个，该节点不会进行KMSAgent配置，仅安装haveged、导入aivault镜像并启动aivault服务，该节点须配置变量server='aivault'。inventory_file文件格式如下：
 
@@ -62,9 +62,12 @@
    ip_address_2 ansible_ssh_pass='password'
    ip_address_3 ansible_ssh_pass='password'
    ```
+   **注意事项**：
+   - 密码认证方式请确保待部署节点允许密码登录。如果不允许，可将/etc/ssh/sshd_config文件里的PasswordAuthentication字段配置为yes并重启sshd服务，用完本工具后再禁止密码登录即可。
+   - 密码认证方式时请删除主节点/root/.ssh目录里的内容。
 
 3. 默认5个并发数，如果待配置环境数量大于5，须修改trust-ai/deployer/config/ansible.cfg文件中的forks值，改成待配置的节点总数（可选）。
-4. 执行`./deploy.sh --aivault-ip={ip} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书(之后使用工具时可将之前使用工具生成的命名为ca.key和ca.pem的文件放入resources/cert目录，然后指定`--exists-cert`参数跳过证书生成，使用该方式进行批量配置时需确保主节点的当前时间在ca.pem证书的有效期内，且输入的密码和之前生成ca.key的一样），会要求用户输入ca.key的密码（长度不能小于6位，且不能大于64位），并进行第二次确认。程序启动后会对各节点的时间进行检测，如果有不满足条件的节点，会打印出来，并要求用户输入[y]es/[n]o进行确认，如果输入“y“或"yes”程序会修改不满足条件的节点的时间，如果输入“n”或“no”会终止程序。
+4. 执行`./deploy.sh --aivault-ip={ip} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书(请确保生成ca.key时的密钥符合组织的安全要求。之后使用工具时可将之前使用工具生成的命名为ca.key和ca.pem的文件放入resources/cert目录，然后指定`--exists-cert`参数跳过证书生成，使用该方式进行批量配置时需确保主节点的当前时间在ca.pem证书的有效期内，且输入的密码和之前生成ca.key的一样），会要求用户输入ca.key的密码（长度不能小于6位，且不能大于64位），并进行第二次确认。程序启动后会对各节点的时间进行检测，如果有不满足条件的节点，会打印出来，并要求用户输入[y]es/[n]o进行确认，如果输入“y“或"yes”程序会修改不满足条件的节点的时间，如果输入“n”或“no”会终止程序。
 5. 批量配置操作完成后，请删除inventory_file文件，避免安全风险。
 
 ## 参数说明
@@ -72,20 +75,15 @@
 用户根据实际需要选择对应参数完成批量配置，命令为`./deploy.sh [options]`。
 参数说明请参见下表，表中各参数的可选参数范围可通过执行`./deploy.sh --help`查看。
 
-| 参数           | 说明                                                                                                                          |
-| :------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| --help  -h     | 查询帮助信息。                                                                                                                |
-| --aivault-ip   | 指定aivault服务的ip地址。                                                                                                     |
-| --svc-port     | 指定aivault服务的端口，默认5001。                                                                                             |
-| --mgmt-port    | 指定管理aivault服务的服务器端口，默认9000。                                                                                    |
-| --cfs-port     | 指定cfs服务的端口，默认是1024。                                                                                               |
-| --offline      | 离线模式，不会下载haveged，工具所在的环境没有网络时须指定。                                                              |
-| --image-name   | 指定aivault镜像名，参考格式：`ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64`         |
-| --python-dir   | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
-| --all          | 所有节点执行kmsagent批量配置任务，默认master节点不进行配置。                                                                   |
+| 参数          | 说明                                                                                                                          |
+| :------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| --help  -h    | 查询帮助信息。                                                                                                                |
+| --aivault-ip  | 指定aivault服务的ip地址。                                                                                                     |
+| --svc-port    | 指定aivault服务的端口，默认5001。                                                                                             |
+| --mgmt-port   | 指定管理aivault服务的服务器端口，默认9000。                                                                                   |
+| --cfs-port    | 指定cfs服务的端口，默认是1024。                                                                                               |
+| --offline     | 离线模式，不会下载haveged，工具所在的环境没有网络时须指定。                                                                   |
+| --image-name  | 指定aivault镜像名，参考格式：`ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64`                                     |
+| --python-dir  | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
+| --all         | 所有节点执行kmsagent批量配置任务，默认master节点不进行配置。                                                                  |
 | --exists-cert | 证书存在时跳过证书生成。                                                                                                      |
-
-## 注意事项
-
-1. 生成ca.key时的密钥须符合组织的安全要求。
-2. 批量配置任务依赖master节点，请不要删除或注释掉master节点的配置。
