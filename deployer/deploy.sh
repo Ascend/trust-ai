@@ -144,12 +144,29 @@ function download_haveged() {
 
 function check_inventory_file_and_openssl() {
     local count_server
-    count_server=$(grep -c server "${BASE_DIR}"/inventory_file)
+    count_server=0
+    local count_ssh_pass_node
+    count_ssh_pass_node=0
+    local have_other_node
+    have_other_node=0
+    while read -r line; do
+        if [[ ${line:0:1} =~ [1-9] ]] || [[ ${line:0:9} =~ "localhost" ]]; then
+            if [[ ${line:0:1} =~ [1-9] ]]; then
+                ((have_other_node++))
+            fi
+            if [ "$(echo "${line}" | grep -c server)" -eq 1 ]; then
+                ((count_server++))
+            fi
+            if [ "$(echo "${line}" | grep -c ansible_ssh_pass)" -eq 1 ]; then
+                ((count_ssh_pass_node++))
+            fi
+        fi
+    done <inventory_file
     if [ "${count_server}" -gt 1 ]; then
         log_error "Only one aivault server node can be set"
         return 1
     fi
-    if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ] && [ "${count_server}" -eq 1 ] && [ "$(grep server "${BASE_DIR}"/inventory_file | grep -c local)" -ne 1 ]; then
+    if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ] && [ "${count_server}" -eq 1 ] && [ "${have_other_node}" -ne 0 ]; then
         log_error "can not find aivault image"
         return 1
     fi
@@ -164,16 +181,19 @@ function check_inventory_file_and_openssl() {
         log_error "The openssl version is incorrect"
         return 1
     fi
-
-    local have_other_node
-    have_other_node=0
-    while read -r line; do
-        if [[ ${line:0:1} =~ [1-9] ]]; then
-            have_other_node=1
-            break
-        fi
-    done <inventory_file
-    if [ ${have_other_node} == 1 ] && [ "$(grep -c ansible_ssh_pass "${BASE_DIR}"/inventory_file)" == 0 ]; then
+    if [ "${count_ssh_pass_node}" -ne 0 ] && [ "${count_ssh_pass_node}" -ne "${have_other_node}" ]; then
+        log_error "Only one authentication method is accepted"
+        return 1
+    fi
+    if [ "${count_ssh_pass_node}" -ne 0 ] && [ "$(grep host_key_checking "${BASE_DIR}"/config/ansible.cfg | cut -d'=' -f2)" != 'False' ]; then
+        log_error "The value of host_key_checking should be False"
+        return 1
+    fi
+    if [ "${count_ssh_pass_node}" -eq 0 ] && [ "$(grep host_key_checking "${BASE_DIR}"/config/ansible.cfg | cut -d'=' -f2)" != 'True' ]; then
+        log_error "The value of host_key_checking should be True"
+        return 1
+    fi
+    if [ "${count_ssh_pass_node}" -eq 0 ] && [ "${have_other_node}" -ne 0 ]; then
         eval "$(ssh-agent -s)" >/dev/null
         ssh-add 2>/dev/null
     fi
