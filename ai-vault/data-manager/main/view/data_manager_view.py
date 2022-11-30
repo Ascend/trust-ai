@@ -122,15 +122,22 @@ class ExportDataView(BaseView):
         try:
             if os.path.exists(AIVAULT_EXPORT_DATA_FILE):
                 os.remove(AIVAULT_EXPORT_DATA_FILE)
-            if DataSizeView.get_size() > MAX_DATA_SIZE:
-                return self.https_ret(status_code.SIZE_ERROR)
             self.zip_file(COMMON_DIR)
+            if self.get_zip_file_size(AIVAULT_EXPORT_DATA_FILE) > MAX_DATA_SIZE:
+                return self.https_ret(status_code.SIZE_ERROR)
             return send_from_directory(directory=HOME_PATH, path="aivault.zip"), 200
         except Exception as e:
             RUN_LOG.log(*self.err_msg(EXPORT_ERROR, e))
             return self.https_ret(status_code.EXPORT_ERROR)
         finally:
-            os.remove(AIVAULT_EXPORT_DATA_FILE)
+            if os.path.exists(AIVAULT_EXPORT_DATA_FILE):
+                os.remove(AIVAULT_EXPORT_DATA_FILE)
+
+    @staticmethod
+    def get_zip_file_size(file_path):
+        with zip_file.ZipFile(file_path, 'r') as zipf:
+            file_sizes = (inner_file.file_size for inner_file in zipf.infolist())
+            return sum(file_sizes)
 
     @staticmethod
     def zip_file(src_dir):
@@ -185,4 +192,3 @@ data_manager.add_url_rule("/export",
 data_manager.add_url_rule("/size",
                           view_func=get_data_size,
                           methods=("GET",))
-
