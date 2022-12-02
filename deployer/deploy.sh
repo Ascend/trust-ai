@@ -33,6 +33,17 @@ function log_error() {
     echo "${DATE_N} ${USER_N}@${IP_N} [ERROR] $*" >>"${BASE_DIR}"/deploy.log
 }
 
+function log_warning() {
+    local DATE_N
+    DATE_N=$(date "+%Y-%m-%d %H:%M:%S")
+    local USER_N
+    USER_N=$(whoami)
+    local IP_N
+    IP_N=$(who am i | awk '{print $NF}' | sed 's/[()]//g')
+    echo "[WARNING] $*"
+    echo "${DATE_N} ${USER_N}@${IP_N} [WARNING] $*" >>"${BASE_DIR}"/deploy.log
+}
+
 function operation_log_info() {
     local DATE_N
     DATE_N=$(date "+%Y-%m-%d %H:%M:%S")
@@ -145,7 +156,6 @@ function download_haveged() {
 function check_inventory_file_and_openssl() {
     local count_server
     count_server=0
-    local count_ssh_pass_node
     count_ssh_pass_node=0
     local have_other_node
     have_other_node=0
@@ -199,6 +209,50 @@ function check_inventory_file_and_openssl() {
     fi
 }
 
+function get_os_name() {
+    local os_id
+    os_id=$(grep -oP "^ID=\"?\K\w+" /etc/os-release)
+    local os_name
+    os_name=${OS_MAP[$os_id]}
+    echo "${os_name}"
+}
+
+function check_rpm_exists() {
+    test_sshpass=$(command -v sshpass | wc -l)
+    if [ "${test_sshpass}" -eq 1 ]; then
+        return
+    fi
+
+    local g_os_name
+    g_os_name=$(get_os_name)
+    local test_rpm
+    test_rpm=$(command -v rpm | wc -l)
+    local have_rpm
+    case ${g_os_name} in
+    centos | euleros | sles | kylin | openEuler)
+        local have_rpm=1
+        ;;
+    ubuntu)
+        local have_rpm=0
+        ;;
+    *)
+        have_rpm=$test_rpm
+        ;;
+    esac
+    log_warning "no sshpass, install sshpass package"
+    if [ "${have_rpm}" -eq 1 ]; then
+        rpm -i --force --nodeps "${BASE_DIR}"/resources/rpm_"$(arch)"/sshpass*.rpm >/dev/null
+    else
+        export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical
+        dpkg --force-all -i "${BASE_DIR}"/resources/dpkg_"$(arch)"/sshpass*.deb >/dev/null
+    fi
+    local install_result_status=$?
+    if [[ "${install_result_status}" != 0 ]]; then
+        log_error "install sshpass packages fail"
+        return 1
+    fi
+}
+
 function process_deploy() {
     check_inventory_file_and_openssl
     local check_inventory_file_and_openssl_status=$?
@@ -219,6 +273,11 @@ function process_deploy() {
         fi
     else
         read -srp "Enter pass phrase for ca.key:" passout2
+    fi
+    if [ "${count_ssh_pass_node}" -ne 0 ]; then
+        if ! check_rpm_exists; then
+            return 1
+        fi
     fi
     local tmp_deploy_play
     tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
