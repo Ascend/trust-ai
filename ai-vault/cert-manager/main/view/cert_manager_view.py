@@ -56,7 +56,7 @@ def gen_prikey_and_csr(data):
     req.get_subject().stateOrProvinceName = data.get("StateOrProvinceName")
     req.get_subject().localityName = data.get("LocalityName")
     req.get_subject().organizationName = data.get("OrganizationName")
-    req.get_subject().organizationalUnitName = data.get("OrganizationUnitName")
+    req.get_subject().organizationalUnitName = data.get("OrganizationalUnitName")
     req.get_subject().emailAddress = data.get("EmailAddress")
 
     req.set_pubkey(pub_key)

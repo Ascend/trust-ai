@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 
 def register_api():
-    app.register_blueprint(cert_manager, url_prefix="/usermanager/v1")
+    app.register_blueprint(cert_manager, url_prefix="/certmanager/v1")
     if not os.path.exists(TMP_DIR):
         os.mkdir(TMP_DIR)
 
