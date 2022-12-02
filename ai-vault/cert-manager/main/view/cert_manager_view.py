@@ -46,9 +46,9 @@ def sign_cert(ca_crt, ca_key, csr: bytes):
 
 
 def gen_prikey_and_csr(data):
-    pub_key = OpenSSL.crypto.PKey()
-    pub_key.generate_key(OpenSSL.crypto.TYPE_RSA, int(data.get("KeyLen", "3072")))
-    pub_key.to_cryptography_key()
+    pri_key = OpenSSL.crypto.PKey()
+    pri_key.generate_key(OpenSSL.crypto.TYPE_RSA, int(data.get("KeyLen", "3072")))
+    pri_key.to_cryptography_key()
 
     req = OpenSSL.crypto.X509Req()
     req.get_subject().commonName = data.get("CommonName")
@@ -59,13 +59,13 @@ def gen_prikey_and_csr(data):
     req.get_subject().organizationalUnitName = data.get("OrganizationalUnitName")
     req.get_subject().emailAddress = data.get("EmailAddress")
 
-    req.set_pubkey(pub_key)
-    req.sign(pub_key, 'sha256')
+    req.set_pubkey(pri_key)
+    req.sign(pri_key, 'sha256')
 
-    pri_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, pub_key)
+    pri_key_export = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, pri_key)
     csr = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, req)
 
-    return pri_key, csr
+    return pri_key_export, csr
 
 
 class BaseView(views.MethodView):
