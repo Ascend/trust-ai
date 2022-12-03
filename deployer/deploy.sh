@@ -176,12 +176,8 @@ function check_inventory_file_and_openssl() {
         log_error "Only one aivault server node can be set"
         return 1
     fi
-    if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ] && [ "${count_server}" -eq 1 ] && [ "${have_other_node}" -ne 0 ]; then
+    if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ] && [ "${count_server}" -eq 1 ]; then
         log_error "can not find aivault image"
-        return 1
-    fi
-    if [ "${count_server}" -eq 1 ] && [ -z "${image_name}" ]; then
-        log_error "Parameter image-name needs to be specified"
         return 1
     fi
 
@@ -248,7 +244,7 @@ function check_rpm_exists() {
     fi
     local install_result_status=$?
     if [[ "${install_result_status}" != 0 ]]; then
-        log_error "install sshpass packages fail"
+        log_error "install sshpass package fail"
         return 1
     fi
 }
@@ -283,7 +279,7 @@ function process_deploy() {
     tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
     echo "- import_playbook: check.yml" >"${tmp_deploy_play}"
     echo "- import_playbook: deploy.yml" >>"${tmp_deploy_play}"
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e svc_port="${svc_port}" -e mgmt_port="${mgmt_port}" -e cfs_port="${cfs_port}" -e image_name="${image_name}" -e passin="${passout2}" -e all="${all}"
+    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e svc_port="${svc_port}" -e mgmt_port="${mgmt_port}" -e cfs_port="${cfs_port}" -e passin="${passout2}" -e all="${all}"
     if [ -f "${tmp_deploy_play}" ]; then
         rm -f "${tmp_deploy_play}"
     fi
@@ -298,8 +294,6 @@ function print_usage() {
     echo "--svc-port              specify the port of aivault, default is 5001"
     echo "--mgmt-port             specify the server port to manage the aivault service, default is 9000"
     echo "--cfs-port              specify the port of cfs, default is 1024"
-    echo "--image-name            specify the aivault image name"
-    echo "                        example: ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64"
     echo "--offline               offline mode, haveged will not be downloaded"
     echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
@@ -365,15 +359,6 @@ function parse_script_args() {
             cfs_port=$(echo "$1" | cut -d"=" -f2)
             if [ "$(echo "${cfs_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${cfs_port}" -lt 1024 ] || [ "${cfs_port}" -gt 65535 ]; then
                 log_error "The input value of [cfs-port] is invalid, and value from 1024 to 65535 is available."
-                print_usage
-                return 1
-            fi
-            shift
-            ;;
-        --image-name=*)
-            image_name=$(echo "$1" | cut -d"=" -f2)
-            if echo "${image_name}" | grep -Evq '^[:a-z0-9._/-]*$'; then
-                log_error "--image-name parameter is invalid"
                 print_usage
                 return 1
             fi
