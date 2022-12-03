@@ -7,7 +7,7 @@
   when: ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
 - name: yum install haveged
-  shell: rpm -ivh --force --nodeps --replacepkgs {{ resources_dir }}/rpm_{{ ansible_architecture }}/*.rpm
+  shell: rpm -ivh --force --nodeps --replacepkgs {{ resources_dir }}/rpm_{{ ansible_architecture }}/haveged*.rpm
   register: sys_result
   when:
     - ansible_pkg_mgr == "yum" or ansible_pkg_mgr == "dnf" or ansible_pkg_mgr == "zypper"
@@ -22,7 +22,7 @@
     - haveged_status.stdout is defined and haveged_status.stdout != "active"
 
 - name: apt install haveged
-  shell: export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical; dpkg --force-all -i {{ resources_dir }}/dpkg_{{ ansible_architecture }}/*.deb
+  shell: export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical; dpkg --force-all -i {{ resources_dir }}/dpkg_{{ ansible_architecture }}/haveged*.deb {{ resources_dir }}/dpkg_{{ ansible_architecture }}/libhavege1*.deb
   register: sys_result
   when:
     - ansible_pkg_mgr == "apt"
@@ -103,14 +103,12 @@
   register: aivault_image
   when:
     - server is defined
-    - ansible_connection != "local"
 
 - name: docker load aivault image
   shell: docker load < {{ resources_dir }}/aivault_{{ ansible_architecture }}.tar
   register: load_result
   failed_when: load_result.rc != 0
   when:
-    - ansible_connection != "local"
     - server is defined and aivault_image.stat.exists
 
 - name: message
@@ -119,15 +117,19 @@
       - "can not find aivault_{{ ansible_architecture }}.tar, load image failed"
   failed_when: true
   when:
-    - ansible_connection != "local"
     - server is defined and not aivault_image.stat.exists
+
+- name: get aivault image name
+  shell: echo {{ load_result.stdout }} | cut -d ' ' -f3
+  register: image_name
+  when: server is defined
 
 - name: start the ai-vault service
   shell: |
     mkdir -p {{ resources_dir }}/AiVault/.ai-vault
     cp -f {{ resources_dir }}/cert/* {{ resources_dir }}/AiVault/.ai-vault
     cp -f {{ resources_dir }}/install.sh {{ resources_dir }}/AiVault/
-    bash {{ resources_dir }}/AiVault/install.sh {{ passin }} {{ svc_port }} {{ mgmt_port }} {{ image_name }}
+    bash {{ resources_dir }}/AiVault/install.sh {{ passin }} {{ svc_port }} {{ mgmt_port }} {{ image_name.stdout }}
   when: server is defined
   
 
