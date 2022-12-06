@@ -25,18 +25,20 @@
 
 ```
 [root@ubuntu root]# ./ai-tool enc
-please input password:
+please input psk password: 
+please input cert password: 
 
 ```
 
-2.  将输出的密文存储在环境变量`MYKEY`中（可通过修改main.go中的name变量自定义环境变量名）。
+2.  将输出的psk口令密文、cert口令密文分别存储在环境变量`PSK_KEY CERT_KEY`中,（可通过修改main.go中的`pskName\certName`变量自定义环境变量名）。
 
 ```
 [root@ubuntu  root]# ./ai-tool enc
-please input password:
-the cipherText is: xxxxxxxxxxxxxxxxxxxxx
+please input psk password: 
+please input cert password: 
+Please use the following command to set environment variables: 
+PSK_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+CERT_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 3.  `./ai-tool run cfs_cmd`使用工具启动cfs命令，即可自动交互输入口令。
-
-

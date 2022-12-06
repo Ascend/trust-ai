@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	info = "Please input mk to decrypt psk info, and end with a new line."
+	mkInfo   = "Please input mk to decrypt psk info, and end with a new line."
+	certInfo = "Please input password to decrypt private key info, and end with a new line."
 )
 
 // CloseConsole close expect console
@@ -24,19 +25,21 @@ func CloseConsole(console *expect.Console) {
 // ConsoleShow show console
 func ConsoleShow(console *expect.Console, ch chan bool) {
 	data := make([]byte, 1024)
-	_, err := console.Read(data)
-	if err != nil {
-		fmt.Printf("func console Read failed with err: %v\n", err.Error())
-		return
+	count := 0
+	ch <- true
+	for count < 2 {
+		_, err := console.Read(data)
+		if err != nil {
+			fmt.Printf("func console Read failed with err: %v\n", err.Error())
+		}
+		if strings.Contains(string(data), mkInfo) || strings.Contains(string(data), certInfo) {
+			ch <- true
+			count += 1
+		} else {
+			fmt.Println(string(data))
+		}
 	}
-	if strings.Contains(string(data), info) {
-		ch <- true
-	} else {
-		fmt.Printf("terminal result is false, data: %s", string(data))
-		return
-	}
-
-	_, err = console.ExpectEOF()
+	_, err := console.ExpectEOF()
 	if err != nil {
 		fmt.Printf("func console ExpectEOF failed with err: %v\n", err.Error())
 		return
