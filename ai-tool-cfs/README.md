@@ -34,5 +34,11 @@
 [root@ubuntu  root]# ./ai-tool dec path(optional)
 ```
 
+3.  打印工具帮助信息
+
+```
+[root@ubuntu root]# ./ai-tool h
+```
+
 
 

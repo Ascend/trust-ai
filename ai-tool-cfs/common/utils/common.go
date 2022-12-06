@@ -13,7 +13,8 @@ const (
 	
 	ai-tool-cfs options:
 		enc   passwd  ca私钥口令需要满足复杂要求
-		dec   path    加密口令存放路径(可选）	
+		dec   path    加密口令存放路径(可选）
+		h          	  打印帮助信息
 `
 )
 

@@ -80,7 +80,10 @@ func main() {
 			whiteBoxDecrypt(path, &f)
 		}
 		whiteBoxDecrypt(filePath, &f)
+	case "h":
+		utils.PrintHelp()
 	default:
 		fmt.Println("only support enc or dec command.")
+		utils.PrintHelp()
 	}
 }
