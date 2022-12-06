@@ -94,7 +94,7 @@ class ImportDataView(BaseView):
             process_name = p.name()
             if 'ai-vault' == process_name:
                 RUN_LOG.log(*self.info_msg("start kill ai-vault"))
-                os.kill(pid, signal.SIGKILL)
+                os.kill(pid, signal.SIGTERM)
                 return
 
     @staticmethod
