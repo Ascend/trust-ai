@@ -135,7 +135,7 @@ class ExportDataView(BaseView):
 
     @staticmethod
     def get_zip_file_size(file_path):
-        with zip_file.ZipFile(file_path, 'r') as zipf:
+        with zipfile.ZipFile(file_path, 'r') as zipf:
             file_sizes = (inner_file.file_size for inner_file in zipf.infolist())
             return sum(file_sizes)
 

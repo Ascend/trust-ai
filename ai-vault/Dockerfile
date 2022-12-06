@@ -2,16 +2,8 @@ FROM openresty/openresty:buster
 
 RUN sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list
 RUN sed -i "/openresty.org/d" /etc/apt/sources.list
-RUN apt-get update
-RUN apt-get install build-essential -y
-RUN apt-get install libssl1.1 -y
-RUN apt-get install zlib* -y
-RUN apt-get install procps -y
-RUN apt-get install sqlite3 -y
-RUN apt-get install python3 -y
-RUN apt-get install python3-pip -y
-RUN apt-get install haveged -y
-RUN apt-get install net-tools -y
+RUN apt-get update && \
+    apt-get install -y build-essential libssl1.1 zlib* procps sqlite3 python3 python3-pip haveged net-tools
 
 RUN mkdir ~/.pip \
 && echo '[global] \n\
@@ -30,7 +22,3 @@ RUN chown -R AiVault:AiVault ./
 RUN chmod -R 700 ./
 USER AiVault
 CMD bash -c /home/AiVault/run.sh
-
-
-
-
