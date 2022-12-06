@@ -36,7 +36,7 @@ please input cert password:
 [root@ubuntu  root]# ./ai-tool enc
 please input psk password: 
 please input cert password: 
-Please use the following command to set environment variables: 
+Please set environment variables: 
 PSK_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 CERT_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
