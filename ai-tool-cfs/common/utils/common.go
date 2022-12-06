@@ -12,10 +12,9 @@ const (
 	Usage ./ai-tool-cfs [options]
 	
 	ai-tool-cfs options:
-		enc   passwd  ca私钥口令需要满足复杂要求
-		dec   path    加密口令存放路径(可选）
-		h          	  打印帮助信息
-`
+		enc   passwd  ca private key password should satisfy requirements
+		dec   path    encrypted password file path (optional）
+		h          	  print help message`
 )
 
 func PrintErrExit(e error) {
