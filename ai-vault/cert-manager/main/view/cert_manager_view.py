@@ -3,6 +3,7 @@
 import json
 import os.path
 import random
+import subprocess
 import time
 import zipfile
 import OpenSSL
@@ -18,7 +19,21 @@ with open(CA_KEY, "rb") as f:
     KEY_BYTES = f.read()
 with open(CA_PEM, "rb") as f:
     CRT_BYTES = f.read()
-PASSWD = "qwerty"
+
+
+def get_plain_passwd(command):
+    """
+    decrypt password by whitebox and get plain password
+    """
+    output = subprocess.Popen(command, shell=True,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT)
+    passwd_byte = output.communicate()[0]
+    passwd = passwd_byte.decode(encoding="utf-8")
+    return passwd
+
+
+PASSWD = get_plain_passwd("./ai-tool-cfs dec")
 
 
 def sign_cert(ca_crt, ca_key, csr: bytes):
