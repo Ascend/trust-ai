@@ -18,6 +18,8 @@ COPY user-manager/ ./user-manager
 COPY data-manager/ ./data-manager
 COPY apigw/nginx/ ./nginx
 COPY build/run.sh ./run.sh
+COPY ai-vault ./ai-vault
+COPY lib ./lib
 RUN chown -R AiVault:AiVault ./
 RUN chmod -R 700 ./
 USER AiVault
