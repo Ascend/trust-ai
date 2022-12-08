@@ -2,8 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"strings"
-
 	expect "github.com/Netflix/go-expect"
 )
 
@@ -24,22 +22,20 @@ func CloseConsole(console *expect.Console) {
 
 // ConsoleShow show console
 func ConsoleShow(console *expect.Console, ch chan bool) {
-	data := make([]byte, 1024)
-	count := 0
 	ch <- true
-	for count < 2 {
-		_, err := console.Read(data)
-		if err != nil {
-			fmt.Printf("func console Read failed with err: %v\n", err.Error())
-		}
-		if strings.Contains(string(data), mkInfo) || strings.Contains(string(data), certInfo) {
-			ch <- true
-			count += 1
-		} else {
-			fmt.Println(string(data))
-		}
+	_, err := console.ExpectString(mkInfo)
+	if err != nil {
+		fmt.Printf("func console ExpectString mkInfo failed with err: %v\n", err.Error())
 	}
-	_, err := console.ExpectEOF()
+	ch <- true
+
+	_, err = console.ExpectString(certInfo)
+	if err != nil {
+		fmt.Printf("func console ExpectString certInfo failed with err: %v\n", err.Error())
+	}
+	ch <- true
+
+	_, err = console.ExpectEOF()
 	if err != nil {
 		fmt.Printf("func console ExpectEOF failed with err: %v\n", err.Error())
 		return
