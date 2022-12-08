@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"ai-tool/common/utils"
-	"ai-tool/common/whitebox"
+	"ai-whitebox/common/utils"
+	"ai-whitebox/common/whitebox"
 )
 
 const (
@@ -71,6 +71,7 @@ func main() {
 			fmt.Println("invalid command.")
 			utils.PrintHelp()
 			return
+		}
 		passwd := os.Args[2]
 		p := []byte(passwd)
 		if err := utils.CheckPasswd(p); err != nil {

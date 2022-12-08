@@ -12,7 +12,7 @@ import (
 	"github.com/OpenWhiteBox/primitives/encoding"
 	"github.com/OpenWhiteBox/primitives/matrix"
 
-	"ai-tool/common/utils"
+	"ai-whitebox/common/utils"
 )
 
 // GenerateTable generate whitebox table

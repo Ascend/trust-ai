@@ -1,6 +1,6 @@
 package main
 
-import "ai-tool/common/whitebox"
+import "ai-whitebox/common/whitebox"
 
 func main() {
 	whitebox.GenerateTable()
