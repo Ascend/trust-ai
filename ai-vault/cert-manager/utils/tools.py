@@ -4,12 +4,12 @@ import re
 import os
 import binascii
 import hashlib
-import status_code
 
 from flask import jsonify
-
+from utils import status_code
 from utils.status_code import ERROR_MSG_MAP
 from config import SALT_LEN, KEY_LEN, Iteration_Count
+
 
 _lower_character_reg = r'[a-z]{1,}'
 _upper_character_reg = r'[A-Z]{1,}'

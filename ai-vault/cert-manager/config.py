@@ -1,7 +1,6 @@
 # coding: UTF-8
 # Copyright (c) 2022. Huawei Technologies Co., Ltd. ALL rights reserved.
 import os
-import json
 import logging
 
 
@@ -14,8 +13,11 @@ LOG_INFO = 20
 LOG_WARN = 30
 LOG_ERROR = 40
 
+SALT_LEN = 16
+KEY_LEN = 16
+Iteration_Count = 10000
 
-CA_DIR = "../"
+CA_DIR = "../cert/"
 CA_PEM = os.path.join(CA_DIR, "ca.pem")
 CA_KEY = os.path.join(CA_DIR, "ca.key")
 TMP_DIR = os.path.join(CA_DIR, "tmp")
