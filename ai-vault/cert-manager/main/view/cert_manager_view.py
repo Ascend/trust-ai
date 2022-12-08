@@ -8,9 +8,10 @@ import time
 import zipfile
 import OpenSSL
 import OpenSSL.crypto
+
+from config import LOG_INFO, LOG_ERROR, RUN_LOG
 from utils.tools import check_param, https_rsp
 from utils import status_code
-
 from flask import Blueprint, views, request, Response
 from utils.ssl_key import SSLKey
 from config import CA_KEY, CA_PEM, TMP_DIR
@@ -41,7 +42,7 @@ def get_plain_passwd(command):
     return passwd
 
 
-PASSWD = get_plain_passwd("./ai-tool-cfs dec")
+PASSWD = get_plain_passwd("./../cert/ai-whitebox dec")
 
 
 def sign_cert(ca_crt, ca_key, csr: bytes):
@@ -104,6 +105,7 @@ class BaseView(views.MethodView):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.uid = int(request.headers.get("UserID")) if request.headers.get("UserID") else None
 
     @staticmethod
     def get_request_json():
@@ -113,17 +115,23 @@ class BaseView(views.MethodView):
             json_data = json.loads(data)
         except json.JSONDecodeError:
             err_msg = "Get request json data error"
-            # RUN_LOG.log(*format_msg(LOG_ERROR, self._op_name, self.uid, status_code.PARAM_ERROR, err_msg))
+            RUN_LOG.log(*format_msg(LOG_ERROR, self._op_name, self.uid, status_code.PARAM_ERROR, err_msg))
             json_data = {}
         finally:
             return json_data
+
+    def err_msg(self, status, msg=None):
+        return format_msg(LOG_ERROR, self._op_name, self.uid, status, msg)
+
+    def info_msg(self, msg=None):
+        return format_msg(LOG_INFO, self._op_name, self.uid, status_code.SUCCESS, msg)
 
 
 class GetCFSCertView(BaseView):
     """
     get CFS Certificate
     """
-    _op_name = "GetCFS"
+    _op_name = "Get CFS Cert"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -135,6 +143,7 @@ class GetCFSCertView(BaseView):
         self.data = self.get_request_json()
         status = check_param(self.data)
         if status != status_code.SUCCESS:
+            RUN_LOG.log(*err_msg(status, "CSR Param Check Failed"))
             return https_rsp(status)
 
         pri_key, csr = gen_prikey_and_csr(self.data)
@@ -142,6 +151,7 @@ class GetCFSCertView(BaseView):
         common_name, cert = sign_cert(self.ca_crt, ca_key, csr)
         cipher_pri_key, status = self.ssl_aes.encrypt_pri_key(pri_key, self.data.get("CfsPassword"))
         if status != status_code.SUCCESS:
+            RUN_LOG.log(*err_msg(status, "Password Check Failed"))
             return https_rsp(status)
 
         file_name = str(hash(common_name)) + str(hash(time.time())) + str(hash(random.randint(0, 100000))) + ".zip"
@@ -158,6 +168,8 @@ class GetCFSCertView(BaseView):
 
         res = Response(zip_data, content_type="application/octet-stream")
         res.headers["Content-disposition"] = f'attachment; filename=cfs_cert.zip'
+        RUN_LOG.log(*self.info_msg("Get CFS Cert and Key Success"))
+
         return res
 
 
