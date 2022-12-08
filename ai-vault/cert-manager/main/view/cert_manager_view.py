@@ -8,6 +8,8 @@ import time
 import zipfile
 import OpenSSL
 import OpenSSL.crypto
+from utils.tools import check_param, https_rsp
+from utils import status_code
 
 from flask import Blueprint, views, request, Response
 from utils.ssl_key import SSLKey
@@ -15,10 +17,16 @@ from config import CA_KEY, CA_PEM, TMP_DIR
 
 cert_manager = Blueprint("cert_manager", __name__)
 
-with open(CA_KEY, "rb") as f:
-    KEY_BYTES = f.read()
-with open(CA_PEM, "rb") as f:
-    CRT_BYTES = f.read()
+
+def get_CA_key_cert(key_path, crt_path):
+    with open(key_path, "rb") as f:
+        key_byte = f.read()
+    with open(crt_path, "rb") as f:
+        crt_byte = f.read()
+    return key_byte, crt_byte
+
+
+KEY_BYTES, CRT_BYTES = get_CA_key_cert(CA_KEY, CA_PEM)
 
 
 def get_plain_passwd(command):
@@ -62,7 +70,7 @@ def sign_cert(ca_crt, ca_key, csr: bytes):
 
 def gen_prikey_and_csr(data):
     pri_key = OpenSSL.crypto.PKey()
-    pri_key.generate_key(OpenSSL.crypto.TYPE_RSA, int(data.get("KeyLen", "3072")))
+    pri_key.generate_key(OpenSSL.crypto.TYPE_RSA, 3072)
     pri_key.to_cryptography_key()
 
     req = OpenSSL.crypto.X509Req()
@@ -106,63 +114,6 @@ class BaseView(views.MethodView):
             return json_data
 
 
-class GenPriKeyAndCrtView(BaseView):
-    """
-    Generate private key and CSR
-    """
-    _op_name = "GenKeyAndCrt"
-
-    def __int__(self, *args, **kwargs):
-        super().__int__(*args, **kwargs)
-        self.ca_crt = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, CRT_BYTES)
-        self.data = {}
-
-    def post(self):
-        self.data = self.get_request_json()
-
-        zip_path = self.zip_file()
-        with open(zip_path, "rb") as zip_fp:
-            zip_data = zip_fp.read()
-        os.remove(zip_path)
-
-        res = Response(zip_data, content_type="application/octet-stream")
-        res.headers["Content-disposition"] = f'attachment; filename=key_cert.zip'
-        return res
-
-    def zip_file(self):
-        pri_key, csr = gen_prikey_and_csr(self.data)
-        ca_key = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, KEY_BYTES, PASSWD.encode())
-        common_name, cert = sign_cert(self.ca_crt, ca_key, csr)
-        file_name = str(hash(common_name)) + str(hash(time.time())) + str(hash(random.randint(0, 100000))) + ".zip"
-        zip_path = os.path.join(TMP_DIR, file_name)
-        zip_content = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
-        zip_content.writestr(f"{common_name}.key", pri_key)
-        zip_content.writestr(f"f{common_name}.pem", cert)
-        zip_content.close()
-        return zip_path
-
-
-class SignCertView(BaseView):
-    """
-    Sign cert for flask
-    """
-    _op_name = "SignCert"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.ca_crt = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, CRT_BYTES)
-
-    def post(self):
-        csr = request.files["CSR"].read()
-        ca_key = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, KEY_BYTES, PASSWD.encode())
-
-        common_name, crt = sign_cert(self.ca_crt, ca_key, csr)
-        res = Response(crt, content_type="application/octet-stream")
-        res.headers["Content-disposition"] = f'attachment; filename={common_name}.pem'
-
-        return res
-
-
 class GetCFSCertView(BaseView):
     """
     get CFS Certificate
@@ -177,10 +128,16 @@ class GetCFSCertView(BaseView):
 
     def post(self):
         self.data = self.get_request_json()
+        status = check_param(self.data)
+        if status != status_code.SUCCESS:
+            return https_rsp(status)
+
         pri_key, csr = gen_prikey_and_csr(self.data)
         ca_key = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, KEY_BYTES, PASSWD.encode())
         common_name, cert = sign_cert(self.ca_crt, ca_key, csr)
-        cipher_pri_key = self.ssl_aes.encrypt_pri_key(pri_key, self.data.get("CfsPassword"))
+        cipher_pri_key, status = self.ssl_aes.encrypt_pri_key(pri_key, self.data.get("CfsPassword"))
+        if status != status_code.SUCCESS:
+            return https_rsp(status)
 
         file_name = str(hash(common_name)) + str(hash(time.time())) + str(hash(random.randint(0, 100000))) + ".zip"
         zip_path = os.path.join(TMP_DIR, file_name)
@@ -195,41 +152,13 @@ class GetCFSCertView(BaseView):
         os.remove(zip_path)
 
         res = Response(zip_data, content_type="application/octet-stream")
-        res.headers["Content-disposition"] = f'attachment; filename=cfs.zip'
+        res.headers["Content-disposition"] = f'attachment; filename=cfs_cert.zip'
         return res
 
 
-class GetCACertView(BaseView):
-    """
-    Get CA certificate
-    """
-    _op_name = "GetCA"
-
-    @staticmethod
-    def get():
-        res = Response(CRT_BYTES, content_type="application/octet-stream")
-        res.headers["Content-disposition"] = 'attachment; filename=ca.pem'
-        return res
-
-
-key_crt_v = GenPriKeyAndCrtView.as_view("get_key_crt")
-sign_v = SignCertView.as_view("sign_cert")
-ca_v = GetCACertView.as_view("get_ca")
 cfs_v = GetCFSCertView.as_view("get_cfs")
 
-cert_manager.add_url_rule("/key",
-                          endpoint="csr",
-                          view_func=key_crt_v,
-                          methods=("POST",))
-cert_manager.add_url_rule("/sign",
-                          endpoint="sign",
-                          view_func=sign_v,
-                          methods=("POST",))
-cert_manager.add_url_rule("/ca",
-                          endpoint="ca",
-                          view_func=ca_v,
-                          methods=("GET",))
-cert_manager.add_url_rule("/cfs",
-                          endpoint="cfs",
+cert_manager.add_url_rule("/getcert",
+                          endpoint="getcert",
                           view_func=cfs_v,
                           methods=("POST",))

@@ -4,12 +4,12 @@ import re
 import os
 import binascii
 import hashlib
+import status_code
 
 from flask import jsonify
 
 from utils.status_code import ERROR_MSG_MAP
 from config import SALT_LEN, KEY_LEN, Iteration_Count
-
 
 _lower_character_reg = r'[a-z]{1,}'
 _upper_character_reg = r'[A-Z]{1,}'
@@ -35,7 +35,7 @@ def pbkdf2hash(password, salt=None, salt_len=SALT_LEN, key_len=KEY_LEN, iteratio
     return hex_en_passwd_str, hex_salt_str
 
 
-def https_ret(code, data=None, extend_msg=None):
+def https_rsp(code, data=None, extend_msg=None):
     err_msg = ERROR_MSG_MAP.get(code)
     msg = '%s. %s'.format(err_msg, extend_msg) if extend_msg is not None else err_msg
     return jsonify({
@@ -68,3 +68,26 @@ def name_check(user_name):
     if re.match(_name_reg, user_name) is None:
         return False
     return True
+
+
+def check_param(data):
+    common_name = data.get("CommonName")
+    if len(common_name) == 0 or len(common_name) > 64:
+        return status_code.PARAM_ERROR
+    country_name = data.get("CountryName")
+    if len(country_name) > 64:
+        return status_code.PARAM_ERROR
+    st_pr_name = data.get("StateOrProvinceName")
+    if len(st_pr_name) > 64:
+        return status_code.PARAM_ERROR
+    local_name = data.get("LocalityName")
+    if len(local_name) > 64:
+        return status_code.PARAM_ERROR
+    org_name = data.get("OrganizationName")
+    if len(org_name) > 64:
+        return status_code.PARAM_ERROR
+    org_unit = data.get("OrganizationalUnitName")
+    if len(org_unit) > 64:
+        return status_code.PARAM_ERROR
+    return status_code.SUCCESS
+

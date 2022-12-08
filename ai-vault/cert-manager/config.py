@@ -30,17 +30,14 @@ LOG_MAX_SIZE = 10 * 1024 * 1024
 LOG_MAX_BACKUP_COUNT = 10
 LOG_INFO = 20
 LOG_WARN = 30
+
+
 LOG_ERROR = 40
 
-CONF_PATH = os.path.join(WORK_DIR, "configuration")
-CA_PEM = os.path.join(CONF_PATH, "ca.pem")
-CA_KEY = os.path.join(CONF_PATH, "ca.key")
-TMP_DIR = os.path.join(CONF_PATH, "tmp")
-
-COMMON_DIR = os.path.expanduser('~/.ai-vault')
-CERT_PATH = os.path.join(COMMON_DIR, "cert")
-CRT_FILE = os.path.join(CERT_PATH, "server.pem")
-KEY_FILE = os.path.join(CERT_PATH, "server.key")
+CA_DIR = "../"
+CA_PEM = os.path.join(CA_DIR, "ca.pem")
+CA_KEY = os.path.join(CA_DIR, "ca.key")
+TMP_DIR = os.path.join(CA_DIR, "tmp")
 GET_TIMEOUT = 60
 
 LOGGING_CONFIG = {
