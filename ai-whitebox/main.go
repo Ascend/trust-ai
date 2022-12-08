@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	filePath = "encrypted_password"
+	filePath = "../cert/encrypted_password"
 	fileMode = 0600
 )
 

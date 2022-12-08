@@ -10,7 +10,7 @@ import OpenSSL
 import OpenSSL.crypto
 
 from config import LOG_INFO, LOG_ERROR, RUN_LOG
-from utils.tools import check_param, https_rsp
+from utils.tools import check_param, https_rsp, format_msg
 from utils import status_code
 from flask import Blueprint, views, request, Response
 from utils.ssl_key import SSLKey
@@ -143,7 +143,7 @@ class GetCFSCertView(BaseView):
         self.data = self.get_request_json()
         status = check_param(self.data)
         if status != status_code.SUCCESS:
-            RUN_LOG.log(*err_msg(status, "CSR Param Check Failed"))
+            RUN_LOG.log(*self.err_msg(status, "CSR Param Check Failed"))
             return https_rsp(status)
 
         pri_key, csr = gen_prikey_and_csr(self.data)
@@ -151,7 +151,7 @@ class GetCFSCertView(BaseView):
         common_name, cert = sign_cert(self.ca_crt, ca_key, csr)
         cipher_pri_key, status = self.ssl_aes.encrypt_pri_key(pri_key, self.data.get("CfsPassword"))
         if status != status_code.SUCCESS:
-            RUN_LOG.log(*err_msg(status, "Password Check Failed"))
+            RUN_LOG.log(*self.err_msg(status, "Password Check Failed"))
             return https_rsp(status)
 
         file_name = str(hash(common_name)) + str(hash(time.time())) + str(hash(random.randint(0, 100000))) + ".zip"
