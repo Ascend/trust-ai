@@ -72,7 +72,7 @@ def name_check(user_name):
 
 def check_param(data):
     common_name = data.get("CommonName")
-    if not common_name or (len(common_name) == 0 or len(common_name) > 64):
+    if len(common_name) == 0 or len(common_name) > 64:
         return status_code.PARAM_ERROR
     country_name = data.get("CountryName")
     if country_name and len(country_name) > 64:
