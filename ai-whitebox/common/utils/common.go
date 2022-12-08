@@ -9,9 +9,9 @@ import (
 
 const (
 	helpMsg = `
-	Usage ./ai-tool-cfs [options]
+	Usage ./ai-whitebox [options]
 	
-	ai-tool-cfs options:
+	ai-whitebox options:
 		enc   passwd  ca private key password should satisfy requirements
 		dec   path    encrypted password file path (optional）
 		h          	  print help message`

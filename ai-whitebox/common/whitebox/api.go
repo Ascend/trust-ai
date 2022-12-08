@@ -4,7 +4,7 @@ import (
 	"embed"
 	"fmt"
 
-	"ai-tool/common/utils"
+	"ai-whitebox/common/utils"
 )
 
 const blockSize = 16
