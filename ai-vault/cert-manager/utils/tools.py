@@ -72,22 +72,22 @@ def name_check(user_name):
 
 def check_param(data):
     common_name = data.get("CommonName")
-    if len(common_name) == 0 or len(common_name) > 64:
+    if not common_name or (len(common_name) == 0 or len(common_name) > 64):
         return status_code.PARAM_ERROR
     country_name = data.get("CountryName")
-    if len(country_name) > 64:
+    if country_name and len(country_name) > 64:
         return status_code.PARAM_ERROR
     st_pr_name = data.get("StateOrProvinceName")
-    if len(st_pr_name) > 64:
+    if st_pr_name and len(st_pr_name) > 64:
         return status_code.PARAM_ERROR
     local_name = data.get("LocalityName")
-    if len(local_name) > 64:
+    if local_name and len(local_name) > 64:
         return status_code.PARAM_ERROR
     org_name = data.get("OrganizationName")
-    if len(org_name) > 64:
+    if org_name and len(org_name) > 64:
         return status_code.PARAM_ERROR
     org_unit = data.get("OrganizationalUnitName")
-    if len(org_unit) > 64:
+    if org_unit and len(org_unit) > 64:
         return status_code.PARAM_ERROR
     return status_code.SUCCESS
 

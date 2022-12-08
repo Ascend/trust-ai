@@ -74,13 +74,18 @@ def gen_prikey_and_csr(data):
     pri_key.to_cryptography_key()
 
     req = OpenSSL.crypto.X509Req()
-    req.get_subject().commonName = data.get("CommonName")
-    req.get_subject().countryName = data.get("CountryName")
-    req.get_subject().stateOrProvinceName = data.get("StateOrProvinceName")
-    req.get_subject().localityName = data.get("LocalityName")
-    req.get_subject().organizationName = data.get("OrganizationName")
-    req.get_subject().organizationalUnitName = data.get("OrganizationalUnitName")
-    req.get_subject().emailAddress = data.get("EmailAddress")
+    if data.get("CommonName"):
+        req.get_subject().commonName = data.get("CommonName")
+    if data.get("CountryName"):
+        req.get_subject().countryName = data.get("CountryName")
+    if data.get("StateOrProvinceName"):
+        req.get_subject().stateOrProvinceName = data.get("StateOrProvinceName")
+    if data.get("LocalityName"):
+        req.get_subject().localityName = data.get("LocalityName")
+    if data.get("OrganizationName"):
+        req.get_subject().organizationName = data.get("OrganizationName")
+    if data.get("OrganizationalUnitName"):
+        req.get_subject().organizationalUnitName = data.get("OrganizationalUnitName")
 
     req.set_pubkey(pri_key)
     req.sign(pri_key, 'sha256')
