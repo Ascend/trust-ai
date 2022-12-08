@@ -67,6 +67,10 @@ func main() {
 	act := os.Args[1]
 	switch act {
 	case "enc":
+		if len(os.Args) < 3 {
+			fmt.Println("invalid command.")
+			utils.PrintHelp()
+			return
 		passwd := os.Args[2]
 		p := []byte(passwd)
 		if err := utils.CheckPasswd(p); err != nil {
