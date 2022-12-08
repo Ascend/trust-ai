@@ -23,4 +23,5 @@ COPY lib ./lib
 RUN chown -R AiVault:AiVault ./
 RUN chmod -R 700 ./
 USER AiVault
+ENV LD_LIBRARY_PATH=/home/AiVault/lib
 CMD bash -c /home/AiVault/run.sh
