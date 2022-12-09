@@ -279,7 +279,7 @@ function process_deploy() {
     tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
     echo "- import_playbook: check.yml" >"${tmp_deploy_play}"
     echo "- import_playbook: deploy.yml" >>"${tmp_deploy_play}"
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e svc_port="${svc_port}" -e mgmt_port="${mgmt_port}" -e cfs_port="${cfs_port}" -e passin="${passout2}" -e all="${all}"
+    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e svc_port="${svc_port}" -e mgmt_port="${mgmt_port}" -e cfs_port="${cfs_port}" -e passin="${passout2}" -e all="${all}" -e update_cert="${update_cert}"
     if [ -f "${tmp_deploy_play}" ]; then
         rm -f "${tmp_deploy_play}"
     fi
@@ -299,6 +299,7 @@ function print_usage() {
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
     echo "--all                   all nodes perform configuration tasks,default only remote nodes"
     echo "--exists-cert           skip certificate generation when certificate exists"
+    echo "--update_cert           update certificate"
     echo ""
     echo "e.g., ./deploy.sh --aivault-ip={ip} --python-dir={python_dir}"
 }
@@ -310,6 +311,7 @@ cfs_port=1024
 offline=n
 all=n
 include_cert=n
+update_cert=n
 
 function parse_script_args() {
     if [ $# = 0 ]; then
@@ -387,6 +389,10 @@ function parse_script_args() {
                 print_usage
                 return 1
             fi
+            shift
+            ;;
+        --update_cert)
+            update_cert=y
             shift
             ;;
         *)
