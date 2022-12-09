@@ -14,7 +14,7 @@ from utils.tools import check_param, https_rsp, format_msg
 from utils import status_code
 from flask import Blueprint, views, request, Response
 from utils.ssl_key import SSLKey
-from config import CA_KEY, CA_PEM, TMP_DIR
+from config import CA_KEY, CA_PEM, TMP_DIR, DEC_PATH
 
 cert_manager = Blueprint("cert_manager", __name__)
 
@@ -40,9 +40,6 @@ def get_plain_passwd(command):
     passwd_byte = output.communicate()[0]
     passwd = passwd_byte.decode(encoding="utf-8")
     return passwd
-
-
-PASSWD = get_plain_passwd("./../cert/ai-whitebox dec")
 
 
 def sign_cert(ca_crt, ca_key, csr: bytes):
@@ -138,6 +135,7 @@ class GetCFSCertView(BaseView):
         self.data = {}
         self.ssl_aes = SSLKey()
         self.ca_crt = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, CRT_BYTES)
+        self.password = get_plain_passwd(DEC_PATH)
 
     def post(self):
         self.data = self.get_request_json()
@@ -147,7 +145,7 @@ class GetCFSCertView(BaseView):
             return https_rsp(status)
 
         pri_key, csr = gen_prikey_and_csr(self.data)
-        ca_key = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, KEY_BYTES, PASSWD.encode())
+        ca_key = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, KEY_BYTES, self.password.encode())
         common_name, cert = sign_cert(self.ca_crt, ca_key, csr)
         cipher_pri_key, status = self.ssl_aes.encrypt_pri_key(pri_key, self.data.get("CfsPassword"))
         if status != status_code.SUCCESS:
