@@ -23,3 +23,57 @@ cert-manager用于为用户自动签发cfs证书和私钥。签发需要用到CA
 
 #### 注意
 口令需满足长度[40, 64], 且需要包含数字、大写字母、小写字母、特殊字符（至少包含四类中的两类）。
+白盒加解密工具ai-whitebox需要放到/home/AiVault/cert目录下，否则会出现路径查找错误；白盒加密后的口令文件encrypted_password也存放在该文件夹中：
+```
+.
+├── ai-whitebox
+│   ├── ai-whitebox
+│   ├── common
+│   │   ├── utils
+│   │   │   └── common.go
+│   │   └── whitebox
+│   │       ├── api.go
+│   │       └── encrypt_base.go
+│   ├── generate.go
+│   ├── go.mod
+│   ├── go.sum
+│   ├── install.sh
+│   ├── main.go
+│   └── README.md
+├── cert
+│   ├── ai-whitebox
+│   ├── ca.csr
+│   ├── ca.key
+│   ├── ca.pem
+│   ├── encrypted_password
+│   └── tmp
+└── cert-manager
+    ├── config.py
+    ├── log
+    │   └── cert_manager_run.log
+    ├── main
+    │   ├── app.py
+    │   ├── __pycache__
+    │   │   └── app.cpython-38.pyc
+    │   └── view
+    │       ├── cert_manager_view.py
+    │       └── __pycache__
+    │           └── cert_manager_view.cpython-38.pyc
+    ├── __pycache__
+    │   └── config.cpython-38.pyc
+    ├── README.md
+    ├── run.py
+    └── utils
+        ├── aes.py
+        ├── log.py
+        ├── __pycache__
+        │   ├── aes.cpython-38.pyc
+        │   ├── log.cpython-38.pyc
+        │   ├── ssl_key.cpython-38.pyc
+        │   ├── status_code.cpython-38.pyc
+        │   └── tools.cpython-38.pyc
+        ├── ssl_key.py
+        ├── status_code.py
+        └── tools.py
+
+```
