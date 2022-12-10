@@ -33,6 +33,17 @@ local function get_permission(session)
         ngx.say(cjson.encode(ret))
         ngx.exit(ngx.HTTP_UNAUTHORIZED)
     end
+    local ok, err = io.open("/home/AiVault/.ai-vault/data-manager/backup_flag")
+    if ok and string.match(ngx.var.request_uri, "^/AIVAULT") ~= nil then
+        ngx.log(ngx.ERR, "Currently backing up")
+        local ret = {}
+        ngx.header["Content-Type"] = "application/json"
+        ret.status = "00000004"
+        ret.msg = "Currently backing up, not allowed."
+        ngx.status = ngx.HTTP_NOT_ALLOWED
+        ngx.say(cjson.encode(ret))
+        ngx.exit(ngx.HTTP_NOT_ALLOWED)
+    end
 end
 
 -- 待验证cookie内容

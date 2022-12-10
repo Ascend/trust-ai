@@ -126,10 +126,10 @@
 
 - name: start the ai-vault service
   shell: |
-    mkdir -p {{ resources_dir }}/AiVault/.ai-vault
-    cp -f {{ resources_dir }}/cert/* {{ resources_dir }}/AiVault/.ai-vault
-    cp -f {{ resources_dir }}/install.sh {{ resources_dir }}/AiVault/
-    bash {{ resources_dir }}/AiVault/install.sh {{ passin }} {{ svc_port }} {{ mgmt_port }} {{ image_name.stdout }} {{ update_cert }} {{ aivault-ip }}
+    mkdir -p {{ resources_dir }}/AiVault/.ai-vault;
+    cp -f {{ resources_dir }}/cert/* {{ resources_dir }}/AiVault/.ai-vault;
+    cp -f {{ resources_dir }}/install.sh {{ resources_dir }}/AiVault/;
+    bash -x {{ resources_dir }}/AiVault/install.sh {{ passin }} {{ svc_port }} {{ mgmt_port }} {{ image_name.stdout }} {{ update_cert }} {{ aivault-ip }}
   when: server is defined
   
 

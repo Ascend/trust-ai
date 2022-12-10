@@ -1,6 +1,6 @@
 FROM openresty/openresty:buster
 
-RUN sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list
+RUN sed -i "s/deb.debian.org/repo.huaweicloud.com/g" /etc/apt/sources.list
 RUN sed -i "/openresty.org/d" /etc/apt/sources.list
 RUN apt-get update && \
     apt-get install -y build-essential libssl1.1 zlib* procps sqlite3 python3 python3-pip haveged net-tools
@@ -23,4 +23,5 @@ COPY lib ./lib
 RUN chown -R AiVault:AiVault ./
 RUN chmod -R 700 ./
 USER AiVault
+ENV LD_LIBRARY_PATH=/home/AiVault/lib
 CMD bash -c /home/AiVault/run.sh

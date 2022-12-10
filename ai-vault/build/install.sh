@@ -128,9 +128,15 @@ function export_certificate() {
   docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /home/AiVault/ai-vault req -force -type MGMT -subject 'CN|SiChuan|ChengDu|Huawei|Ascend' || return -1
   docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /home/AiVault/ai-vault req -force -type SVC -subject 'CN|SiChuan|ChengDu|Huawei|Ascend' || return -1
 
+<<<<<<< HEAD
   # 签发AI-VAULT证书
   docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/svc/svc.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/svc.pem -days 3650 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:${passwd} || return -1
   docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/mgmt/mgmt.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/mgmt.pem -days 3650 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:${passwd} || return -1
+=======
+# 签发AI-VAULT证书
+docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/svc/svc.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/svc.pem -days 3650 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:${passwd} || exit 1
+docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/mgmt/mgmt.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/mgmt.pem -days 3650 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:${passwd} || exit 1
+>>>>>>> 68d96d1bce12666eef079b29292445b4c6162b50
 
   # 导入AI-VAULT证书
   docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image  /home/AiVault/ai-vault x509 -type MGMT -caFile /home/AiVault/.ai-vault/ca.pem -certFile /home/AiVault/.ai-vault/mgmt.pem | grep 'fingerprint' || return -1
