@@ -21,8 +21,8 @@
    └─ca.key                 # CA私钥
 ```
 3. 执行安装命令
-`bash install.sh [image-name] [svc-port] [mgmt-port]`，安装脚本可接收三个参数，第一个指定镜像名（必选），第二个指定svc端口即aivault服务端口（可选，默认5001），第三个指定mgmt端口即管理aivault服务的服务器端口（可选，默认9000）。
-例如`bash install.sh ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64 5001 9000`。
+`bash install.sh --image=[image-name] --svc-port=[svc-port] --mgmt-port=[mgmt-port] --update_cert`，安装脚本可接收三个参数，第一个指定镜像名（必选），第二个指定svc端口即aivault服务端口（可选，默认5001），第三个指定mgmt端口即管理aivault服务的服务器端口（可选，默认9000），第四个更新证书（可选）。
+例如`bash install.sh --image=ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64 --svc-port=5001 --mgmt-port=9000 --update_cert`。
 
 ## 升级
 升级前请停止对应的容器，然后按照安装步骤重新执行

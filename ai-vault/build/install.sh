@@ -23,7 +23,7 @@ function operation_log_info() {
 }
 
 function run_docker() {
-  docker run -d --restart=always -p $mgmt_port:9000 -p $svc_port:5001 -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault $image bash -c /home/AiVault/run.sh
+  docker run -d --restart=always -p $mgmt_port:9000 -p $svc_port:5001 -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault $image bash -c "/home/AiVault/run.sh $aivault_args"
   sleep 3
   docker ps | grep $image | grep "Up"
   if [ $? -eq 0 ]; then
@@ -45,6 +45,7 @@ fi
 svc_port=5001
 mgmt_port=9000
 update_cert=n
+aivault_args=""
 
 for option
 do
@@ -52,6 +53,9 @@ do
     --image=*)
       OPTION=$(echo "${option}"|cut -d '=' -f 2)
       image=${OPTION}
+      ;;
+    --update_cert)
+      update_cert=y
       ;;
     --svc_port=*)
       OPTION=$(echo "${option}"|cut -d '=' -f 2)
@@ -61,8 +65,33 @@ do
       OPTION=$(echo "${option}"|cut -d '=' -f 2)
       mgmt_port=${OPTION}
       ;;
-    --update_cert)
-      update_cert=y
+    --certExpireAlarmDays=*)
+      OPTION=$(echo "${option}"|cut -d '=' -f 2)
+      aivault_args="$aivault_args -certExpireAlarmDays ${OPTION} "
+      ;;
+    --checkPeriodDays=*)
+      OPTION=$(echo "${option}"|cut -d '=' -f 2)
+      aivault_args="$aivault_args -checkPeriodDays ${OPTION} "
+      ;;
+    --maxKMSAdgent=*)
+      OPTION=$(echo "${option}"|cut -d '=' -f 2)
+      aivault_args="$aivault_args -maxKMSAdgent ${OPTION} "
+      ;;
+    --maxLinkPerKMSAdgent=*)
+      OPTION=$(echo "${option}"|cut -d '=' -f 2)
+      aivault_args="$aivault_args -maxLinkPerKMSAdgent ${OPTION} "
+      ;;
+    --maxMkNum=*)
+      OPTION=$(echo "${option}"|cut -d '=' -f 2)
+      aivault_args="$aivault_args -maxMkNum ${OPTION} "
+      ;;
+    --dbBackup=*)
+      OPTION=$(echo "${option}"|cut -d '=' -f 2)
+      aivault_args="$aivault_args -dbBackup ${OPTION} "
+      ;;
+    --certBackup=*)
+      OPTION=$(echo "${option}"|cut -d '=' -f 2)
+      aivault_args="$aivault_args -certBackup ${OPTION} "
       ;;
     *)
       echo "Invalid parameter"

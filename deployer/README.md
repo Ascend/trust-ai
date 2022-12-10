@@ -87,3 +87,4 @@
 | --python-dir  | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
 | --all         | 所有节点执行kmsagent批量配置任务，默认master节点不进行配置。                                                                  |
 | --exists-cert | 证书存在时跳过证书生成。                                                                                                      |
+| --update-cert | 更新证书。                                                                                                                   |
