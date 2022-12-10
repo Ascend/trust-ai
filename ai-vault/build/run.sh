@@ -8,7 +8,7 @@ chmod 700 -R .ai-vault
 
 cd /home/AiVault/.ai-vault/cert || exit
 
-export LD_LIBRARY_PATH=/home/AiVault/.ai-vault/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/AiVault/.ai-vault/lib
 
 ip=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6|awk '{print $2}'|tr -d "addr:"`
 
