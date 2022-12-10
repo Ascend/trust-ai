@@ -9,10 +9,12 @@
 ├─ai-vault                  # AI-VAULT系统集成
 │  ├─apigw                  # AI-VAULT网关参考设计    
 │  ├─build                  # 安装运行脚本
+│  ├─cert-manager           # cfs证书签发参考设计
 │  ├─data-manager           # 数据迁移参考设计
 │  ├─UI                     # 前端页面参考设计
 │  ├─user-manager           # 用户管理参考设计
 │  └─Dockerfile             # 镜像制作Dockerfile
+├─ai-whitebox               # 白盒加解密CA口令
 ├─aiguard_plugin            # fuse device及容器权限限制插件参考设计
 └─deployer                  # 批量依赖安装及配置工具参考设计
 ```
