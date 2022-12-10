@@ -19,7 +19,7 @@ function operation_log_info() {
 
 function run_docker() {
   [ $(docker ps|grep ai-vault-svc|wc -l) -ne 0 ] && docker stop ai-vault-svc && docker rm ai-vault-svc
-  docker run -d --restart=always -p $mgmt_port:9000 -p $svc_port:5001 --name ai-vault-svc -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault $image bash -c /home/AiVault/run.sh
+  docker run -d --restart=always -p $mgmt_port:9000 -p $svc_port:5001 --name ai-vault-svc -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault $image bash -c /home/AiVault/run.sh $aivault_args
   sleep 3
   docker ps | grep $image | grep "Up"
   if [ $? -eq 0 ]; then
@@ -52,6 +52,9 @@ update_cert=$5
 
 # 指定IP
 aivault_ip=$6
+
+# 指定aivault可选参数
+aivault_args=$7
 
 # 非首次安装
 if [ -d "/home/AiVault/.ai-vault" ] && [ "${update_cert}" == "n" ]; then

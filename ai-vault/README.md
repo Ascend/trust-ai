@@ -21,8 +21,20 @@
    └─ca.key                 # CA私钥
 ```
 3. 执行安装命令
-`bash install.sh --image=[image-name] --svc-port=[svc-port] --mgmt-port=[mgmt-port] --update_cert`，安装脚本可接收三个参数，第一个指定镜像名（必选），第二个指定svc端口即aivault服务端口（可选，默认5001），第三个指定mgmt端口即管理aivault服务的服务器端口（可选，默认9000），第四个更新证书（可选）。
-例如`bash install.sh --image=ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64 --svc-port=5001 --mgmt-port=9000 --update_cert`。
+`bash install.sh --option=[option]`，安装脚本可接收多个参数，例如`bash install.sh --image=ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64 --svc-port=5001 --mgmt-port=9000 --update_cert`。参数说明如下表。
+| 参数                  | 说明                                                                                                                          |
+| :------------         | ----------------------------------------------------------------------------------------------------------------------------- |
+| --image               | 必选，指定镜像名及tag。                                                                                                         |
+| --svc-port            | 可选，指定aivault服务的端口，默认5001。                                                                                         |
+| --mgmt-port           | 可选，指定管理aivault服务的服务器端口，默认9000。                                                                                |
+| --update-cert         | 可选，更新证书。                                                                                                               |
+| --certExpireAlarmDays | 可选，证书到期提醒天数[7-180](默认值90)。                                                                                        |
+| --checkPeriodDays     | 可选，检查证书周期天数，范围为1到证书到期告警天数（默认值7）。                                                                      |
+| --maxKMSAdgent        | 可选，连接KMSAgent的最大值（默认128）。                                                                                          |
+| --maxLinkPerKMSAdgent | 可选，每个KMSAgent的链接最大值（默认值32）。                                                                                      |
+| --maxMkNum            | 可选，mk编号的最大值（默认值10）。                                                                                               |
+| --dbBackup            | 可选，ai-vault数据库备份文件保存地址。                                                                                           |
+| --certBackup          | 可选，导入证书备份保存地址。                                                                                                     |
 
 ## 升级
 升级前请停止对应的容器，然后按照安装步骤重新执行

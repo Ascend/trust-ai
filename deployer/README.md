@@ -76,15 +76,22 @@
 用户根据实际需要选择对应参数完成批量配置，命令为`./deploy.sh [options]`。
 参数说明请参见下表，表中各参数的可选参数范围可通过执行`./deploy.sh --help`查看。
 
-| 参数          | 说明                                                                                                                          |
-| :------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| --help  -h    | 查询帮助信息。                                                                                                                |
-| --aivault-ip  | 指定aivault服务的ip地址。                                                                                                     |
-| --svc-port    | 指定aivault服务的端口，默认5001。                                                                                             |
-| --mgmt-port   | 指定管理aivault服务的服务器端口，默认9000。                                                                                   |
-| --cfs-port    | 指定cfs服务的端口，默认是1024。                                                                                               |
-| --offline     | 离线模式，不会下载haveged，工具所在的环境没有网络时须指定。                                                                   |
-| --python-dir  | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
-| --all         | 所有节点执行kmsagent批量配置任务，默认master节点不进行配置。                                                                  |
-| --exists-cert | 证书存在时跳过证书生成。                                                                                                      |
-| --update-cert | 更新证书。                                                                                                                   |
+| 参数                  | 说明                                                                                                                          |
+| :------------         | ----------------------------------------------------------------------------------------------------------------------------- |
+| --help  -h            | 查询帮助信息。                                                                                                                 |
+| --aivault-ip          | 指定aivault服务的ip地址。                                                                                                      |
+| --svc-port            | 指定aivault服务的端口，默认5001。                                                                                               |
+| --mgmt-port           | 指定管理aivault服务的服务器端口，默认9000。                                                                                      |
+| --cfs-port            | 指定cfs服务的端口，默认是1024。                                                                                                 |
+| --offline             | 离线模式，不会下载haveged，工具所在的环境没有网络时须指定。                                                                        |
+| --python-dir          | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。     |
+| --all                 | 所有节点执行kmsagent批量配置任务，默认master节点不进行配置。                                                                       |
+| --exists-cert         | 证书存在时跳过证书生成。                                                                                                         |
+| --update-cert         | 更新证书。                                                                                                                      |
+| --certExpireAlarmDays | 证书到期提醒天数[7-180](默认值90)。                                                                                              |
+| --checkPeriodDays     | 检查证书周期天数，范围为1到证书到期告警天数（默认值7）。                                                                            |
+| --maxKMSAdgent        | 连接KMSAgent的最大值（默认128）。                                                                                                |
+| --maxLinkPerKMSAdgent | 每个KMSAgent的链接最大值（默认值32）。                                                                                           |
+| --maxMkNum            | mk编号的最大值（默认值10）。                                                                                                     |
+| --dbBackup            | ai-vault数据库备份文件保存地址。                                                                                                 |
+| --certBackup          | 导入证书备份保存地址。                                                                                                           |
