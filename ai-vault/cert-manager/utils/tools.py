@@ -75,7 +75,7 @@ def check_param(data):
     if len(common_name) == 0 or len(common_name) > 64:
         return status_code.PARAM_ERROR
     country_name = data.get("CountryName")
-    if country_name and len(country_name) > 64:
+    if country_name and len(country_name) > 2:
         return status_code.PARAM_ERROR
     st_pr_name = data.get("StateOrProvinceName")
     if st_pr_name and len(st_pr_name) > 64:

@@ -17,6 +17,7 @@ const (
 		h          	  print help message`
 )
 
+// PrintErrExit print error and exit
 func PrintErrExit(e error) {
 	if e != nil {
 		log.Println("Error", e)
@@ -24,6 +25,7 @@ func PrintErrExit(e error) {
 	}
 }
 
+// PrintHelp print help info
 func PrintHelp() {
 	fmt.Println(helpMsg)
 }
@@ -36,6 +38,7 @@ func SensitiveInfoClear(s []byte) {
 
 }
 
+// ClearStringMemory clear sensitive string
 func ClearStringMemory(s string) {
 	if len(s) <= 1 {
 		return

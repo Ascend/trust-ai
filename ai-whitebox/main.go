@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	filePath = "../cert/encrypted_password"
+	filePath = "/home/AiVault/.ai-vault/encrypted_password"
 	fileMode = 0600
 )
 

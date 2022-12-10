@@ -75,9 +75,9 @@ class SSLKey:
             cipher_text: cipher text for private key
          """
         if len(password) < 40 or len(password) > 64:
-            return status_code.PASSWORD_ERROR
+            return None, status_code.PASSWORD_ERROR
         if not self._passwd_check(password):
-            return status_code.PASSWORD_ERROR
+            return None, status_code.PASSWORD_ERROR
         work_key, salt = self._pbkdf2hash(password)
         iv = os.urandom(self.IV_LEN)
         self.aes = AES(work_key, iv)

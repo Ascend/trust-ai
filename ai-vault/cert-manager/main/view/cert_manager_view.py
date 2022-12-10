@@ -14,12 +14,15 @@ from utils.tools import check_param, https_rsp, format_msg
 from utils import status_code
 from flask import Blueprint, views, request, Response
 from utils.ssl_key import SSLKey
-from config import CA_KEY, CA_PEM, TMP_DIR, DEC_PATH
+from config import CA_KEY, CA_PEM, TMP_DIR, DEC_COMMAND
 
 cert_manager = Blueprint("cert_manager", __name__)
 
 
 def get_CA_key_cert(key_path, crt_path):
+    """
+    get ca encrypted key and cert
+    """
     with open(key_path, "rb") as f:
         key_byte = f.read()
     with open(crt_path, "rb") as f:
@@ -67,6 +70,9 @@ def sign_cert(ca_crt, ca_key, csr: bytes):
 
 
 def gen_prikey_and_csr(data):
+    """
+    generate cfs plain private key and csr
+    """
     pri_key = OpenSSL.crypto.PKey()
     pri_key.generate_key(OpenSSL.crypto.TYPE_RSA, 3072)
     pri_key.to_cryptography_key()
@@ -135,7 +141,7 @@ class GetCFSCertView(BaseView):
         self.data = {}
         self.ssl_aes = SSLKey()
         self.ca_crt = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, CRT_BYTES)
-        self.password = get_plain_passwd(DEC_PATH)
+        self.password = get_plain_passwd(DEC_COMMAND)
 
     def post(self):
         self.data = self.get_request_json()

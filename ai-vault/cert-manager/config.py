@@ -7,7 +7,7 @@ import logging
 WORK_DIR = os.path.dirname(os.path.realpath(__file__))
 LOG_PATH = os.path.join(WORK_DIR, "log")
 RUN_LOG_FILE = os.path.join(LOG_PATH, "cert_manager_run.log")
-DEC_PATH = "./../cert/ai-whitebox dec"
+DEC_COMMAND = "./../ai-whitebox dec"
 LOG_MAX_SIZE = 10 * 1024 * 1024
 LOG_MAX_BACKUP_COUNT = 10
 LOG_INFO = 20
@@ -18,12 +18,11 @@ SALT_LEN = 16
 KEY_LEN = 16
 Iteration_Count = 10000
 
-CA_DIR = "../cert/"
-CA_PEM = os.path.join(CA_DIR, "ca.pem")
-CA_KEY = os.path.join(CA_DIR, "ca.key")
-TMP_DIR = os.path.join(CA_DIR, "tmp")
-
 COMMON_DIR = os.path.expanduser('~/.ai-vault')
+CA_PEM = os.path.join(COMMON_DIR, "ca.pem")
+CA_KEY = os.path.join(COMMON_DIR, "ca.key")
+TMP_DIR = os.path.join(COMMON_DIR, "tmp")
+
 CERT_PATH = os.path.join(COMMON_DIR, "cert")
 CRT_FILE = os.path.join(CERT_PATH, "server.pem")
 KEY_FILE = os.path.join(CERT_PATH, "server.key")
