@@ -22,8 +22,9 @@ cert-manager用于为用户自动签发cfs证书和私钥。签发需要用到CA
 
 
 #### 注意
-口令需满足长度[40, 64], 且需要包含数字、大写字母、小写字母、特殊字符（至少包含四类中的两类）。
-白盒加解密工具ai-whitebox需要放到/home/AiVault/目录下，否则会出现路径查找错误；白盒加密后的口令文件encrypted_password放在.ai-vault文件夹中：
+1. 口令需满足长度[40, 64], 且需要包含数字、大写字母、小写字母、特殊字符（至少包含四类中的两类）。
+2. 白盒加解密工具ai-whitebox需要放到/home/AiVault/目录下，否则会出现路径查找错误；白盒加密后的口令文件encrypted_password放在.ai-vault文件夹中：
+3. 实际运行时cert-manager会被复制到.ai-vault文件下运行。
 ```
 ├── .ai-vault
 │   ├── ca.key

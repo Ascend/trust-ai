@@ -1,5 +1,6 @@
 cp -af user-manager .ai-vault/
 cp -af data-manager .ai-vault/
+cp -af cert-manager .ai-vault/
 cp -af nginx .ai-vault/
 cp -af ai-vault .ai-vault/
 cp -af lib .ai-vault/
@@ -28,6 +29,9 @@ python3 ../data-manager/run.py &
 # 启动user-manager
 python3 ../user-manager/run.py &
 
+# 启动cert-manager
+python3 ../cert-manager/run.py &
+
 # 监测程序是否正常运行中
 while true
 do
@@ -52,6 +56,12 @@ do
    fi
    num4=`ps -u AiVault -ef|grep "python3 ../user-manager/run.py" |grep -v grep|wc -l`
    if test $[num4] -ne $[1]
+   then
+     exit 1
+   fi
+   fi
+   num5=`ps -u AiVault -ef|grep "python3 ../cert-manager/run.py" |grep -v grep|wc -l`
+   if test $[num5] -ne $[1]
    then
      exit 1
    fi

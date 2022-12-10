@@ -7,7 +7,7 @@ import logging
 WORK_DIR = os.path.dirname(os.path.realpath(__file__))
 LOG_PATH = os.path.join(WORK_DIR, "log")
 RUN_LOG_FILE = os.path.join(LOG_PATH, "cert_manager_run.log")
-DEC_COMMAND = "./../ai-whitebox dec"
+DEC_COMMAND = "./../../ai-whitebox dec"
 LOG_MAX_SIZE = 10 * 1024 * 1024
 LOG_MAX_BACKUP_COUNT = 10
 LOG_INFO = 20
