@@ -66,7 +66,7 @@
    - 密码认证方式请确保待部署节点允许密码登录。如果不允许，可将/etc/ssh/sshd_config文件里的PasswordAuthentication字段配置为yes并重启sshd服务，用完本工具后再禁止密码登录即可。
    - 密码认证方式时请删除主节点/root/.ssh目录里的内容。
 
-3. 默认5个并发数，如果待配置环境数量大于5，须修改trust-ai/deployer/config/ansible.cfg文件中的forks值，改成待配置的节点总数（可选）。
+3. 默认5个并发数，最高并发数为255，如果待配置环境数量大于5（包含主节点），可以修改trust-ai/deployer/config/ansible.cfg文件中的forks值，改成待部署的节点总数以加快部署速度（可选）。
 4. 执行`./deploy.sh --aivault-ip={ip} --python-dir={python_dir}`进行批量配置。该步骤会生成CA证书(请确保生成ca.key时的密钥符合组织的安全要求），会要求用户输入ca.key的密码（长度不能小于6位，且不能大于64位），并进行第二次确认。程序启动后会对各节点的时间进行检测，如果有不满足条件的节点，会打印出来，并要求用户输入[y]es/[n]o进行确认，如果输入“y“或"yes”程序会修改不满足条件的节点的时间，如果输入“n”或“no”会终止程序。
 5. 批量配置操作完成后，请删除inventory_file文件，避免安全风险。
 6. 重新部署aivault节点时，请先停止aivault服务对应的容器。重新部署时，可以使用之前的证书（工具部署后resources/cert目录会有ca.key和ca.pem两个文件）进行部署。使用之前的证书进行部署时，须将之前部署生成的ca.key和ca.pem放入工具的resources/cert目录，且须额外指定`--exists-cert`参数。使用之前的证书进行批量部署时需确保主节点的当前时间在ca.pem证书的有效期内，且要求输入密码时，须输入之前生成ca.key时的密码。（步骤6可选）。
@@ -84,7 +84,6 @@
 | --mgmt-port   | 指定管理aivault服务的服务器端口，默认9000。                                                                                   |
 | --cfs-port    | 指定cfs服务的端口，默认是1024。                                                                                               |
 | --offline     | 离线模式，不会下载haveged，工具所在的环境没有网络时须指定。                                                                   |
-| --image-name  | 指定aivault镜像名，参考格式：`ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64`                                     |
 | --python-dir  | 指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.5` 或 `/usr/local/python3.7.5/`,默认是/usr/local/python3.7.5。 |
 | --all         | 所有节点执行kmsagent批量配置任务，默认master节点不进行配置。                                                                  |
 | --exists-cert | 证书存在时跳过证书生成。                                                                                                      |

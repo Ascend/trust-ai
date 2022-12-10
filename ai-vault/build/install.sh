@@ -3,7 +3,8 @@ arch="$(arch)"
 cur_dir=$(dirname "$(readlink -f "$0")")
 
 function run_docker() {
-  docker run -d --restart=always -p $mgmt_port:9000 -p $svc_port:5001 -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault $image bash -c /home/AiVault/run.sh
+  [ $(docker ps|grep ai-vault-svc|wc -l) -ne 0 ] && docker stop ai-vault-svc && docker rm ai-vault-svc
+  docker run -d --restart=always -p $mgmt_port:9000 -p $svc_port:5001 --name ai-vault-svc -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault $image bash -c /home/AiVault/run.sh
   sleep 3
   docker ps | grep $image | grep "Up"
   if [ $? -eq 0 ]; then
@@ -51,7 +52,7 @@ fi
 
 # 初始化用户
 useradd -d /home/AiVault -u 9001 -m AiVault
-mkdir -p /home/AiVault
+mkdir -p /home/AiVault/.ai-vault
 chown AiVault -R .
 chown AiVault -R /home/AiVault
 # 签发证书
@@ -66,8 +67,8 @@ docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRAR
 docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /home/AiVault/ai-vault req -force -type SVC -subject 'CN|SiChuan|ChengDu|Huawei|Ascend' || exit 1
 
 # 签发AI-VAULT证书
-docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/svc/svc.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/svc.pem -days 3650 -passin pass:${passwd} || exit 1
-docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/mgmt/mgmt.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/mgmt.pem -days 3650 -passin pass:${passwd} || exit 1
+docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/svc/svc.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/svc.pem -days 3650 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:${passwd} || exit 1
+docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/mgmt/mgmt.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/mgmt.pem -days 3650 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:${passwd} || exit 1
 
 # 导入AI-VAULT证书
 docker run -it --rm -v ${cur_dir}/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image  /home/AiVault/ai-vault x509 -type MGMT -caFile /home/AiVault/.ai-vault/ca.pem -certFile /home/AiVault/.ai-vault/mgmt.pem | grep 'fingerprint' || exit 1
