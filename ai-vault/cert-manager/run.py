@@ -8,5 +8,5 @@ from config import CRT_FILE, KEY_FILE, RUN_LOG, LOG_INFO
 if __name__ == "__main__":
     if init_app():
         RUN_LOG.log(LOG_INFO, "Start user-manager service success.")
-        server = pywsgi.WSGIServer(("0.0.0.0", 10001), app, keyfile=KEY_FILE, certfile=CRT_FILE, log=None)
+        server = pywsgi.WSGIServer(("0.0.0.0", 8086), app, keyfile=KEY_FILE, certfile=CRT_FILE, log=None)
         server.serve_forever()
