@@ -57,7 +57,7 @@ aivault_ip=$6
 aivault_args=$7
 
 # 非首次安装
-if [ -d "/home/AiVault/.ai-vault" ] && [ "${update_cert}" == "n" ]; then
+if [ -d "/home/AiVault/.ai-vault/cert" ] && [ "${update_cert}" == "n" ]; then
   run_docker
 fi
 
@@ -87,12 +87,12 @@ function export_certificate() {
   docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image  /home/AiVault/ai-vault x509 -type SVC -caFile /home/AiVault/.ai-vault/ca.pem -certFile /home/AiVault/.ai-vault/svc.pem | grep 'fingerprint' || return -1
 
   # 生成服务证书私钥
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /bin/bash -c "openssl rand -writerand ~/.rnd" || return -1
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /bin/bash -c "openssl genrsa -out /home/AiVault/.ai-vault/cert/server.key 4096" || return -1
+  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl rand -writerand ~/.rnd || return -1
+  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl genrsa -out /home/AiVault/.ai-vault/cert/server.key 4096 || return -1
   # 生成服务证书CSR
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /bin/bash -c "openssl req -new -key /home/AiVault/.ai-vault/cert/server.key -subj '/CN=aivault' -out /home/AiVault/.ai-vault/cert/server.csr" || return -1
+  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl req -new -key /home/AiVault/.ai-vault/cert/server.key -subj '/CN=aivault' -out /home/AiVault/.ai-vault/cert/server.csr || return -1
   # 生成服务证书
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /bin/bash -c "openssl x509 -req -in /home/AiVault/.ai-vault/cert/server.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/cert/server.pem -days 3650 -sha256 -extensions v3_ca -passin pass:${passwd}" || return -1
+  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/server.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/cert/server.pem -days 3650 -sha256 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:${passwd} || return -1
 }
 # 导入证书失败后多次尝试
 function update_certificate(){
