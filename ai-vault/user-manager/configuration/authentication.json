@@ -9,7 +9,8 @@
       "/AIVAULT/v1/updateKey",
       "/AIVAULT/v1/createMK",
       "/AIVAULT/v1/createPSK",
-      "/usermanager/v1/password"
+      "/usermanager/v1/password",
+      "/certmanager/v1/getcert"
     ],
     "DELETE": [
       "/AIVAULT/v1/deletePSK",

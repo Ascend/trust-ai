@@ -59,7 +59,6 @@ do
    then
      exit 1
    fi
-   fi
    num5=`ps -u AiVault -ef|grep "python3 ../cert-manager/run.py" |grep -v grep|wc -l`
    if test $[num5] -ne $[1]
    then

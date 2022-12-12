@@ -23,7 +23,6 @@ func whiteBoxEncrypt(p []byte, f *embed.FS) {
 		fmt.Printf("encrypt password failed, err: %v", err.Error())
 	}
 	cipherTextStr := hex.EncodeToString(cipherText)
-	fmt.Printf("the cipherText is: %s\n", cipherTextStr)
 	// write to file
 	if err := ioutil.WriteFile(filePath, cipherText, fileMode); err != nil {
 		fmt.Printf("write encrypted password failed, err: %v", err.Error())

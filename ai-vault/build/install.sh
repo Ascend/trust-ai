@@ -167,8 +167,6 @@ update_certificate
 cp -af .ai-vault /home/AiVault/
 
 # 清理临时文件
-rm -rf /home/AiVault/.ai-vault/ca.*
-rm -rf /home/AiVault/.ai-vault/*.pem
 rm -rf /home/AiVault/.ai-vault/cert/server.csr
 
 run_docker

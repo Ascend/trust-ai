@@ -54,8 +54,6 @@ cert-manager用于为用户自动签发cfs证书和私钥。签发需要用到CA
     │   ├── app.py
     │   └── view
     │       ├── cert_manager_view.py
-    ├── __pycache__
-    │   └── config.cpython-38.pyc
     ├── README.md
     ├── run.py
     └── utils
