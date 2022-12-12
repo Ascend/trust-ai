@@ -14,7 +14,7 @@ from utils.tools import check_param, https_rsp, format_msg
 from utils import status_code
 from flask import Blueprint, views, request, Response
 from utils.ssl_key import SSLKey
-from config import CA_KEY, CA_PEM, TMP_DIR, DEC_COMMAND
+from config import CA_KEY, CA_PEM, TMP_DIR, DEC_CMD, DEC_ARG
 
 cert_manager = Blueprint("cert_manager", __name__)
 
@@ -33,11 +33,12 @@ def get_CA_key_cert(key_path, crt_path):
 KEY_BYTES, CRT_BYTES = get_CA_key_cert(CA_KEY, CA_PEM)
 
 
-def get_plain_passwd(command):
+def get_plain_passwd(cmd, arg):
     """
     decrypt password by whitebox and get plain password
     """
-    output = subprocess.Popen(command, shell=True,
+    command = [cmd, arg]
+    output = subprocess.Popen(command, shell=False,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT)
     passwd_byte = output.communicate()[0]
@@ -141,7 +142,7 @@ class GetCFSCertView(BaseView):
         self.data = {}
         self.ssl_aes = SSLKey()
         self.ca_crt = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, CRT_BYTES)
-        self.password = get_plain_passwd(DEC_COMMAND)
+        self.password = get_plain_passwd(DEC_CMD, DEC_ARG)
 
     def post(self):
         self.data = self.get_request_json()

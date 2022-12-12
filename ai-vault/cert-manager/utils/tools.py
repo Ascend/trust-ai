@@ -17,7 +17,7 @@ _number_reg = r'[0-9]{1,}'
 _special_character_reg = r'[!"#$%&\'()*+,-./:;<=>?@\[\]^_~{}|\\]{1,}'
 
 _passwd_complexity = [_lower_character_reg, _upper_character_reg, _number_reg, _special_character_reg]
-_passwd_reg = r'^[a-zA-Z0-9!"#$%&\'()*+,-./:;<=>?@\[\]^_~{}|\\]{8,20}$'
+_passwd_reg = r'^[a-zA-Z0-9!"#$%&\'()*+,-./:;<=>?@\[\]^_~{}|\\]{40,60}$'
 
 _name_reg = r'^[a-zA-Z]{1}[a-zA-Z0-9_-]{0,31}$'
 

@@ -16,17 +16,7 @@ class SSLKey:
     SALT_LEN = 16
     IV_LEN = 12
 
-    def __init__(self, version: int = 1, alg_id: int = 0, iteration: int = 10000,
-                 req_name: str = "CFS", req_country: str = "CN", req_state: str = "SC", req_city: str = "Chengdu",
-                 req_organization: str = "HW", req_organization_unit: str = "Ascend", req_email: str = "address"):
-        self.req_name = req_name
-        self.req_country = req_country
-        self.req_state = req_state
-        self.req_city = req_city
-        self.req_organization = req_organization
-        self.req_organization_unit = req_organization_unit
-        self.req_email = req_email
-
+    def __init__(self, version: int = 1, alg_id: int = 0, iteration: int = 10000):
         self.version = version
         self.alg_id = alg_id
         self.iteration = iteration
