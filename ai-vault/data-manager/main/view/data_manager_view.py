@@ -140,7 +140,6 @@ class ImportDataView(BaseView):
             self._copy_key_data(COMMON_DIR, IMPORT_DIR, True, db_backup_dir, cert_backup_dir)
             RUN_LOG.log(*self.info_msg("copy new data successfully"))
             # start aivault
-            os.system("/usr/local/openresty/nginx/sbin/nginx -p /home/AiVault/.ai-vault/nginx/ -s reload")
             self._start_aivault(db_backup_dir, cert_backup_dir)
             RUN_LOG.log(*self.info_msg("import data successfully"))
             return self.https_ret(SUCCESS)
@@ -233,6 +232,7 @@ class ImportDataView(BaseView):
             cert_backup_dir = f'-certBackup {cert_backup_dir}'
         cmd = f"/home/AiVault/.ai-vault/ai-vault run -ip {ip} -mgmtPort 5000 -servicePort 5001 {db_backup_dir} {cert_backup_dir} & "
         os.system(cmd)
+        os.system("/usr/local/openresty/nginx/sbin/nginx -p /home/AiVault/.ai-vault/nginx/ -s reload")
         time.sleep(1)
         if not self.is_ai_vault_alive():
             raise Exception("start ai-vault failed")
