@@ -43,6 +43,14 @@ module.exports = {
         },
         secure: false,
       },
+      '/certmanager/v1': {
+        target: 'https://42.192.48.100:9000',
+        changeOrigin: true,
+        pathRewrite: {
+            '^/certmanager/v1': '/certmanager/v1'
+        },
+        secure: false,
+      },
     },
 
     // Various Dev Server settings

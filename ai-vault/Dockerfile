@@ -16,6 +16,9 @@ RUN useradd -d /home/AiVault -u 9001 -m -s /usr/sbin/nologin AiVault
 WORKDIR /home/AiVault
 COPY user-manager/ ./user-manager
 COPY data-manager/ ./data-manager
+COPY cert-manager/ ./cert-manager
+# ai-whitebox is an executable file
+COPY ai-whitebox ./ai-whitebox
 COPY apigw/nginx/ ./nginx
 COPY build/run.sh ./run.sh
 COPY ai-vault ./ai-vault

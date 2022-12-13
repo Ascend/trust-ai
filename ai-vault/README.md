@@ -13,12 +13,13 @@
 ## 安装教程
 1. 将build/install.sh上传到待安装环境。
 
-2. 将一键配置证书中生成的ca.pem和ca.key上传到install.sh同级目录的.ai-vault目录中。目录结构如下。
+2. 将一键配置证书中生成的ca.pem、ca.key以及白盒加密后的口令文件encrypted_password上传到install.sh同级目录的.ai-vault目录中。目录结构如下。
 ```
 ├─install.sh                # 安装脚本
 └─.ai-vault
    ├─ca.pem                 # CA证书    
-   └─ca.key                 # CA私钥
+   ├─ca.key                 # CA私钥
+   └─encrypted_password     # 加密后的口令文件
 ```
 3. 执行安装命令
 `bash install.sh --option=[option]`，安装脚本可接收多个参数，例如`bash install.sh --image=ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64 --svc-port=5001 --mgmt-port=9000 --update_cert`。参数说明如下表。

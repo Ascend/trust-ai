@@ -103,18 +103,51 @@ function bootstrap() {
     fi
 }
 
+function check_passout() {
+    if [ "${#passout}" -lt 6 ] || [ "${#passout}" -gt 64 ]; then
+        log_error "The CA certificate is generated failed"
+        return 1
+    fi
+
+    local have_lowercase
+    have_lowercase=0
+    local have_uppercase
+    have_uppercase=0
+    local have_num
+    have_num=0
+    local have_punct
+    have_punct=0
+    if [[ "${passout}" =~ [[:lower:]] ]]; then
+        have_lowercase=1
+    fi
+    if [[ "${passout}" =~ [[:upper:]] ]]; then
+        have_uppercase=1
+    fi
+    if [[ "${passout}" =~ [[:digit:]] ]]; then
+        have_num=1
+    fi
+    if [[ "${passout}" =~ [[:punct:]] ]]; then
+        have_punct=1
+    fi
+    result=$((have_lowercase + have_uppercase + have_num + have_punct))
+    if [ $result -lt 2 ]; then
+        log_error "The pass phrase of ca.key is too simple"
+        return 1
+    fi
+
+}
+
 function generate_ca_cert() {
     local passout
     openssl rand -writerand ~/.rnd
     read -srp "Enter pass phrase for ca.key:" passout
     echo ""
-    if [ "${#passout}" -lt 6 ] || [ "${#passout}" -gt 64 ]; then
-        log_error "The CA certificate is generated failed"
-        return 1
-    fi
     read -srp "Verifying - Enter pass phrase for ca.key:" passout2
     echo ""
     if [ "${passout}" = "${passout2}" ]; then
+        if ! check_passout; then
+            return 1
+        fi
         openssl genrsa -passout pass:"${passout2}" -aes256 -out "${BASE_DIR}"/resources/cert/ca.key 4096 2>/dev/null &&
             openssl req -new -key "${BASE_DIR}"/resources/cert/ca.key -subj "/CN=Aiguard Root CA" -out ca.csr -passin pass:"${passout2}" &&
             openssl x509 -req -in ca.csr -signkey "${BASE_DIR}"/resources/cert/ca.key -days 3650 -extfile "${BASE_DIR}"/config/openssl.cnf -extensions v3_ca -out "${BASE_DIR}"/resources/cert/ca.pem -passin pass:"${passout2}" 2>/dev/null
@@ -294,24 +327,24 @@ function print_usage() {
     echo "--svc-port              specify the port of aivault, default is 5001"
     echo "--mgmt-port             specify the server port to manage the aivault service, default is 9000"
     echo "--cfs-port              specify the port of cfs, default is 1024"
+    echo "--certBackup            backup aivault cert path, default is /home/AiVault/.ai-vault/backup"
+    echo "--certExpireAlarmDays   aivault cert expiration remind days, range [7, 180], default is 90"
+    echo "--checkPeriodDays       check aivault cert period days, range from 1 to certExpireAlarmDays, default is 7"
+    echo "--dbBackup              ai-vault database backup path, default is /home/AiVault/.ai-vault/backup"
+    echo "--maxKMSAgent           max number of KMSAgent link, default is 128"
+    echo "--maxLinkPerKMSAgent    the max of the link of per KMSAgent, default is 32"
+    echo "--maxMkNum              the max of the mk number, default is 10"
     echo "--offline               offline mode, haveged will not be downloaded"
-    echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.5"
-    echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
+    echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.9"
+    echo "                        example: /usr/local/python3.7.9 or /usr/local/python3.7.9/"
     echo "--all                   all nodes perform configuration tasks,default only remote nodes"
     echo "--exists-cert           skip certificate generation when certificate exists"
-    echo "--update_cert           update certificate"
-    echo "--certExpireAlarmDays   certificate expire alarm days, default is 90"
-    echo "--checkPeriodDays       certificate check period, default is 7"
-    echo "--maxKMSAdgent          max number of KMSAdgent link, default is 128"
-    echo "--maxLinkPerKMSAdgent   max links of one KMSAdgent, default is 32"
-    echo "--maxMkNum              max number of MK, default is 10"
-    echo "--dbBackup              ai-vaullt database backup path"
-    echo "--certBackup            certificate backup path"
+    echo "--update-cert           update certificate"
     echo ""
     echo "e.g., ./deploy.sh --aivault-ip={ip} --python-dir={python_dir}"
 }
 
-python_dir="/usr/local/python3.7.5"
+python_dir="/usr/local/python3.7.9"
 svc_port=5001
 mgmt_port=9000
 cfs_port=1024
@@ -398,12 +431,12 @@ function parse_script_args() {
             fi
             shift
             ;;
-        --update_cert)
+        --update-cert)
             update_cert=y
             shift
             ;;
         --certExpireAlarmDays=*)
-            certExpireAlarmDays=$(echo "$1"|cut -d '=' -f 2)
+            certExpireAlarmDays=$(echo "$1" | cut -d '=' -f 2)
             if [ "$(echo "${certExpireAlarmDays}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${certExpireAlarmDays}" -lt 7 ] || [ "${certExpireAlarmDays}" -gt 180 ]; then
                 log_error "The input value of [mgmt-certExpireAlarmDays] is invalid, and value from 7 to 180 is available."
                 print_usage
@@ -413,7 +446,7 @@ function parse_script_args() {
             shift
             ;;
         --checkPeriodDays=*)
-            checkPeriodDays=$(echo "$1"|cut -d '=' -f 2)
+            checkPeriodDays=$(echo "$1" | cut -d '=' -f 2)
             if [ "$(echo "${checkPeriodDays}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
                 log_error "The input value of [mgmt-checkPeriodDays] is invalid."
                 print_usage
@@ -422,28 +455,28 @@ function parse_script_args() {
             aivault_args="$aivault_args -checkPeriodDays ${checkPeriodDays} "
             shift
             ;;
-        --maxKMSAdgent=*)
-            maxKMSAdgent=$(echo "$1"|cut -d '=' -f 2)
-            if [ "$(echo "${maxKMSAdgent}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
-                log_error "The input value of [mgmt-maxKMSAdgent] is invalid."
+        --maxKMSAgent=*)
+            maxKMSAgent=$(echo "$1" | cut -d '=' -f 2)
+            if [ "$(echo "${maxKMSAgent}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
+                log_error "The input value of [mgmt-maxKMSAgent] is invalid."
                 print_usage
                 return 1
             fi
-            aivault_args="$aivault_args -maxKMSAdgent ${maxKMSAdgent} "
+            aivault_args="$aivault_args -maxKMSAdgent ${maxKMSAgent} "
             shift
             ;;
-        --maxLinkPerKMSAdgent=*)
-            maxLinkPerKMSAdgent=$(echo "$1"|cut -d '=' -f 2)
-            if [ "$(echo "${maxLinkPerKMSAdgent}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
-                log_error "The input value of [mgmt-maxLinkPerKMSAdgent] is invalid."
+        --maxLinkPerKMSAgent=*)
+            maxLinkPerKMSAgent=$(echo "$1" | cut -d '=' -f 2)
+            if [ "$(echo "${maxLinkPerKMSAgent}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
+                log_error "The input value of [mgmt-maxLinkPerKMSAgent] is invalid."
                 print_usage
                 return 1
             fi
-            aivault_args="$aivault_args -maxLinkPerKMSAdgent ${maxLinkPerKMSAdgent} "
+            aivault_args="$aivault_args -maxLinkPerKMSAdgent ${maxLinkPerKMSAgent} "
             shift
             ;;
         --maxMkNum=*)
-            maxMkNum=$(echo "$1"|cut -d '=' -f 2)
+            maxMkNum=$(echo "$1" | cut -d '=' -f 2)
             if [ "$(echo "${maxMkNum}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
                 log_error "The input value of [mgmt-maxMkNum] is invalid."
                 print_usage
@@ -453,7 +486,7 @@ function parse_script_args() {
             shift
             ;;
         --dbBackup=*)
-            dbBackup=$(echo "$1"|cut -d '=' -f 2)
+            dbBackup=$(echo "$1" | cut -d '=' -f 2)
             if [ "${dbBackup: -1}" = / ]; then
                 dbBackup="${dbBackup%?}"
             fi
@@ -461,7 +494,7 @@ function parse_script_args() {
             shift
             ;;
         --certBackup=*)
-            certBackup=$(echo "$1"|cut -d '=' -f 2)
+            certBackup=$(echo "$1" | cut -d '=' -f 2)
             if [ "${certBackup: -1}" = / ]; then
                 certBackup="${certBackup%?}"
             fi
