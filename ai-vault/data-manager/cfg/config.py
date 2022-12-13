@@ -41,6 +41,8 @@ KEY_DATA_WHITE_LIST = (
     "backup/cert/svc/svc.csr",
     "backup/cert/svc/svc.key",
     "backup/cert/svc/svc.pem",
+    "ca.key",
+    "ca.pem",
     "cert/server.key",
     "cert/server.pem",
     "cert/mgmt/ca.pem",
@@ -53,6 +55,7 @@ KEY_DATA_WHITE_LIST = (
     "cert/svc/svc.csr",
     "cert/svc/svc.key",
     "cert/svc/svc.pem",
+    "encrypted_password",
     "ksf/0/backup.dat",
     "ksf/0/master.dat",
     "user-manager/user_manager.sqlite"

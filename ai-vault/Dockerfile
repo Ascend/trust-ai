@@ -17,7 +17,8 @@ WORKDIR /home/AiVault
 COPY user-manager/ ./user-manager
 COPY data-manager/ ./data-manager
 COPY cert-manager/ ./cert-manager
-COPY ai-whitebox/ ./ai-whitebox
+# ai-whitebox is an executable file
+COPY ai-whitebox ./ai-whitebox
 COPY apigw/nginx/ ./nginx
 COPY build/run.sh ./run.sh
 COPY ai-vault ./ai-vault
