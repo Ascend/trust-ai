@@ -33,6 +33,17 @@ function log_error() {
     echo "${DATE_N} ${USER_N}@${IP_N} [ERROR] $*" >>"${BASE_DIR}"/deploy.log
 }
 
+function log_warning() {
+    local DATE_N
+    DATE_N=$(date "+%Y-%m-%d %H:%M:%S")
+    local USER_N
+    USER_N=$(whoami)
+    local IP_N
+    IP_N=$(who am i | awk '{print $NF}' | sed 's/[()]//g')
+    echo "[WARNING] $*"
+    echo "${DATE_N} ${USER_N}@${IP_N} [WARNING] $*" >>"${BASE_DIR}"/deploy.log
+}
+
 function operation_log_info() {
     local DATE_N
     DATE_N=$(date "+%Y-%m-%d %H:%M:%S")
@@ -145,7 +156,6 @@ function download_haveged() {
 function check_inventory_file_and_openssl() {
     local count_server
     count_server=0
-    local count_ssh_pass_node
     count_ssh_pass_node=0
     local have_other_node
     have_other_node=0
@@ -166,12 +176,8 @@ function check_inventory_file_and_openssl() {
         log_error "Only one aivault server node can be set"
         return 1
     fi
-    if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ] && [ "${count_server}" -eq 1 ] && [ "${have_other_node}" -ne 0 ]; then
+    if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ] && [ "${count_server}" -eq 1 ]; then
         log_error "can not find aivault image"
-        return 1
-    fi
-    if [ "${count_server}" -eq 1 ] && [ -z "${image_name}" ]; then
-        log_error "Parameter image-name needs to be specified"
         return 1
     fi
 
@@ -199,6 +205,50 @@ function check_inventory_file_and_openssl() {
     fi
 }
 
+function get_os_name() {
+    local os_id
+    os_id=$(grep -oP "^ID=\"?\K\w+" /etc/os-release)
+    local os_name
+    os_name=${OS_MAP[$os_id]}
+    echo "${os_name}"
+}
+
+function check_rpm_exists() {
+    test_sshpass=$(command -v sshpass | wc -l)
+    if [ "${test_sshpass}" -eq 1 ]; then
+        return
+    fi
+
+    local g_os_name
+    g_os_name=$(get_os_name)
+    local test_rpm
+    test_rpm=$(command -v rpm | wc -l)
+    local have_rpm
+    case ${g_os_name} in
+    centos | euleros | sles | kylin | openEuler)
+        local have_rpm=1
+        ;;
+    ubuntu)
+        local have_rpm=0
+        ;;
+    *)
+        have_rpm=$test_rpm
+        ;;
+    esac
+    log_warning "no sshpass, install sshpass package"
+    if [ "${have_rpm}" -eq 1 ]; then
+        rpm -i --force --nodeps "${BASE_DIR}"/resources/rpm_"$(arch)"/sshpass*.rpm >/dev/null
+    else
+        export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical
+        dpkg --force-all -i "${BASE_DIR}"/resources/dpkg_"$(arch)"/sshpass*.deb >/dev/null
+    fi
+    local install_result_status=$?
+    if [[ "${install_result_status}" != 0 ]]; then
+        log_error "install sshpass package fail"
+        return 1
+    fi
+}
+
 function process_deploy() {
     check_inventory_file_and_openssl
     local check_inventory_file_and_openssl_status=$?
@@ -220,11 +270,16 @@ function process_deploy() {
     else
         read -srp "Enter pass phrase for ca.key:" passout2
     fi
+    if [ "${count_ssh_pass_node}" -ne 0 ]; then
+        if ! check_rpm_exists; then
+            return 1
+        fi
+    fi
     local tmp_deploy_play
     tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
     echo "- import_playbook: check.yml" >"${tmp_deploy_play}"
     echo "- import_playbook: deploy.yml" >>"${tmp_deploy_play}"
-    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e svc_port="${svc_port}" -e mgmt_port="${mgmt_port}" -e cfs_port="${cfs_port}" -e image_name="${image_name}" -e passin="${passout2}" -e all="${all}"
+    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e svc_port="${svc_port}" -e mgmt_port="${mgmt_port}" -e cfs_port="${cfs_port}" -e passin="${passout2}" -e all="${all}" -e update_cert="${update_cert}" -e aivault_args="${aivault_args}"
     if [ -f "${tmp_deploy_play}" ]; then
         rm -f "${tmp_deploy_play}"
     fi
@@ -239,13 +294,19 @@ function print_usage() {
     echo "--svc-port              specify the port of aivault, default is 5001"
     echo "--mgmt-port             specify the server port to manage the aivault service, default is 9000"
     echo "--cfs-port              specify the port of cfs, default is 1024"
-    echo "--image-name            specify the aivault image name"
-    echo "                        example: ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64"
     echo "--offline               offline mode, haveged will not be downloaded"
     echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.5"
     echo "                        example: /usr/local/python3.7.5 or /usr/local/python3.7.5/"
     echo "--all                   all nodes perform configuration tasks,default only remote nodes"
     echo "--exists-cert           skip certificate generation when certificate exists"
+    echo "--update_cert           update certificate"
+    echo "--certExpireAlarmDays   certificate expire alarm days, default is 90"
+    echo "--checkPeriodDays       certificate check period, default is 7"
+    echo "--maxKMSAdgent          max number of KMSAdgent link, default is 128"
+    echo "--maxLinkPerKMSAdgent   max links of one KMSAdgent, default is 32"
+    echo "--maxMkNum              max number of MK, default is 10"
+    echo "--dbBackup              ai-vaullt database backup path"
+    echo "--certBackup            certificate backup path"
     echo ""
     echo "e.g., ./deploy.sh --aivault-ip={ip} --python-dir={python_dir}"
 }
@@ -257,6 +318,7 @@ cfs_port=1024
 offline=n
 all=n
 include_cert=n
+update_cert=n
 
 function parse_script_args() {
     if [ $# = 0 ]; then
@@ -311,15 +373,6 @@ function parse_script_args() {
             fi
             shift
             ;;
-        --image-name=*)
-            image_name=$(echo "$1" | cut -d"=" -f2)
-            if echo "${image_name}" | grep -Evq '^[:a-z0-9._/-]*$'; then
-                log_error "--image-name parameter is invalid"
-                print_usage
-                return 1
-            fi
-            shift
-            ;;
         --python-dir=*)
             python_dir=$(echo "$1" | cut -d"=" -f2)
             if [ "${python_dir: -1}" = / ]; then
@@ -343,6 +396,76 @@ function parse_script_args() {
                 print_usage
                 return 1
             fi
+            shift
+            ;;
+        --update_cert)
+            update_cert=y
+            shift
+            ;;
+        --certExpireAlarmDays=*)
+            certExpireAlarmDays=$(echo "$1"|cut -d '=' -f 2)
+            if [ "$(echo "${certExpireAlarmDays}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${certExpireAlarmDays}" -lt 7 ] || [ "${certExpireAlarmDays}" -gt 180 ]; then
+                log_error "The input value of [mgmt-certExpireAlarmDays] is invalid, and value from 7 to 180 is available."
+                print_usage
+                return 1
+            fi
+            aivault_args="$aivault_args -certExpireAlarmDays ${certExpireAlarmDays} "
+            shift
+            ;;
+        --checkPeriodDays=*)
+            checkPeriodDays=$(echo "$1"|cut -d '=' -f 2)
+            if [ "$(echo "${checkPeriodDays}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
+                log_error "The input value of [mgmt-checkPeriodDays] is invalid."
+                print_usage
+                return 1
+            fi
+            aivault_args="$aivault_args -checkPeriodDays ${checkPeriodDays} "
+            shift
+            ;;
+        --maxKMSAdgent=*)
+            maxKMSAdgent=$(echo "$1"|cut -d '=' -f 2)
+            if [ "$(echo "${maxKMSAdgent}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
+                log_error "The input value of [mgmt-maxKMSAdgent] is invalid."
+                print_usage
+                return 1
+            fi
+            aivault_args="$aivault_args -maxKMSAdgent ${maxKMSAdgent} "
+            shift
+            ;;
+        --maxLinkPerKMSAdgent=*)
+            maxLinkPerKMSAdgent=$(echo "$1"|cut -d '=' -f 2)
+            if [ "$(echo "${maxLinkPerKMSAdgent}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
+                log_error "The input value of [mgmt-maxLinkPerKMSAdgent] is invalid."
+                print_usage
+                return 1
+            fi
+            aivault_args="$aivault_args -maxLinkPerKMSAdgent ${maxLinkPerKMSAdgent} "
+            shift
+            ;;
+        --maxMkNum=*)
+            maxMkNum=$(echo "$1"|cut -d '=' -f 2)
+            if [ "$(echo "${maxMkNum}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
+                log_error "The input value of [mgmt-maxMkNum] is invalid."
+                print_usage
+                return 1
+            fi
+            aivault_args="$aivault_args -maxMkNum ${maxMkNum} "
+            shift
+            ;;
+        --dbBackup=*)
+            dbBackup=$(echo "$1"|cut -d '=' -f 2)
+            if [ "${dbBackup: -1}" = / ]; then
+                dbBackup="${dbBackup%?}"
+            fi
+            aivault_args="$aivault_args -dbBackup ${dbBackup} "
+            shift
+            ;;
+        --certBackup=*)
+            certBackup=$(echo "$1"|cut -d '=' -f 2)
+            if [ "${certBackup: -1}" = / ]; then
+                certBackup="${certBackup%?}"
+            fi
+            aivault_args="$aivault_args -certBackup ${certBackup} "
             shift
             ;;
         *)

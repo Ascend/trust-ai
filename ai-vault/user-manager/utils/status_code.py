@@ -34,5 +34,6 @@ ERROR_MSG_MAP = {
     PASSWD_NOT_SAME: "The password entered twice is inconsistent",
     PERMISSION_ERROR: "User is not allowed to do this operation",
     ADMIN_DEL_FORBIDDEN: "Cannot delete an administrator account",
-    MK_EXIST: "User has in-use MKs"
+    MK_EXIST: "User has in-use MKs",
+    MAX_USER_ERROR: "The maximum number of users exceeding the limit(500)"
 }
