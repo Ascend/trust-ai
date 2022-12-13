@@ -119,5 +119,8 @@ cp -af "$cur_dir"/.ai-vault /home/AiVault/
 
 # 清理临时文件
 rm -rf /home/AiVault/.ai-vault/cert/server.csr
+[ -f /home/AiVault/.ai-vault/ca.srl ] && rm -f /home/AiVault/.ai-vault/ca.srl
+[ -f /home/AiVault/.ai-vault/mgmt.pem ] && rm -f /home/AiVault/.ai-vault/mgmt.pem
+[ -f /home/AiVault/.ai-vault/svc.pem ] && rm -f /home/AiVault/.ai-vault/svc.pem
 
 run_docker
