@@ -9,6 +9,15 @@
         >
             {{ $t('BUTTON_ADD') }}
        </el-button>
+      <el-button
+        v-no-more-click
+        type="primary"
+        icon="el-icon-key"
+        class="btn-add"
+        @click="handleApplyCert"
+      >
+        {{ $t('BUTTON_CERT') }}
+      </el-button>
         <div class="tab-main-operation">
             <el-input
                 type="text"
@@ -129,6 +138,9 @@ export default {
         handleAddMainKey() {
             this.$emit('handleAddMK')
         },
+        handleApplyCert() {
+          this.$emit('handleAddCert')
+        },
         handleSortMKTable({column, prop, order}) {
             this.queryMainKeyParams.sortBy = prop === 'CreatedAt' ? 'CreateTime' : prop
             this.queryMainKeyParams.sortMode = {'ascending': 'asc', 'descending': 'desc'}[order]
@@ -180,7 +192,7 @@ export default {
 
 .btn-add {
   float: left;
-  margin-left: 10px;
+  margin-left: 5px;
   background: #0077FF;
   border-radius: 2px;
   color: #FFFFFF;
