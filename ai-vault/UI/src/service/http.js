@@ -1,6 +1,7 @@
 import { request } from "@/plugins/axios";
-import { Message } from "element-ui"; 
+import { Message } from "element-ui";
 
+const controller = new AbortController();
 function getAuthToken() {
     const token = 'Bearer ' + sessionStorage.getItem('token');
     return token || '';
@@ -13,6 +14,9 @@ function getError() {
 
 let messageObj = null;
 function showErrMsg(message) {
+  if (message==='canceled'){
+    return
+  }
     try {
         messageObj && messageObj.close();
         messageObj = Message.error(message);
@@ -21,7 +25,7 @@ function showErrMsg(message) {
     }
 }
 
-export function $get(url, params = {}, config = {}) {
+export function $get(url, params = {}, config={}) {
     const { headers, ...rest } = config;
     return new Promise((resolve, reject) => {
       request
@@ -47,7 +51,7 @@ export function $get(url, params = {}, config = {}) {
     })
 }
 
-export function $post(url, params = {}, config = {}) {
+export function $post(url, params = {}, config={}) {
     const { headers, ...rest } = config;
     return new Promise((resolve, reject) => {
       request
@@ -74,12 +78,12 @@ export function $post(url, params = {}, config = {}) {
     })
   }
 
-export function $delete(url, params = {}, config = {}) {
+export function $delete(url, params = {}) {
   const { headers, ...rest } = config;
   return new Promise((resolve, reject) => {
     request
       .delete(url, {
-          params, 
+          params,
           headers: {
               Authorization: getAuthToken(),
               ...headers,

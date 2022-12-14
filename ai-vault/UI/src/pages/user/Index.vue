@@ -82,7 +82,7 @@
             >
             </el-pagination>
             </div>
-        </div>    
+        </div>
 
         <el-dialog
             :title="indexOperation === 'resetPWD' ? $t('RESET_PASSWORD') : $t('CONFIRM_DELETE')"
@@ -136,6 +136,7 @@ export default {
         }
 
         return {
+            abortController:new AbortController(),
             useramount: 0,
             userData: [],
             userPagination: {
@@ -183,6 +184,9 @@ export default {
     },
     mounted() {
       this.fetchUserList()
+    },
+    beforeDestroy() {
+      this.abortController.abort()
     },
     methods: {
         fetchUserList() {
@@ -345,7 +349,7 @@ export default {
       margin-right: 8px;
     }
 
-    
+
 .user-margin {
     margin-left: 8px;
     font-size: 12px;

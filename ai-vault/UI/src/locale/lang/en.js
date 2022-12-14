@@ -23,6 +23,7 @@ export default {
 
     PLACEHOLDER_INPUT: 'Please enter the project name to inquire ...',
     BUTTON_ADD: 'Add',
+    BUTTON_CERT: 'Cert Apply',
     BUTTON_UPLOAD: 'Upload',
     BUTTON_DOWNLOAD: 'Download',
 
@@ -50,6 +51,10 @@ export default {
     PLACEHOLDER_KEY_USAGE: "Please enter the key's usage",
     PLACEHOLDER_COMMENT: "Please enter a description",
     PLACEHOLDER_PSK_NAME: "Please enter the pre-shared key's name",
+    PLACEHOLDER_CERT_COMMONNAME:'Please enter the common name',
+    PLACEHOLDER_CERT_KEYWORD:'Please enter the password',
+    PLACEHOLDER_CERT_MAIL:'Please enter your mail',
+    PLACEHOLDER_CERT_PLACE:'Please choose your address',
     SUBMIT: 'Submit',
     LOGIN: '登录',
     CURRENT_PSW: 'Current password',

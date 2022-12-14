@@ -112,10 +112,14 @@ export default {
               LocalityName: [
                     { required: false,max :2, message: this.$t('PLACEHOLDER_CERT_CITY'), trigger: 'blur' },
               ],
-            }
+            },
+          abortController:new AbortController()
         };
     },
     mounted() {
+    },
+    beforeDestroy() {
+      this.abortController.abort()
     },
     watch: {
         currPage(newVal, oldVal) {
@@ -132,7 +136,7 @@ export default {
             this.$refs[formName].validate((valid) => {
                 if (valid) {
                     if(true) {
-                        postCert(this.certForm)
+                        postCert(this.certForm,{signal:this.abortController.signal})
                             .then(res => {
                                 if (res.headers['content-disposition'] === undefined) {
                                     let reader = new FileReader();
