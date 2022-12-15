@@ -103,7 +103,7 @@ export default {
                 NewPasswordConfirm: '',
             },
             formLabelWidth: '100px',
-            addUserRules: {                
+            addUserRules: {
                 UserName: [
                     { required: true, message: this.$t('PLACEHOLDER_USERNAME'), trigger: 'blur' },
                 ],
@@ -196,14 +196,18 @@ export default {
                                     message: this.$t('ERR_USER_AREADY_EXIST'),
                                 })
                             } else if (res.data.status === '00002000') {
-                                this.$message.error({
-                                    message: this.$t('ERR_PARAMS_CHECK_FAILED'),
-                                })
+                              this.$message.error({
+                                message: this.$t('ERR_PARAMS_CHECK_FAILED'),
+                              })
+                            } else if (res.data.status === '21000006') {
+                              this.$message.error({
+                                message: this.$t('ERR_ADD_USER_2'),
+                              })
                             } else {
                                 this.$message.error({
                                     message: this.$t('ERR_ADD_USER'),
                                 })
-                            }                   
+                            }
                         })
                         .catch(err => {
                             this.handleCancel()
