@@ -44,14 +44,14 @@
                 </el-col>
                 <el-col class="line" :span="1">-</el-col>
                 <el-col :span="7">
-                  <el-tooltip :content="$t('TIP_LOCATION')" placement="right">
+                  <el-tooltip :content="$t('TIP_COMMON')" placement="right">
                     <el-input v-model="certForm.StateOrProvinceName" class="inp-add" :placeholder="$t('PLACEHOLDER_CERT_PROVINCE')"
                               autocomplete="off"></el-input>
                   </el-tooltip>
                 </el-col>
                 <el-col class="line" :span="1">-</el-col>
                 <el-col :span="7">
-                  <el-tooltip :content="$t('TIP_LOCATION')" placement="right">
+                  <el-tooltip :content="$t('TIP_COMMON')" placement="right">
                     <el-input v-model="certForm.LocalityName" class="inp-add" :placeholder="$t('PLACEHOLDER_CERT_CITY')"
                               autocomplete="off"></el-input>
                   </el-tooltip>
