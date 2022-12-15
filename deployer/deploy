@@ -1,0 +1,551 @@
+#!/bin/bash
+BASE_DIR=$(
+    cd "$(dirname "$0")" >/dev/null 2>&1 || exit
+    pwd -P
+)
+readonly BASE_DIR
+LOG_COUNT_THRESHOLD=5
+readonly LOG_COUNT_THRESHOLD
+LOG_SIZE_THRESHOLD=$((20 * 1024 * 1024))
+readonly LOG_SIZE_THRESHOLD
+
+if [ -z "${ASNIBLE_CONFIG}" ]; then
+    export ANSIBLE_CONFIG=$BASE_DIR/config/ansible.cfg
+fi
+if [ -z "${ASNIBLE_LOG_PATH}" ]; then
+    export ANSIBLE_LOG_PATH=$BASE_DIR/deploy.log
+fi
+if [ -z "${ASNIBLE_INVENTORY}" ]; then
+    export ANSIBLE_INVENTORY=$BASE_DIR/inventory_file
+fi
+if [ -z "${ANSIBLE_CACHE_PLUGIN_CONNECTION}" ]; then
+    export ANSIBLE_CACHE_PLUGIN_CONNECTION=$BASE_DIR/facts_cache
+fi
+
+function log_error() {
+    local DATE_N
+    DATE_N=$(date "+%Y-%m-%d %H:%M:%S")
+    local USER_N
+    USER_N=$(whoami)
+    local IP_N
+    IP_N=$(who am i | awk '{print $NF}' | sed 's/[()]//g')
+    echo "[ERROR] $*"
+    echo "${DATE_N} ${USER_N}@${IP_N} [ERROR] $*" >>"${BASE_DIR}"/deploy.log
+}
+
+function log_warning() {
+    local DATE_N
+    DATE_N=$(date "+%Y-%m-%d %H:%M:%S")
+    local USER_N
+    USER_N=$(whoami)
+    local IP_N
+    IP_N=$(who am i | awk '{print $NF}' | sed 's/[()]//g')
+    echo "[WARNING] $*"
+    echo "${DATE_N} ${USER_N}@${IP_N} [WARNING] $*" >>"${BASE_DIR}"/deploy.log
+}
+
+function operation_log_info() {
+    local DATE_N
+    DATE_N=$(date "+%Y-%m-%d %H:%M:%S")
+    local USER_N
+    USER_N=$(whoami)
+    local IP_N
+    IP_N=$(who am i | awk '{print $NF}' | sed 's/[()]//g')
+    echo "${DATE_N} ${USER_N}@${IP_N} [INFO] $*" >>"${BASE_DIR}"/deploy_operation.log
+}
+
+function check_log() {
+    if [[ ! -e $1 ]]; then
+        touch "$1"
+    fi
+    local log_size
+    log_size=$(find "$1" -exec ls -l {} \; | awk '{ print $5 }')
+    if [[ ${log_size} -ge ${LOG_SIZE_THRESHOLD} ]]; then
+        rotate_log "$1"
+    fi
+}
+
+function rotate_log() {
+    local log_list
+    log_list=$(find "$1"* -exec ls {} \; | sort -r)
+    for item in $log_list; do
+        local suffix
+        suffix=${item##*.}
+        local prefix
+        prefix=${item%.*}
+        if [[ ${suffix} != "log" ]]; then
+            if [[ ${suffix} -lt ${LOG_COUNT_THRESHOLD} ]]; then
+                suffix=$((suffix + 1))
+                mv -f "$item" "$prefix".$suffix
+            fi
+        else
+            mv -f "${item}" "${item}".1
+            cat /dev/null >"${item}"
+        fi
+    done
+}
+
+function set_permission() {
+    chmod 750 "${BASE_DIR}" "${BASE_DIR}"/playbooks/ "${BASE_DIR}"/resources
+    chmod 600 "${BASE_DIR}"/*.log "${BASE_DIR}"/inventory_file "${BASE_DIR}"/config/ansible.cfg "${BASE_DIR}"/config/certs.py "${BASE_DIR}"/config/openssl.cnf 2>/dev/null
+    chmod 500 "${BASE_DIR}"/deploy.sh 2>/dev/null
+    chmod 400 "${BASE_DIR}"/*.log.? 2>/dev/null
+}
+
+function bootstrap() {
+    if [ "$(find "${python_dir}"/bin -name "python3.[7|8|9]" 2>/dev/null)" ] && [ "$(find "${python_dir}"/bin -name "ansible")" ]; then
+        export PATH=${python_dir}/bin:$PATH
+        export LD_LIBRARY_PATH=${python_dir}/lib:$LD_LIBRARY_PATH
+        unset PYTHONPATH
+    else
+        log_error "The python version is incorrect or ansible is not installed"
+        return 1
+    fi
+}
+
+function check_passout() {
+    if [ "${#passout}" -lt 6 ] || [ "${#passout}" -gt 64 ]; then
+        log_error "The CA certificate is generated failed"
+        return 1
+    fi
+
+    local have_lowercase
+    have_lowercase=0
+    local have_uppercase
+    have_uppercase=0
+    local have_num
+    have_num=0
+    local have_punct
+    have_punct=0
+    if [[ "${passout}" =~ [[:lower:]] ]]; then
+        have_lowercase=1
+    fi
+    if [[ "${passout}" =~ [[:upper:]] ]]; then
+        have_uppercase=1
+    fi
+    if [[ "${passout}" =~ [[:digit:]] ]]; then
+        have_num=1
+    fi
+    if [[ "${passout}" =~ [[:punct:]] ]]; then
+        have_punct=1
+    fi
+    result=$((have_lowercase + have_uppercase + have_num + have_punct))
+    if [ $result -lt 2 ]; then
+        log_error "The pass phrase of ca.key is too simple"
+        return 1
+    fi
+
+}
+
+function generate_ca_cert() {
+    local passout
+    openssl rand -writerand ~/.rnd
+    read -srp "Enter pass phrase for ca.key:" passout
+    echo ""
+    read -srp "Verifying - Enter pass phrase for ca.key:" passout2
+    echo ""
+    if [ "${passout}" = "${passout2}" ]; then
+        if ! check_passout; then
+            return 1
+        fi
+        openssl genrsa -passout pass:"${passout2}" -aes256 -out "${BASE_DIR}"/resources/cert/ca.key 4096 2>/dev/null &&
+            openssl req -new -key "${BASE_DIR}"/resources/cert/ca.key -subj "/CN=Aiguard Root CA" -out ca.csr -passin pass:"${passout2}" &&
+            openssl x509 -req -in ca.csr -signkey "${BASE_DIR}"/resources/cert/ca.key -days 3650 -extfile "${BASE_DIR}"/config/openssl.cnf -extensions v3_ca -out "${BASE_DIR}"/resources/cert/ca.pem -passin pass:"${passout2}" 2>/dev/null
+        local result_status=$?
+        if [ $result_status -ne 0 ]; then
+            log_error "The CA certificate is generated failed"
+            return 1
+        fi
+        echo "The CA certificate is generated successfully"
+        rm -f "${BASE_DIR}"/ca.csr
+    else
+        log_error "The CA certificate is generated failed"
+        return 1
+    fi
+}
+
+function zip_extract() {
+    zip_list=$(find "${BASE_DIR}"/resources -name "*.zip")
+    for zip_file in $zip_list; do
+        if [[ $zip_file =~ x86_64.zip ]]; then
+            unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_x86_64
+            rm -f "$zip_file"
+        fi
+        if [[ $zip_file =~ aarch64.zip ]]; then
+            unzip -q "$zip_file" -d "${BASE_DIR}"/resources/fuse_aarch64
+            rm -f "$zip_file"
+        fi
+    done
+}
+
+function download_haveged() {
+    rm -rf "${BASE_DIR}"/resources/fuse_*
+    if ! python3 "${BASE_DIR}"/downloader/download.py; then
+        log_error "download files failed"
+        return 1
+    fi
+}
+
+function check_inventory_file_and_openssl() {
+    local count_server
+    count_server=0
+    count_ssh_pass_node=0
+    local have_other_node
+    have_other_node=0
+    while read -r line; do
+        if [[ ${line:0:1} =~ [1-9] ]] || [[ ${line:0:9} =~ "localhost" ]]; then
+            if [[ ${line:0:1} =~ [1-9] ]]; then
+                ((have_other_node++))
+            fi
+            if [ "$(echo "${line}" | grep -c server)" -eq 1 ]; then
+                ((count_server++))
+            fi
+            if [ "$(echo "${line}" | grep -c ansible_ssh_pass)" -eq 1 ]; then
+                ((count_ssh_pass_node++))
+            fi
+        fi
+    done <inventory_file
+    if [ "${count_server}" -gt 1 ]; then
+        log_error "Only one aivault server node can be set"
+        return 1
+    fi
+    if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ] && [ "${count_server}" -eq 1 ]; then
+        log_error "can not find aivault image"
+        return 1
+    fi
+
+    local openssl_version
+    openssl_version=$(openssl version | cut -d ' ' -f2)
+    if [[ ${openssl_version:0:5} != 1.1.1 ]]; then
+        log_error "The openssl version is incorrect"
+        return 1
+    fi
+    if [ "${count_ssh_pass_node}" -ne 0 ] && [ "${count_ssh_pass_node}" -ne "${have_other_node}" ]; then
+        log_error "Only one authentication method is accepted"
+        return 1
+    fi
+    if [ "${count_ssh_pass_node}" -ne 0 ] && [ "$(grep host_key_checking "${BASE_DIR}"/config/ansible.cfg | cut -d'=' -f2)" != 'False' ]; then
+        log_error "The value of host_key_checking should be False"
+        return 1
+    fi
+    if [ "${count_ssh_pass_node}" -eq 0 ] && [ "$(grep host_key_checking "${BASE_DIR}"/config/ansible.cfg | cut -d'=' -f2)" != 'True' ]; then
+        log_error "The value of host_key_checking should be True"
+        return 1
+    fi
+    if [ "${count_ssh_pass_node}" -eq 0 ] && [ "${have_other_node}" -ne 0 ]; then
+        eval "$(ssh-agent -s)" >/dev/null
+        ssh-add 2>/dev/null
+    fi
+}
+
+function get_os_name() {
+    local os_id
+    os_id=$(grep -oP "^ID=\"?\K\w+" /etc/os-release)
+    local os_name
+    os_name=${OS_MAP[$os_id]}
+    echo "${os_name}"
+}
+
+function check_rpm_exists() {
+    test_sshpass=$(command -v sshpass | wc -l)
+    if [ "${test_sshpass}" -eq 1 ]; then
+        return
+    fi
+
+    local g_os_name
+    g_os_name=$(get_os_name)
+    local test_rpm
+    test_rpm=$(command -v rpm | wc -l)
+    local have_rpm
+    case ${g_os_name} in
+    centos | euleros | sles | kylin | openEuler)
+        local have_rpm=1
+        ;;
+    ubuntu)
+        local have_rpm=0
+        ;;
+    *)
+        have_rpm=$test_rpm
+        ;;
+    esac
+    log_warning "no sshpass, install sshpass package"
+    if [ "${have_rpm}" -eq 1 ]; then
+        rpm -i --force --nodeps "${BASE_DIR}"/resources/rpm_"$(arch)"/sshpass*.rpm >/dev/null
+    else
+        export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical
+        dpkg --force-all -i "${BASE_DIR}"/resources/dpkg_"$(arch)"/sshpass*.deb >/dev/null
+    fi
+    local install_result_status=$?
+    if [[ "${install_result_status}" != 0 ]]; then
+        log_error "install sshpass package fail"
+        return 1
+    fi
+}
+
+function process_deploy() {
+    check_inventory_file_and_openssl
+    local check_inventory_file_and_openssl_status=$?
+    if [[ ${check_inventory_file_and_openssl_status} != 0 ]]; then
+        return ${check_inventory_file_and_openssl_status}
+    fi
+
+    if [ "${offline}" = n ]; then
+        if ! download_haveged; then
+            return 1
+        fi
+    fi
+
+    zip_extract
+    if [ "${include_cert}" = n ]; then
+        if ! generate_ca_cert; then
+            return 1
+        fi
+    else
+        read -srp "Enter pass phrase for ca.key:" passout2
+    fi
+    if [ "${count_ssh_pass_node}" -ne 0 ]; then
+        if ! check_rpm_exists; then
+            return 1
+        fi
+    fi
+    local tmp_deploy_play
+    tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
+    echo "- import_playbook: check.yml" >"${tmp_deploy_play}"
+    echo "- import_playbook: deploy.yml" >>"${tmp_deploy_play}"
+    ansible-playbook -i "${BASE_DIR}"/inventory_file "${tmp_deploy_play}" -e hosts_name=ascend -e aivault_ip="${aivault_ip}" -e svc_port="${svc_port}" -e mgmt_port="${mgmt_port}" -e cfs_port="${cfs_port}" -e passin="${passout2}" -e all="${all}" -e update_cert="${update_cert}" -e aivault_args="${aivault_args}"
+    if [ -f "${tmp_deploy_play}" ]; then
+        rm -f "${tmp_deploy_play}"
+    fi
+}
+
+function print_usage() {
+    echo "Usage: ./deploy.sh <option> [args]"
+    echo ""
+    echo "options:"
+    echo "-h, --help              show this help message and exit"
+    echo "--aivault-ip            specify the IP address of aivault"
+    echo "--svc-port              specify the port of aivault, default is 5001"
+    echo "--mgmt-port             specify the server port to manage the aivault service, default is 9000"
+    echo "--cfs-port              specify the port of cfs, default is 1024"
+    echo "--certBackup            backup aivault cert path, default is /home/AiVault/.ai-vault/backup"
+    echo "--certExpireAlarmDays   aivault cert expiration remind days, range [7, 180], default is 90"
+    echo "--checkPeriodDays       check aivault cert period days, range from 1 to certExpireAlarmDays, default is 7"
+    echo "--dbBackup              ai-vault database backup path, default is /home/AiVault/.ai-vault/backup"
+    echo "--maxKMSAgent           max number of KMSAgent link, default is 128"
+    echo "--maxLinkPerKMSAgent    the max of the link of per KMSAgent, default is 32"
+    echo "--maxMkNum              the max of the mk number, default is 10"
+    echo "--offline               offline mode, haveged will not be downloaded"
+    echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.9"
+    echo "                        example: /usr/local/python3.7.9 or /usr/local/python3.7.9/"
+    echo "--all                   all nodes perform configuration tasks,default only remote nodes"
+    echo "--exists-cert           skip certificate generation when certificate exists"
+    echo "--update-cert           update certificate"
+    echo ""
+    echo "e.g., ./deploy.sh --aivault-ip={ip} --python-dir={python_dir}"
+}
+
+python_dir="/usr/local/python3.7.9"
+svc_port=5001
+mgmt_port=9000
+cfs_port=1024
+offline=n
+all=n
+include_cert=n
+update_cert=n
+
+function parse_script_args() {
+    if [ $# = 0 ]; then
+        print_usage
+        return 6
+    fi
+    local all_para_len
+    all_para_len="$*"
+    if [[ ${#all_para_len} -gt 1024 ]]; then
+        log_error "The total length of the parameter is too long"
+        return 1
+    fi
+    while true; do
+        case "$1" in
+        --help | -h)
+            print_usage
+            return 6
+            ;;
+        --aivault-ip=*)
+            aivault_ip=$(echo "$1" | cut -d"=" -f2)
+            if [ "$(echo "${aivault_ip}" | grep -cEv '^[0-9.]*$')" -ne 0 ] || [ "$(echo "${aivault_ip}" | grep -cE '^*\.$')" -ne 0 ] || [ "$(echo "${aivault_ip}" | grep -cvE '^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?){4}$')" -ne 0 ]; then
+                log_error "The input vaule of [aivault-ip] is invalid, and value needs valid IPv4 address."
+                print_usage
+                return 1
+            fi
+            shift
+            ;;
+        --svc-port=*)
+            svc_port=$(echo "$1" | cut -d"=" -f2)
+            if [ "$(echo "${svc_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${svc_port}" -lt 1024 ] || [ "${svc_port}" -gt 65535 ]; then
+                log_error "The input value of [svc-port] is invalid, and value from 1024 to 65535 is available."
+                print_usage
+                return 1
+            fi
+            shift
+            ;;
+        --mgmt-port=*)
+            mgmt_port=$(echo "$1" | cut -d"=" -f2)
+            if [ "$(echo "${mgmt_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${mgmt_port}" -lt 1024 ] || [ "${mgmt_port}" -gt 65535 ]; then
+                log_error "The input value of [mgmt-port] is invalid, and value from 1024 to 65535 is available."
+                print_usage
+                return 1
+            fi
+            shift
+            ;;
+        --cfs-port=*)
+            cfs_port=$(echo "$1" | cut -d"=" -f2)
+            if [ "$(echo "${cfs_port}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${cfs_port}" -lt 1024 ] || [ "${cfs_port}" -gt 65535 ]; then
+                log_error "The input value of [cfs-port] is invalid, and value from 1024 to 65535 is available."
+                print_usage
+                return 1
+            fi
+            shift
+            ;;
+        --python-dir=*)
+            python_dir=$(echo "$1" | cut -d"=" -f2)
+            if [ "${python_dir: -1}" = / ]; then
+                python_dir="${python_dir%?}"
+            fi
+            shift
+            ;;
+        --all)
+            all=y
+            shift
+            ;;
+        --offline)
+            offline=y
+            shift
+            ;;
+        --exists-cert)
+            if [ -f "${BASE_DIR}"/resources/cert/ca.key ] && [ -f "${BASE_DIR}"/resources/cert/ca.pem ]; then
+                include_cert=y
+            else
+                log_error "Certificate not found"
+                print_usage
+                return 1
+            fi
+            shift
+            ;;
+        --update-cert)
+            update_cert=y
+            shift
+            ;;
+        --certExpireAlarmDays=*)
+            certExpireAlarmDays=$(echo "$1" | cut -d '=' -f 2)
+            if [ "$(echo "${certExpireAlarmDays}" | grep -cEv '^[0-9]*$')" -ne 0 ] || [ "${certExpireAlarmDays}" -lt 7 ] || [ "${certExpireAlarmDays}" -gt 180 ]; then
+                log_error "The input value of [mgmt-certExpireAlarmDays] is invalid, and value from 7 to 180 is available."
+                print_usage
+                return 1
+            fi
+            aivault_args="$aivault_args -certExpireAlarmDays ${certExpireAlarmDays} "
+            shift
+            ;;
+        --checkPeriodDays=*)
+            checkPeriodDays=$(echo "$1" | cut -d '=' -f 2)
+            if [ "$(echo "${checkPeriodDays}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
+                log_error "The input value of [mgmt-checkPeriodDays] is invalid."
+                print_usage
+                return 1
+            fi
+            aivault_args="$aivault_args -checkPeriodDays ${checkPeriodDays} "
+            shift
+            ;;
+        --maxKMSAgent=*)
+            maxKMSAgent=$(echo "$1" | cut -d '=' -f 2)
+            if [ "$(echo "${maxKMSAgent}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
+                log_error "The input value of [mgmt-maxKMSAgent] is invalid."
+                print_usage
+                return 1
+            fi
+            aivault_args="$aivault_args -maxKMSAdgent ${maxKMSAgent} "
+            shift
+            ;;
+        --maxLinkPerKMSAgent=*)
+            maxLinkPerKMSAgent=$(echo "$1" | cut -d '=' -f 2)
+            if [ "$(echo "${maxLinkPerKMSAgent}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
+                log_error "The input value of [mgmt-maxLinkPerKMSAgent] is invalid."
+                print_usage
+                return 1
+            fi
+            aivault_args="$aivault_args -maxLinkPerKMSAdgent ${maxLinkPerKMSAgent} "
+            shift
+            ;;
+        --maxMkNum=*)
+            maxMkNum=$(echo "$1" | cut -d '=' -f 2)
+            if [ "$(echo "${maxMkNum}" | grep -cEv '^[0-9]*$')" -ne 0 ]; then
+                log_error "The input value of [mgmt-maxMkNum] is invalid."
+                print_usage
+                return 1
+            fi
+            aivault_args="$aivault_args -maxMkNum ${maxMkNum} "
+            shift
+            ;;
+        --dbBackup=*)
+            dbBackup=$(echo "$1" | cut -d '=' -f 2)
+            if [ "${dbBackup: -1}" = / ]; then
+                dbBackup="${dbBackup%?}"
+            fi
+            aivault_args="$aivault_args -dbBackup ${dbBackup} "
+            shift
+            ;;
+        --certBackup=*)
+            certBackup=$(echo "$1" | cut -d '=' -f 2)
+            if [ "${certBackup: -1}" = / ]; then
+                certBackup="${certBackup%?}"
+            fi
+            aivault_args="$aivault_args -certBackup ${certBackup} "
+            shift
+            ;;
+        *)
+            if [ "$1" != "" ]; then
+                log_error "Unsupported parameters: $1"
+                print_usage
+                return 1
+            fi
+            break
+            ;;
+        esac
+    done
+
+    if [ -z "${aivault_ip}" ]; then
+        log_error "Parameter aivault-ip needs to be specified"
+        return 1
+    fi
+}
+
+main() {
+    check_log "${BASE_DIR}"/deploy.log
+    check_log "${BASE_DIR}"/deploy_operation.log
+    set_permission
+    parse_script_args "$@"
+    local parse_script_args_status=$?
+    if [[ ${parse_script_args_status} != 0 ]]; then
+        return ${parse_script_args_status}
+    fi
+    bootstrap
+    local bootstrap_status=$?
+    if [ ${bootstrap_status} != 0 ]; then
+        return ${bootstrap_status}
+    fi
+    if [ -n "${aivault_ip}" ]; then
+        process_deploy
+        local process_deploy_status=$?
+        if [ ${process_deploy_status} != 0 ]; then
+            return ${process_deploy_status}
+        fi
+    fi
+}
+
+main "$@"
+main_status=$?
+if [[ ${main_status} != 0 ]] && [[ ${main_status} != 6 ]]; then
+    operation_log_info "parameter error,run failed"
+else
+    operation_log_info "$0 $*:Success"
+fi
+exit ${main_status}
