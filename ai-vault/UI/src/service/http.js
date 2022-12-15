@@ -78,7 +78,7 @@ export function $post(url, params = {}, config={}) {
     })
   }
 
-export function $delete(url, params = {}) {
+export function $delete(url, params = {}, config={}) {
   const { headers, ...rest } = config;
   return new Promise((resolve, reject) => {
     request
