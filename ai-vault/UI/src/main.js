@@ -6,6 +6,7 @@ import App from './App'
 import router from './router'
 import store from './store'
 import { i18n } from './locale'
+import axios from "axios";
 
 Vue.config.productionTip = false
 
@@ -34,3 +35,4 @@ Vue.directive('noMoreClick', {
     })
   }
 })
+

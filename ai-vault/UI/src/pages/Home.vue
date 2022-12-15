@@ -25,7 +25,7 @@
           <div class="right_info">{{ version }}</div>
         </div>
         <div class="info-block">
-          <div class="right_name">{{ $t("HEALTH_STATUS") }}</div>        
+          <div class="right_name">{{ $t("HEALTH_STATUS") }}</div>
           <div class="health_info" style="margin-top:5px">
               <div v-if="this.isAhealth" style="display: flex; flex-direction: row;">
                 <img src="@/assets/icon/healthy.svg" style="margin:8px">
@@ -34,7 +34,7 @@
               <div v-else style="display: flex; flex-direction: row;">
                 <img src="@/assets/icon/nohealthy.svg" style="margin:8px">
                 <div style="font-size:20px; line-height:30px; font-weight:400; letter-spacing: 0; color: #FFFFFE;margin:0 8px">不健康</div>
-              </div>            
+              </div>
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@ export default {
       isDhealth: false,
       tmpVersion: '',
       tmpTableData: [],
-      tmpHealthStatus: false,      
+      tmpHealthStatus: false,
       isQueryVersion: false,
       isQueryCert: false,
       isQueryHealth: false,
@@ -144,11 +144,15 @@ export default {
         CertValidDate: '***',
         CertAlarm: '***',
         CrlStatus: '***',
-      }
+      },
+      abortController:new AbortController()
     }
   },
   mounted() {
     this.fetchData()
+  },
+  beforeDestroy() {
+    this.abortController.abort()
   },
   watch: {
     isQueryVersion(newValue, oldValue) {
@@ -190,7 +194,7 @@ export default {
   },
   methods: {
     handleGetUserAmount() {
-      fetchUser({})
+      fetchUser({},{signal:this.abortController.signal})
         .then(res => {
           if(res.data.status === '00000000') {
             this.useramount = res.data.data.total
@@ -202,7 +206,7 @@ export default {
         })
     },
     handleGetDataSize() {
-      fetchDataSize({})
+      fetchDataSize({},{signal:this.abortController.signal})
         .then(res => {
           if(res.data.status === '00000000') {
             this.datasize = (res.data.data.size / 1024 /1024).toFixed(2)
@@ -214,7 +218,7 @@ export default {
         })
     },
     queryVersion() {
-      fetchVersion()
+      fetchVersion({},{signal:this.abortController.signal})
         .then(res => {
           if(res.data.status === '31000022') {
             let timerVersion = setTimeout(() => {
@@ -234,7 +238,7 @@ export default {
         })
     },
     queryHealth() {
-      fetchHealthStatus()
+      fetchHealthStatus({},{signal:this.abortController.signal})
         .then(res => {
           if(res.data.status === '31000022') {
             let timerHealth = setTimeout(() => {
@@ -254,7 +258,7 @@ export default {
         })
     },
     queryCert() {
-      fetchCertStatus()
+      fetchCertStatus({},{signal:this.abortController.signal})
         .then(res => {
           if(res.data.status === '31000022') {
             let timerCert = setTimeout(() => {

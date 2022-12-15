@@ -90,11 +90,15 @@ export default {
             tableData: [],
             isDelete: false,
             selectedRow: {},
-            page: ''
+            page: '',
+            abortController: new AbortController(),
         };
     },
     mounted() {
         this.fetchData()
+    },
+    beforeDestroy() {
+      this.abortController.abort()
     },
     watch: {
         currPage(newPage, oldPage) {
@@ -125,14 +129,14 @@ export default {
                 params.PSKName = this.queryPreSharedKeyParams.pskName
             }
 
-            fetchPreSharedKey(params)
+            fetchPreSharedKey(params,{signal:this.abortController.signal})
               .then(res => {
                 const format = 'YYYY-MM-DD HH:mm:ss';
                 if (res.data.data.data) {
                     res.data.data.data.forEach(item => {
                         item.PSKCreateTime = moment(item.PSKCreateTime).format(format)
                     })
-                }    
+                }
                 this.tableData = res.data.data.data
               })
         },

@@ -117,11 +117,14 @@ export default {
                 Password: [
                     { required: true, message: this.$t('PLACEHOLDER_KEY_PASSWORD'), trigger: 'blur' },
                 ],
-            }
-
+            },
+          abortController:new AbortController()
         };
     },
     mounted() {
+    },
+    beforeDestroy() {
+      this.abortController.abort()
     },
     watch: {
         currPage(newVal, oldVal) {
@@ -138,7 +141,7 @@ export default {
             this.$refs[formName].validate((valid) => {
                 if (valid) {
                     if(this.currPage === 'mk') {
-                        postMK(this.mkForm)
+                        postMK(this.mkForm,{signal:this.abortController.signal})
                             .then(res => {
                                 if (res.headers['content-disposition'] === undefined) {
                                     let reader = new FileReader();
@@ -186,7 +189,7 @@ export default {
                     } else {
                         this.mkName = this.pskForm.MKName
                         this.pskName = this.pskForm.PSKName
-                        postPSK(this.pskForm)
+                        postPSK(this.pskForm,{signal:this.abortController.signal})
                             .then(res => {
                                 if(res.data.status === '00000000') {
                                     let blob = new Blob([res.data.data.PSK], {type: 'application/none'})
@@ -232,7 +235,7 @@ export default {
                                 }
                             })
                     }
-                    
+
                 } else {
                     return false
                 }
