@@ -123,6 +123,7 @@ export default {
   ERR_RESET_PASSWORD: '修改密码失败',
   SUCCESS_ADD_USER: '添加用户成功',
   ERR_ADD_USER: '添加用户失败',
+  ERR_ADD_USER_2: '用户数量已满500，添加用户失败',
   SUCCESS_COPY: '复制成功',
   ERR_COPY: '复制失败',
   ERR_ADD: '添加失败',
