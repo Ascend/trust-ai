@@ -201,7 +201,7 @@ export default {
                               })
                             } else if (res.data.status === '21000006') {
                               this.$message.error({
-                                message: this.$t('ERR_ADD_USER_2'),
+                                message: this.$t('ERR_USER_NUM_EXCEED'),
                               })
                             } else {
                                 this.$message.error({

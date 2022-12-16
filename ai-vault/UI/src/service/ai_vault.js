@@ -39,12 +39,12 @@ export function postPSK(params = {},config={}) {
     },config);
 }
 
-export function deleteMK(params,config={}) {
+export function deleteMK(params) {
     const url = '/AIVAULT/v1/deleteMK/' + params
     return $delete(url);
 }
 
-export function deletePSK(params,config={}) {
+export function deletePSK(params) {
     const url = '/AIVAULT/v1/deletePSK/' + params
     return $delete(url);
 }

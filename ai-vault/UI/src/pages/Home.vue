@@ -17,8 +17,12 @@
           <div class="title">{{ $t("TOOL_INFO") }}</div>
         </div>
         <div class="top-button">
-            <el-button v-no-more-click type="text" icon="el-icon-upload2" :loading="isUploading" style="color:#D3DCE9" @click="isConfirmUploading=true">{{ $t('BUTTON_UPLOAD') }}</el-button>
-            <el-button v-no-more-click type="text" icon="el-icon-download" :loading="isDownloading" style="color:#D3DCE9" @click="handleDownload">{{ $t('BUTTON_DOWNLOAD') }}</el-button>
+          <el-button v-no-more-click type="text" icon="el-icon-upload2" :loading="isUploading" style="color:#D3DCE9"
+                     @click="isConfirmUploading=true">{{ $t('BUTTON_UPLOAD') }}
+          </el-button>
+          <el-button v-no-more-click type="text" icon="el-icon-download" :loading="isDownloading" style="color:#D3DCE9"
+                     @click="handleDownload">{{ $t('BUTTON_DOWNLOAD') }}
+          </el-button>
         </div>
         <div class="info-block">
           <div class="right_name">{{ $t("VERSION") }}</div>
@@ -27,14 +31,20 @@
         <div class="info-block">
           <div class="right_name">{{ $t("HEALTH_STATUS") }}</div>
           <div class="health_info" style="margin-top:5px">
-              <div v-if="this.isAhealth" style="display: flex; flex-direction: row;">
-                <img src="@/assets/icon/healthy.svg" style="margin:8px">
-                <div style="font-size:20px; line-height:30px; font-weight:400; letter-spacing: 0; color: #FFFFFE;margin:8px">健康</div>
+            <div v-if="this.isAhealth" style="display: flex; flex-direction: row;">
+              <img src="@/assets/icon/healthy.svg" style="margin:8px">
+              <div
+                style="font-size:20px; line-height:30px; font-weight:400; letter-spacing: 0; color: #FFFFFE;margin:8px">
+                健康
               </div>
-              <div v-else style="display: flex; flex-direction: row;">
-                <img src="@/assets/icon/nohealthy.svg" style="margin:8px">
-                <div style="font-size:20px; line-height:30px; font-weight:400; letter-spacing: 0; color: #FFFFFE;margin:0 8px">不健康</div>
+            </div>
+            <div v-else style="display: flex; flex-direction: row;">
+              <img src="@/assets/icon/nohealthy.svg" style="margin:8px">
+              <div
+                style="font-size:20px; line-height:30px; font-weight:400; letter-spacing: 0; color: #FFFFFE;margin:0 8px">
+                不健康
               </div>
+            </div>
           </div>
         </div>
       </div>
@@ -79,18 +89,19 @@
     </div>
 
     <el-dialog
-        :title="$t('UPLOAD_RISK')"
-        :visible.sync= "isConfirmUploading"
-        width="28%"
-        :close-on-click-modal="false"
-        :modal="false"
-        >
-          <div class="dialog-tip">
-            <div style="margin-left: 16px; margin-right: 16px"><img src="@/assets/icon/warn.svg"></div>
-            {{$t('CONFIRM_UPLOAD_TIP')}}
-          </div>
-          <span slot="footer" class="dialog-footer">
-              <el-button v-no-more-click @click="isConfirmUploading = false" class="dialog-button">{{$t('BTN_CANCEL')}}</el-button>
+      :title="$t('UPLOAD_RISK')"
+      :visible.sync="isConfirmUploading"
+      width="28%"
+      :close-on-click-modal="false"
+      :modal="false"
+    >
+      <div class="dialog-tip">
+        <div style="margin-left: 16px; margin-right: 16px"><img src="@/assets/icon/warn.svg"></div>
+        {{ $t('CONFIRM_UPLOAD_TIP') }}
+      </div>
+      <span slot="footer" class="dialog-footer">
+              <el-button v-no-more-click @click="isConfirmUploading = false"
+                         class="dialog-button">{{ $t('BTN_CANCEL') }}</el-button>
               <el-upload
                 class="upload-demo"
                 action="/datamanager/v1/import"
@@ -101,20 +112,21 @@
                 :on-success="handleUploadSuccess"
                 :on-error="handleUploadError"
               >
-              <el-button v-no-more-click type="primary" @click="isConfirmUploading = false" class="dialog-button">{{$t('BUTTON_UPLOAD') }}</el-button>
+              <el-button v-no-more-click type="primary" @click="isConfirmUploading = false"
+                         class="dialog-button">{{ $t('BUTTON_UPLOAD') }}</el-button>
             </el-upload></span>
-        </el-dialog>
+    </el-dialog>
 
   </div>
 </template>
 
 <script>
-import { fetchDataSize, fetchVersion, fetchHealthStatus, fetchCertStatus, exportFile } from '@/service/home.js'
+import {fetchDataSize, fetchVersion, fetchHealthStatus, fetchCertStatus, exportFile} from '@/service/home.js'
 import {fetchUser} from '@/service/user.js'
 
 export default {
   name: 'home',
-  data () {
+  data() {
     return {
       useramount: 0,
       datasize: 0,
@@ -145,47 +157,47 @@ export default {
         CertAlarm: '***',
         CrlStatus: '***',
       },
-      abortController:new AbortController()
+      abortController: new AbortController()
     }
   },
   mounted() {
     this.fetchData()
   },
-  beforeDestroy() {
-    this.abortController.abort()
-  },
+  // beforeDestroy() {
+  //   this.abortController.abort()
+  // },
   watch: {
     isQueryVersion(newValue, oldValue) {
-      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+      if (this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
         this.version = this.tmpVersion
-        if(this.tmpHealthStatus === 'ok') {
-          this.isAhealth=true
+        if (this.tmpHealthStatus === 'ok') {
+          this.isAhealth = true
         } else {
-          this.isAhealth=false
+          this.isAhealth = false
         }
         this.tableData = this.tmpTableData
         this.handleSpan()
       }
     },
     isQueryHealth(newValue, oldValue) {
-      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+      if (this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
         this.version = this.tmpVersion
-        if(this.tmpHealthStatus === 'ok') {
-          this.isAhealth=true
+        if (this.tmpHealthStatus === 'ok') {
+          this.isAhealth = true
         } else {
-          this.isAhealth=false
+          this.isAhealth = false
         }
         this.tableData = this.tmpTableData
         this.handleSpan()
       }
     },
     isQueryCert(newValue, oldValue) {
-      if(this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
+      if (this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
         this.version = this.tmpVersion
-        if(this.tmpHealthStatus === 'ok') {
-          this.isAhealth=true
+        if (this.tmpHealthStatus === 'ok') {
+          this.isAhealth = true
         } else {
-          this.isAhealth=false
+          this.isAhealth = false
         }
         this.tableData = this.tmpTableData
         this.handleSpan()
@@ -194,9 +206,9 @@ export default {
   },
   methods: {
     handleGetUserAmount() {
-      fetchUser({},{signal:this.abortController.signal})
+      fetchUser({}, {signal: this.abortController.signal})
         .then(res => {
-          if(res.data.status === '00000000') {
+          if (res.data.status === '00000000') {
             this.useramount = res.data.data.total
             this.isUhealth = true
           } else {
@@ -206,10 +218,10 @@ export default {
         })
     },
     handleGetDataSize() {
-      fetchDataSize({},{signal:this.abortController.signal})
+      fetchDataSize({}, {signal: this.abortController.signal})
         .then(res => {
-          if(res.data.status === '00000000') {
-            this.datasize = (res.data.data.size / 1024 /1024).toFixed(2)
+          if (res.data.status === '00000000') {
+            this.datasize = (res.data.data.size / 1024 / 1024).toFixed(2)
             this.isDhealth = true
           } else {
             this.datasize = 0
@@ -218,53 +230,38 @@ export default {
         })
     },
     queryVersion() {
-      fetchVersion({},{signal:this.abortController.signal})
+      fetchVersion({}, {signal: this.abortController.signal})
         .then(res => {
-          if(res.data.status === '31000022') {
-            let timerVersion = setTimeout(() => {
-              this.queryVersion()
-              clearTimeout(timerVersion)
-            }, 1000);
+          if (res.data.status === '31000022') {
+            this.queryVersion()
           } else {
             this.tmpVersion = res.data.data.version.split('_')[0]
             this.isQueryVersion = true
           }
-          })
+        })
         .finally(() => {
-          let timerHealth = setTimeout(() => {
-              this.queryHealth()
-              clearTimeout(timerHealth)
-            }, 1000);
+          this.queryHealth()
         })
     },
     queryHealth() {
-      fetchHealthStatus({},{signal:this.abortController.signal})
+      fetchHealthStatus({}, {signal: this.abortController.signal})
         .then(res => {
-          if(res.data.status === '31000022') {
-            let timerHealth = setTimeout(() => {
-              this.queryHealth()
-              clearTimeout(timerHealth)
-            }, 1000);
+          if (res.data.status === '31000022') {
+            this.queryHealth()
           } else {
             this.tmpHealthStatus = res.data.msg
             this.isQueryHealth = true
           }
         })
         .finally(() => {
-          let timerCert = setTimeout(() => {
-              this.queryCert()
-              clearTimeout(timerCert)
-            }, 1000);
+          this.queryCert()
         })
     },
     queryCert() {
-      fetchCertStatus({},{signal:this.abortController.signal})
+      fetchCertStatus({}, {signal: this.abortController.signal})
         .then(res => {
-          if(res.data.status === '31000022') {
-            let timerCert = setTimeout(() => {
-              this.queryCert()
-              clearTimeout(timerCert)
-            }, 1000);
+          if (res.data.status === '31000022') {
+            this.queryCert()
           } else {
             this.tmpTableData = res.data.data
             this.isQueryCert = true
@@ -281,38 +278,38 @@ export default {
       let svcArr = this.tableData.filter(item => item.CertType !== 'MGMT')
       this.tableData = mgmtArr.concat(svcArr)
       this.tableData.forEach((item, index) => {
-        if(item.CertType === 'MGMT') {
+        if (item.CertType === 'MGMT') {
           this.mgmtcert.CertAlarm = item.CertAlarm === '' ? '正常' : '不正常'
           this.mgmtcert.CrlStatus = item.CrlStatus === 'No CRL certificate has been imported.' ? '未导入' : '已导入'
           this.mgmtcert.CertValidDate = item.CertValidDate
-        }else {
+        } else {
         }
-          this.svccert.CertAlarm = item.CertAlarm === '' ? '正常' : '不正常'
-          this.svccert.CrlStatus = item.CrlStatus === 'No CRL certificate has been imported.' ? '未导入' : '已导入'
-          this.svccert.CertValidDate = item.CertValidDate
+        this.svccert.CertAlarm = item.CertAlarm === '' ? '正常' : '不正常'
+        this.svccert.CrlStatus = item.CrlStatus === 'No CRL certificate has been imported.' ? '未导入' : '已导入'
+        this.svccert.CertValidDate = item.CertValidDate
       })
     },
     handleBeforeUpload(file) {
-      this.isUploading=true;
+      this.isUploading = true;
       const isZip = file.type.indexOf('zip') > -1;
       const isLt50M = file.size / 1024 / 1024 <= 50;
 
       if (!isZip) {
         this.$message.error(this.$t('ERR_UPLOAD_FILE_TYPE'));
-        this.isUploading=false;
+        this.isUploading = false;
       }
       if (!isLt50M) {
         this.$message.error(this.$t('ERR_UPLOAD_FILE_SIZE'));
-        this.isUploading=false;
+        this.isUploading = false;
       }
       return isZip && isLt50M;
     },
     async handleDownload() {
-      this.isDownloading=true;
+      this.isDownloading = true;
       const res = await exportFile()
       let blob = new Blob([res.data], {type: 'application/zip'})
       let filename = res.headers['content-disposition'].split(';')[1].split('=')[1];
-      if(window.navigator && window.navigator.msSaveOrOpenBlob) {
+      if (window.navigator && window.navigator.msSaveOrOpenBlob) {
         window.navigator.msSaveBlob(
           blob,
           filename
@@ -328,20 +325,20 @@ export default {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
       }
-      this.isDownloading=false;
+      this.isDownloading = false;
     },
     handleUploadSuccess(response, file, fileList) {
-      if(response.status === "00000000") {
+      if (response.status === "00000000") {
         this.$message.success({message: this.$t('SUCCESS_UPLOAD')})
       } else {
         this.$message.warning({message: this.$t('ERR_UPLOAD')})
       }
       this.handleGetUserAmount()
-      this.isUploading=false;
+      this.isUploading = false;
     },
     handleUploadError(err, file, fileList) {
       this.$message.warning({message: this.$t('ERR_UPLOAD')})
-      this.isUploading=false;
+      this.isUploading = false;
     }
   }
 }
@@ -349,7 +346,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.home{
+.home {
   display: flex;
   flex-direction: row;
   overflow: auto;
@@ -371,6 +368,7 @@ export default {
   margin-top: 6px;
   min-width: 855px;
 }
+
 .left-box {
   padding: 0 57px;
   height: 108px;
@@ -380,6 +378,7 @@ export default {
   justify-content: center;
   text-align: center;
 }
+
 .first-left:before {
   content: '';
   width: 1px;
@@ -390,6 +389,7 @@ export default {
   margin-top: -20px;
   background: #8D98AA;
 }
+
 .left-name {
   font-size: 21px;
   color: #8D98AA;
@@ -398,6 +398,7 @@ export default {
   letter-spacing: 0;
   text-align: center;
 }
+
 .left-num {
   font-size: 54px;
   color: #FFFFFF;

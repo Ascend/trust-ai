@@ -1,6 +1,4 @@
 import { $get, $post, $delete } from './http';
-import axios from "axios";
-
 
 // 查询用户
 export function fetchUser(params = {},config = {}) {
