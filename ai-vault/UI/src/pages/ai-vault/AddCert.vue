@@ -113,14 +113,10 @@ export default {
                     { required: false,max :2, message: this.$t('PLACEHOLDER_CERT_CITY'), trigger: 'blur' },
               ],
             },
-          // abortController:new AbortController()
         };
     },
     mounted() {
     },
-    // beforeDestroy() {
-    //   this.abortController.abort()
-    // },
     watch: {
         currPage(newVal, oldVal) {
             let formName = 'certForm'
