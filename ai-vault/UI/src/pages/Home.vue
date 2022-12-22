@@ -137,7 +137,6 @@ export default {
       isUhealth: false,
       isDhealth: false,
       tmpVersion: '',
-      // tmpTableData: [],
       tmpHealthStatus: false,
       isQueryVersion: false,
       isQueryCert: false,
