@@ -97,14 +97,10 @@ export default {
             },
             isDelete: false,
             selectedRow: {},
-            abortController:new AbortController()
         };
     },
     mounted() {
         this.fetchData()
-    },
-    beforeDestroy() {
-      this.abortController.abort()
     },
     watch: {
         currPage(newPage, oldPage) {
@@ -128,7 +124,7 @@ export default {
                 params.MKName =  this.queryMainKeyParams.mkName
             }
 
-            fetchMainKey(params,{signal:this.abortController.signal})
+            fetchMainKey(params,{})
               .then(res => {
                 const format = 'YYYY-MM-DD HH:mm:ss';
                 if (res.data.data.data) {
@@ -155,7 +151,7 @@ export default {
             this.isDelete = true
         },
         handleDelete(){
-            deleteMK(this.selectedRow.MKName,{signal:this.abortController.signal})
+            deleteMK(this.selectedRow.MKName,{})
                 .then(res => {
                     if(res.data.status === '00000000') {
                         this.$message.success({

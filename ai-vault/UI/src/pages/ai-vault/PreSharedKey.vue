@@ -91,14 +91,10 @@ export default {
             isDelete: false,
             selectedRow: {},
             page: '',
-            abortController: new AbortController(),
         };
     },
     mounted() {
         this.fetchData()
-    },
-    beforeDestroy() {
-      this.abortController.abort()
     },
     watch: {
         currPage(newPage, oldPage) {
@@ -129,7 +125,7 @@ export default {
                 params.PSKName = this.queryPreSharedKeyParams.pskName
             }
 
-            fetchPreSharedKey(params,{signal:this.abortController.signal})
+            fetchPreSharedKey(params,{})
               .then(res => {
                 const format = 'YYYY-MM-DD HH:mm:ss';
                 if (res.data.data.data) {

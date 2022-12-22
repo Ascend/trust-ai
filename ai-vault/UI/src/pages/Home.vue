@@ -123,6 +123,7 @@
 <script>
 import {fetchDataSize, fetchVersion, fetchHealthStatus, fetchCertStatus, exportFile} from '@/service/home.js'
 import {fetchUser} from '@/service/user.js'
+import store from '@/store'
 
 export default {
   name: 'home',
@@ -132,11 +133,11 @@ export default {
       datasize: 0,
       version: '***',
       tableData: [],
-      isAhealth: false,
+      isAhealth: true,
       isUhealth: false,
       isDhealth: false,
       tmpVersion: '',
-      tmpTableData: [],
+      // tmpTableData: [],
       tmpHealthStatus: false,
       isQueryVersion: false,
       isQueryCert: false,
@@ -157,56 +158,14 @@ export default {
         CertAlarm: '***',
         CrlStatus: '***',
       },
-      abortController: new AbortController()
     }
   },
   mounted() {
     this.fetchData()
   },
-  // beforeDestroy() {
-  //   this.abortController.abort()
-  // },
-  watch: {
-    isQueryVersion(newValue, oldValue) {
-      if (this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
-        this.version = this.tmpVersion
-        if (this.tmpHealthStatus === 'ok') {
-          this.isAhealth = true
-        } else {
-          this.isAhealth = false
-        }
-        this.tableData = this.tmpTableData
-        this.handleSpan()
-      }
-    },
-    isQueryHealth(newValue, oldValue) {
-      if (this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
-        this.version = this.tmpVersion
-        if (this.tmpHealthStatus === 'ok') {
-          this.isAhealth = true
-        } else {
-          this.isAhealth = false
-        }
-        this.tableData = this.tmpTableData
-        this.handleSpan()
-      }
-    },
-    isQueryCert(newValue, oldValue) {
-      if (this.isQueryVersion && this.isQueryHealth && this.isQueryCert) {
-        this.version = this.tmpVersion
-        if (this.tmpHealthStatus === 'ok') {
-          this.isAhealth = true
-        } else {
-          this.isAhealth = false
-        }
-        this.tableData = this.tmpTableData
-        this.handleSpan()
-      }
-    },
-  },
   methods: {
     handleGetUserAmount() {
-      fetchUser({}, {signal: this.abortController.signal})
+      fetchUser({}, {})
         .then(res => {
           if (res.data.status === '00000000') {
             this.useramount = res.data.data.total
@@ -218,7 +177,7 @@ export default {
         })
     },
     handleGetDataSize() {
-      fetchDataSize({}, {signal: this.abortController.signal})
+      fetchDataSize({}, {})
         .then(res => {
           if (res.data.status === '00000000') {
             this.datasize = (res.data.data.size / 1024 / 1024).toFixed(2)
@@ -230,48 +189,47 @@ export default {
         })
     },
     queryVersion() {
-      fetchVersion({}, {signal: this.abortController.signal})
+      fetchVersion({}, {})
         .then(res => {
-          if (res.data.status === '31000022') {
-            this.queryVersion()
-          } else {
-            this.tmpVersion = res.data.data.version.split('_')[0]
-            this.isQueryVersion = true
-          }
-        })
-        .finally(() => {
+          this.version = (res.data.data.version||'').split('_')[0]
+          store.commit("saveVersion",this.version)
           this.queryHealth()
         })
     },
     queryHealth() {
-      fetchHealthStatus({}, {signal: this.abortController.signal})
+      fetchHealthStatus({}, {})
         .then(res => {
-          if (res.data.status === '31000022') {
-            this.queryHealth()
+          this.tmpHealthStatus = res.data.msg
+          if (this.tmpHealthStatus === 'ok') {
+            this.isAhealth = true
           } else {
-            this.tmpHealthStatus = res.data.msg
-            this.isQueryHealth = true
+            this.isAhealth = false
           }
-        })
-        .finally(() => {
+          store.commit("saveHealth",this.isAhealth)
           this.queryCert()
         })
     },
     queryCert() {
-      fetchCertStatus({}, {signal: this.abortController.signal})
+      fetchCertStatus({}, {})
         .then(res => {
-          if (res.data.status === '31000022') {
-            this.queryCert()
-          } else {
-            this.tmpTableData = res.data.data
-            this.isQueryCert = true
-          }
+          this.tableData = res.data.data
+          store.commit("saveCert",this.tableData)
+          this.isQueryCert = true
+          this.handleSpan()
         })
     },
     fetchData() {
       this.handleGetUserAmount()
       this.handleGetDataSize()
-      this.queryVersion()
+      if (store.state.home.tableData.length===0){
+        this.queryVersion()
+      }else {
+        this.tableData=store.state.home.tableData
+        this.isAhealth=store.state.home.isAhealth
+        this.version=store.state.home.version
+        this.handleSpan()
+      }
+
     },
     handleSpan() {
       let mgmtArr = this.tableData.filter(item => item.CertType === 'MGMT')
