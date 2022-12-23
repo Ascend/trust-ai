@@ -128,12 +128,12 @@ export default {
             fetchPreSharedKey(params,{})
               .then(res => {
                 const format = 'YYYY-MM-DD HH:mm:ss';
-                if (res.data.data.data) {
-                    res.data.data.data.forEach(item => {
+                if (res.data.data) {
+                    res.data.data.forEach(item => {
                         item.PSKCreateTime = moment(item.PSKCreateTime).format(format)
                     })
                 }
-                this.tableData = res.data.data.data
+                this.tableData = res.data.data
               })
         },
         handleSortPSKTable({column, prop, order}) {
