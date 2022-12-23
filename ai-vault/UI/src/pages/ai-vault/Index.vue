@@ -53,9 +53,6 @@ export default {
     },
     mounted() {
     },
-    beforeDestroy() {
-      this.abortController.abort()
-    },
     methods: {
       handleClick(tab, event) {
         this.isAddKey = false

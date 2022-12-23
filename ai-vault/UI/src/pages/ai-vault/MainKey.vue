@@ -127,12 +127,12 @@ export default {
             fetchMainKey(params,{})
               .then(res => {
                 const format = 'YYYY-MM-DD HH:mm:ss';
-                if (res.data.data.data) {
-                    res.data.data.data.forEach(item => {
+                if (res.data.data) {
+                    res.data.data.forEach(item => {
                         item.CreatedAt = moment(item.CreatedAt).format(format)
                     })
                 }
-                this.tableData = res.data.data.data
+                this.tableData = res.data.data
               })
         },
         handleAddMainKey() {
