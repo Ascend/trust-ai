@@ -76,7 +76,7 @@ func GetCommand(arg []string) []string {
 // PrintErrExit print error and exit
 func PrintErrExit(e error) {
 	if e != nil {
-		log.Println("Error", e)
+		log.Println("Error ", e)
 		os.Exit(-1)
 	}
 }

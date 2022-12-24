@@ -136,7 +136,7 @@ func whiteBoxDecrypt(cfsPath string, para []string, f *embed.FS) {
 	}
 }
 
-func whiteBoxEncryptP(p []byte, f *embed.FS) {
+func encryptPassword(p []byte, f *embed.FS) {
 	defer utils.SensitiveInfoClear(p)
 	cipherText, err := whitebox.EncryptBytes(p, f)
 	if err != nil {
@@ -146,24 +146,16 @@ func whiteBoxEncryptP(p []byte, f *embed.FS) {
 	fmt.Printf(string(cipherText))
 }
 
-func readCipherTextP(path string, f *embed.FS) ([]byte, error) {
+func decryptPassword(path string, f *embed.FS) {
 	//read cipher password from file
 	cipher, err := ioutil.ReadFile(path)
 	if err != nil {
+		fmt.Printf("read cipher data failed: %v", err.Error())
 		utils.PrintErrExit(err)
 	}
 	plainText, err := whitebox.DecryptBytes(cipher, f)
 	if err != nil {
 		fmt.Printf("decrypt cipher failed, err: %v", err.Error())
-		return nil, err
-	}
-	return plainText, nil
-}
-
-func whiteBoxDecryptP(path string, f *embed.FS) {
-	plainText, err := readCipherTextP(path, f)
-	if err != nil {
-		fmt.Printf("read cipher data failed: %v", err.Error())
 		return
 	}
 	defer utils.SensitiveInfoClear(plainText)
@@ -196,7 +188,7 @@ func main() {
 				utils.PrintErrExit(err)
 			}
 			defer utils.ClearStringMemory(passwd)
-			whiteBoxEncryptP(p, &f)
+			encryptPassword(p, &f)
 		}
 	case "run":
 		commands := utils.GetCommand(os.Args)
@@ -204,9 +196,9 @@ func main() {
 	case "dec":
 		if len(os.Args) == 3 {
 			path := os.Args[2]
-			whiteBoxDecryptP(path, &f)
+			decryptPassword(path, &f)
 		}
-		whiteBoxDecryptP(filePath, &f)
+		decryptPassword(filePath, &f)
 	case "h":
 		utils.PrintHelp()
 	default:
