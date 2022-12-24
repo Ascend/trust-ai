@@ -169,6 +169,8 @@ var f embed.FS
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("please input command.")
+		utils.PrintHelp()
+		return
 	}
 	act := os.Args[1]
 	switch act {
