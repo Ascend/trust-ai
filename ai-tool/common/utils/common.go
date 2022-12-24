@@ -15,10 +15,10 @@ const (
 	Usage ./ai-tool [options]
 	
 	ai-tool options:
-		enc   -p  passwd 	ca private key password should satisfy requirements, -p is optional
+		enc   -p  	ca 		private key password should satisfy requirements, -p is optional
 		dec   path    		encrypted password file path (optional)
-		run   cfs_cmd       run cfs service
-		h          	  		print help message`
+		run   cfs_cmd           run cfs service
+		h          	        print help message`
 )
 
 // CloseConsole close expect console

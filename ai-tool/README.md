@@ -60,7 +60,7 @@ CERT_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 [root@ubuntu root]# ./ai-tool enc -p plain_password
 ```
 
-2.  `./ai-tool dec`从指定文件读取白盒加密后的口令，进行解密。
+2.  `./ai-tool dec`从指定文件读取白盒加密后的口令，进行解密。默认从/home/AiVault/.ai-vault/encrypted_password中读取，如果指定path则从指定路径读取文件。
 
 ```
 [root@ubuntu  root]# ./ai-tool dec path(optional)
