@@ -4,6 +4,7 @@ import (
 	"embed"
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 
@@ -17,6 +18,7 @@ import (
 const (
 	pskName  = "PSK_KEY"
 	certName = "CERT_KEY"
+	filePath = "/home/AiVault/.ai-vault/encrypted_password"
 )
 
 func whiteBoxEncrypt(f *embed.FS) {
@@ -134,6 +136,40 @@ func whiteBoxDecrypt(cfsPath string, para []string, f *embed.FS) {
 	}
 }
 
+func whiteBoxEncryptP(p []byte, f *embed.FS) {
+	defer utils.SensitiveInfoClear(p)
+	cipherText, err := whitebox.EncryptBytes(p, f)
+	if err != nil {
+		fmt.Printf("encrypt password failed, err: %v", err.Error())
+	}
+	// echo to the console
+	fmt.Printf(string(cipherText))
+}
+
+func readCipherTextP(path string, f *embed.FS) ([]byte, error) {
+	//read cipher password from file
+	cipher, err := ioutil.ReadFile(path)
+	if err != nil {
+		utils.PrintErrExit(err)
+	}
+	plainText, err := whitebox.DecryptBytes(cipher, f)
+	if err != nil {
+		fmt.Printf("decrypt cipher failed, err: %v", err.Error())
+		return nil, err
+	}
+	return plainText, nil
+}
+
+func whiteBoxDecryptP(path string, f *embed.FS) {
+	plainText, err := readCipherTextP(path, f)
+	if err != nil {
+		fmt.Printf("read cipher data failed: %v", err.Error())
+		return
+	}
+	defer utils.SensitiveInfoClear(plainText)
+	fmt.Printf(string(plainText))
+}
+
 //go:embed publicTable
 //go:embed privateKey
 var f embed.FS
@@ -145,11 +181,37 @@ func main() {
 	act := os.Args[1]
 	switch act {
 	case "enc":
-		whiteBoxEncrypt(&f)
+		if len(os.Args) == 2 {
+			whiteBoxEncrypt(&f)
+		}
+		if len(os.Args) < 4 {
+			fmt.Println("invalid command.")
+			utils.PrintHelp()
+			return
+		}
+		if os.Args[2] == "-p" {
+			passwd := os.Args[3]
+			p := []byte(passwd)
+			if err := utils.CheckPasswd(p); err != nil {
+				utils.PrintErrExit(err)
+			}
+			defer utils.ClearStringMemory(passwd)
+			whiteBoxEncryptP(p, &f)
+		}
 	case "run":
 		commands := utils.GetCommand(os.Args)
 		whiteBoxDecrypt(os.Args[2], commands, &f)
+	case "dec":
+		if len(os.Args) == 3 {
+			path := os.Args[2]
+			whiteBoxDecryptP(path, &f)
+		}
+		whiteBoxDecryptP(filePath, &f)
+	case "h":
+		utils.PrintHelp()
 	default:
-		fmt.Println("only support enc or run command.")
+		fmt.Println("only support enc dec h or run command.")
+		utils.PrintHelp()
 	}
+
 }
