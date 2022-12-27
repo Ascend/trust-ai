@@ -31,6 +31,47 @@ function run_docker() {
   fi
 }
 
+function export_certificate() {
+  base_dir=$1
+  # AI-VAULT导出CSR
+  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /home/AiVault/ai-vault req -force -type MGMT -subject 'CN|SiChuan|ChengDu|Huawei|Ascend' || return -1
+  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /home/AiVault/ai-vault req -force -type SVC -subject 'CN|SiChuan|ChengDu|Huawei|Ascend' || return -1
+
+  # 签发AI-VAULT证书
+  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/svc/svc.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/svc.pem -days 3650 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:"${passwd}" || return -1
+  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/mgmt/mgmt.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/mgmt.pem -days 3650 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:"${passwd}" || return -1
+
+  # 导入AI-VAULT证书
+  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image  /home/AiVault/ai-vault x509 -type MGMT -caFile /home/AiVault/.ai-vault/ca.pem -certFile /home/AiVault/.ai-vault/mgmt.pem | grep 'fingerprint' || return -1
+  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image  /home/AiVault/ai-vault x509 -type SVC -caFile /home/AiVault/.ai-vault/ca.pem -certFile /home/AiVault/.ai-vault/svc.pem | grep 'fingerprint' || return -1
+
+  # 生成服务证书私钥
+  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault $image bash -c "openssl rand -writerand ~/.rnd" || return -1
+  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl genrsa -out /home/AiVault/.ai-vault/cert/server.key 4096 || return -1
+  # 生成服务证书CSR
+  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl req -new -key /home/AiVault/.ai-vault/cert/server.key -subj '/CN=aivault' -out /home/AiVault/.ai-vault/cert/server.csr || return -1
+  # 生成服务证书
+  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /bin/bash -c "openssl x509 -req -in /home/AiVault/.ai-vault/cert/server.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/cert/server.pem -days 3650 -sha256 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:${passwd}" || return -1
+  # 口令加密
+  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /bin/bash -c "/home/AiVault/ai-whitebox enc -p ${passwd} > /home/AiVault/.ai-vault/encrypted_password" || return -1
+}
+# 导入证书失败后多次尝试
+function update_certificate(){
+  operation_log_info "start update certificate"
+  for i in {1..3}
+  do
+    export_certificate $1
+    if [ $? == 0 ];then
+      echo "update certificate success"
+      return 0
+    else
+      echo "update certificate $i times"
+    fi
+  done
+  log_error "update certificate faild"
+  exit 1
+}
+
 # 安装docker
 docker version > /dev/null 2>&1
 if [ $? -ne 0 ]; then
@@ -54,13 +95,22 @@ update_cert=$5
 aivault_ip=$6
 
 # 指定aivault可选参数
-aivault_args=$7
+aivault_args=$7  
 
-# 非首次安装
+# 非首次安装，不更新证书
 if [ -d "/home/AiVault/.ai-vault/cert" ] && [ "${update_cert}" == "n" ]; then
   run_docker
 fi
 
+# 非首次安装，更新证书
+if [ -d "/home/AiVault/.ai-vault/cert" ] && [ "${update_cert}" == "y" ]; then
+  export LD_LIBRARY_PATH=/home/AiVault/lib:$LD_LIBRARY_PATH
+  passwd=$1
+  update_certificate "/home/AiVault"
+  run_docker
+fi
+
+# 首次安装
 # 初始化用户
 useradd -d /home/AiVault -u 9001 -m AiVault
 mkdir -p /home/AiVault/.ai-vault
@@ -72,48 +122,7 @@ export LD_LIBRARY_PATH=/home/AiVault/lib:$LD_LIBRARY_PATH
 # 读取私钥口令，同时作为新服务证书私钥口令
 passwd=$1
 
-
-function export_certificate() {
-  # AI-VAULT导出CSR
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /home/AiVault/ai-vault req -force -type MGMT -subject 'CN|SiChuan|ChengDu|Huawei|Ascend' || return -1
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /home/AiVault/ai-vault req -force -type SVC -subject 'CN|SiChuan|ChengDu|Huawei|Ascend' || return -1
-
-  # 签发AI-VAULT证书
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/svc/svc.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/svc.pem -days 3650 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:"${passwd}" || return -1
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl x509 -req -in /home/AiVault/.ai-vault/cert/mgmt/mgmt.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/mgmt.pem -days 3650 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:"${passwd}" || return -1
-
-  # 导入AI-VAULT证书
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image  /home/AiVault/ai-vault x509 -type MGMT -caFile /home/AiVault/.ai-vault/ca.pem -certFile /home/AiVault/.ai-vault/mgmt.pem | grep 'fingerprint' || return -1
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image  /home/AiVault/ai-vault x509 -type SVC -caFile /home/AiVault/.ai-vault/ca.pem -certFile /home/AiVault/.ai-vault/svc.pem | grep 'fingerprint' || return -1
-
-  # 生成服务证书私钥
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl rand -writerand ~/.rnd || return -1
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl genrsa -out /home/AiVault/.ai-vault/cert/server.key 4096 || return -1
-  # 生成服务证书CSR
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault $image openssl req -new -key /home/AiVault/.ai-vault/cert/server.key -subj '/CN=aivault' -out /home/AiVault/.ai-vault/cert/server.csr || return -1
-  # 生成服务证书
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /bin/bash -c "openssl x509 -req -in /home/AiVault/.ai-vault/cert/server.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/cert/server.pem -days 3650 -sha256 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:${passwd}" || return -1
-  # 口令加密
-  docker run --rm -v "${cur_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /bin/bash -c "/home/AiVault/ai-whitebox enc -p ${passwd} > /home/AiVault/.ai-vault/encrypted_password" || return -1
-}
-# 导入证书失败后多次尝试
-function update_certificate(){
-  operation_log_info "start update certificate"
-  for i in {1..3}
-  do
-    export_certificate
-    if [ $? == 0 ];then
-      echo "update certificate success"
-      return 0
-    else
-      echo "update certificate $i times"
-    fi
-  done
-  log_error "update certificate faild"
-  exit 1
-}
-
-update_certificate
+update_certificate $cur_dir
 
 cp -af "$cur_dir"/.ai-vault /home/AiVault/
 
