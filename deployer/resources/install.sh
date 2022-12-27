@@ -32,11 +32,7 @@ function run_docker() {
 }
 
 function export_certificate() {
-  if [ $1 == 1 ];then
-    base_dir=${cur_dir}
-  else
-    base_dir="/home/AiVault"
-  fi
+  base_dir=$1
   # AI-VAULT导出CSR
   docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /home/AiVault/ai-vault req -force -type MGMT -subject 'CN|SiChuan|ChengDu|Huawei|Ascend' || return -1
   docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /home/AiVault/ai-vault req -force -type SVC -subject 'CN|SiChuan|ChengDu|Huawei|Ascend' || return -1
@@ -57,7 +53,7 @@ function export_certificate() {
   # 生成服务证书
   docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /bin/bash -c "openssl x509 -req -in /home/AiVault/.ai-vault/cert/server.csr -CA /home/AiVault/.ai-vault/ca.pem -CAkey /home/AiVault/.ai-vault/ca.key -CAcreateserial -out /home/AiVault/.ai-vault/cert/server.pem -days 3650 -sha256 -extfile /etc/ssl/openssl.cnf -extensions v3_req -passin pass:${passwd}" || return -1
   # 口令加密
-  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /bin/bash -c "/home/AiVault/ai-whitebox enc ${passwd}" || return -1
+  docker run --rm -v "${base_dir}"/.ai-vault:/home/AiVault/.ai-vault -e LD_LIBRARY_PATH=/home/AiVault/lib $image /bin/bash -c "/home/AiVault/ai-whitebox enc -p ${passwd} > /home/AiVault/.ai-vault/encrypted_password" || return -1
 }
 # 导入证书失败后多次尝试
 function update_certificate(){
@@ -110,7 +106,7 @@ fi
 if [ -d "/home/AiVault/.ai-vault/cert" ] && [ "${update_cert}" == "y" ]; then
   export LD_LIBRARY_PATH=/home/AiVault/lib:$LD_LIBRARY_PATH
   passwd=$1
-  update_certificate 0
+  update_certificate "/home/AiVault"
   run_docker
 fi
 
@@ -126,8 +122,14 @@ export LD_LIBRARY_PATH=/home/AiVault/lib:$LD_LIBRARY_PATH
 # 读取私钥口令，同时作为新服务证书私钥口令
 passwd=$1
 
-update_certificate 1
+update_certificate $cur_dir
 
 cp -af "$cur_dir"/.ai-vault /home/AiVault/
+
+# 清理临时文件
+rm -rf /home/AiVault/.ai-vault/cert/server.csr
+[ -f /home/AiVault/.ai-vault/ca.srl ] && rm -f /home/AiVault/.ai-vault/ca.srl
+[ -f /home/AiVault/.ai-vault/mgmt.pem ] && rm -f /home/AiVault/.ai-vault/mgmt.pem
+[ -f /home/AiVault/.ai-vault/svc.pem ] && rm -f /home/AiVault/.ai-vault/svc.pem
 
 run_docker
