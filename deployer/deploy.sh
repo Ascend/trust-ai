@@ -442,7 +442,7 @@ function parse_script_args() {
                 print_usage
                 return 1
             fi
-            aivault_args="$aivault_args -certExpireAlarmDays ${certExpireAlarmDays} "
+            aivault_args="$aivault_args%certExpireAlarmDays=${certExpireAlarmDays}"
             shift
             ;;
         --checkPeriodDays=*)
@@ -452,7 +452,7 @@ function parse_script_args() {
                 print_usage
                 return 1
             fi
-            aivault_args="$aivault_args -checkPeriodDays ${checkPeriodDays} "
+            aivault_args="$aivault_args%checkPeriodDays=${checkPeriodDays}"
             shift
             ;;
         --maxKMSAgent=*)
@@ -462,7 +462,7 @@ function parse_script_args() {
                 print_usage
                 return 1
             fi
-            aivault_args="$aivault_args -maxKMSAdgent ${maxKMSAgent} "
+            aivault_args="$aivault_args%maxKMSAgent=${maxKMSAgent}"
             shift
             ;;
         --maxLinkPerKMSAgent=*)
@@ -472,7 +472,7 @@ function parse_script_args() {
                 print_usage
                 return 1
             fi
-            aivault_args="$aivault_args -maxLinkPerKMSAdgent ${maxLinkPerKMSAgent} "
+            aivault_args="$aivault_args%maxLinkPerKMSAgent=${maxLinkPerKMSAgent}"
             shift
             ;;
         --maxMkNum=*)
@@ -482,7 +482,7 @@ function parse_script_args() {
                 print_usage
                 return 1
             fi
-            aivault_args="$aivault_args -maxMkNum ${maxMkNum} "
+            aivault_args="$aivault_args%maxMkNum=${maxMkNum}"
             shift
             ;;
         --dbBackup=*)
@@ -490,7 +490,7 @@ function parse_script_args() {
             if [ "${dbBackup: -1}" = / ]; then
                 dbBackup="${dbBackup%?}"
             fi
-            aivault_args="$aivault_args -dbBackup ${dbBackup} "
+            aivault_args="$aivault_args%dbBackup=${dbBackup}"
             shift
             ;;
         --certBackup=*)
@@ -498,7 +498,7 @@ function parse_script_args() {
             if [ "${certBackup: -1}" = / ]; then
                 certBackup="${certBackup%?}"
             fi
-            aivault_args="$aivault_args -certBackup ${certBackup} "
+            aivault_args="$aivault_args%certBackup=${certBackup}"
             shift
             ;;
         *)
