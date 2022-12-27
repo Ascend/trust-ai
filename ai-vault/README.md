@@ -13,7 +13,7 @@
 ## 安装教程
 1. 将build/install.sh上传到待安装环境。
 
-2. 将一键配置证书中生成的ca.pem、ca.key以及ai-whitebox二进制白盒加密后的口令文件encrypted_password上传到install.sh同级目录的.ai-vault目录中。目录结构如下。
+2. 将一键配置证书中生成的ca.pem、ca.key以及ai-tool二进制白盒加密后的口令文件encrypted_password上传到install.sh同级目录的.ai-vault目录中。目录结构如下。
 ```
 ├─install.sh                # 安装脚本
 └─.ai-vault
