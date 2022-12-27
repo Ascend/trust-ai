@@ -199,6 +199,7 @@ func main() {
 		if len(os.Args) == 3 {
 			path := os.Args[2]
 			decryptPassword(path, &f)
+			return
 		}
 		decryptPassword(filePath, &f)
 	case "h":
