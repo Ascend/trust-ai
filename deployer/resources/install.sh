@@ -19,7 +19,7 @@ function operation_log_info() {
 
 function run_docker() {
   [ $(docker ps|grep ai-vault-svc|wc -l) -ne 0 ] && docker stop ai-vault-svc && docker rm ai-vault-svc
-  docker run -d --restart=always -p $mgmt_port:9000 -p $svc_port:5001 --name ai-vault-svc -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault $image bash -c /home/AiVault/run.sh $aivault_args
+  docker run -d --restart=always -p $mgmt_port:9000 -p $svc_port:5001 --name ai-vault-svc -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault -e  AIVAULT_ARGS=$aivault_args $image bash -c /home/AiVault/run.sh
   sleep 3
   docker ps | grep $image | grep "Up"
   if [ $? -eq 0 ]; then

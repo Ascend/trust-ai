@@ -24,7 +24,7 @@ function operation_log_info() {
 
 function run_docker() {
   [ $(docker ps|grep ai-vault-svc|wc -l) -ne 0 ] && docker stop ai-vault-svc && docker rm ai-vault-svc
-  docker run -d --restart=always -p $mgmt_port:9000 -p $svc_port:5001 --name ai-vault-svc -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault $image bash -c /home/AiVault/run.sh $aivault_args
+  docker run -d --restart=always -p $mgmt_port:9000 -p $svc_port:5001 --name ai-vault-svc -v /home/AiVault/.ai-vault:/home/AiVault/.ai-vault -e AIVAULT_ARGS=$aivault_args $image bash -c /home/AiVault/run.sh
   sleep 3
   docker ps | grep $image | grep "Up"
   if [ $? -eq 0 ]; then
@@ -109,31 +109,31 @@ do
       ;;
     --certExpireAlarmDays=*)
       OPTION=$(echo "${option}"|cut -d '=' -f 2)
-      aivault_args="$aivault_args -certExpireAlarmDays ${OPTION} "
+      aivault_args="$aivault_args%certExpireAlarmDays=${OPTION}"
       ;;
     --checkPeriodDays=*)
       OPTION=$(echo "${option}"|cut -d '=' -f 2)
-      aivault_args="$aivault_args -checkPeriodDays ${OPTION} "
+      aivault_args="$aivault_args%checkPeriodDays=${OPTION}"
       ;;
-    --maxKMSAdgent=*)
+    --maxKMSAgent=*)
       OPTION=$(echo "${option}"|cut -d '=' -f 2)
-      aivault_args="$aivault_args -maxKMSAdgent ${OPTION} "
+      aivault_args="$aivault_args%maxKMSAgent=${OPTION}"
       ;;
-    --maxLinkPerKMSAdgent=*)
+    --maxLinkPerKMSAgent=*)
       OPTION=$(echo "${option}"|cut -d '=' -f 2)
-      aivault_args="$aivault_args -maxLinkPerKMSAdgent ${OPTION} "
+      aivault_args="$aivault_args%maxLinkPerKMSAgent=${OPTION}"
       ;;
     --maxMkNum=*)
       OPTION=$(echo "${option}"|cut -d '=' -f 2)
-      aivault_args="$aivault_args -maxMkNum ${OPTION} "
+      aivault_args="$aivault_args%maxMkNum=${OPTION}"
       ;;
     --dbBackup=*)
       OPTION=$(echo "${option}"|cut -d '=' -f 2)
-      aivault_args="$aivault_args -dbBackup ${OPTION} "
+      aivault_args="$aivault_args%dbBackup=${OPTION}"
       ;;
     --certBackup=*)
       OPTION=$(echo "${option}"|cut -d '=' -f 2)
-      aivault_args="$aivault_args -certBackup ${OPTION} "
+      aivault_args="$aivault_args%certBackup=${OPTION}"
       ;;
     *)
       echo "Invalid parameter"
