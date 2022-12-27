@@ -5,7 +5,7 @@
 
 #### 软件结构
 ```
-├─ai-tool                   # 白盒加密PSK口令及容器中自动输入crypto_fs
+├─ai-tool                   # 白盒加解密PSK口令或CA私钥口令及容器中自动输入crypto_fs
 ├─ai-vault                  # AI-VAULT系统集成
 │  ├─apigw                  # AI-VAULT网关参考设计    
 │  ├─build                  # 安装运行脚本
@@ -14,7 +14,6 @@
 │  ├─UI                     # 前端页面参考设计
 │  ├─user-manager           # 用户管理参考设计
 │  └─Dockerfile             # 镜像制作Dockerfile
-├─ai-whitebox               # 白盒加解密CA口令及自动写入encrypted_password文件
 ├─aiguard_plugin            # fuse device及容器权限限制插件参考设计
 └─deployer                  # 批量依赖安装及配置工具参考设计
 ```
@@ -28,10 +27,6 @@
 - ai-vault
 
 详细介绍见[ai-vault](./ai-vault/README.md)
-
-- ai-whitebox
-
-详细介绍见[ai-whitebox](./ai-whitebox/README.md)
 
 - aiguard_plugin
 

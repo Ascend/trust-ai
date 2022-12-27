@@ -8,7 +8,7 @@ WORK_DIR = os.path.dirname(os.path.realpath(__file__))
 LOG_PATH = os.path.join(WORK_DIR, "log")
 RUN_LOG_FILE = os.path.join(LOG_PATH, "cert_manager_run.log")
 
-DEC_CMD = "/home/AiVault/ai-whitebox"
+DEC_CMD = "/home/AiVault/ai-tool"
 DEC_ARG = "dec"
 
 LOG_MAX_SIZE = 10 * 1024 * 1024
