@@ -38,6 +38,9 @@
       shell: |
         mkdir -p /home/HwHiAiUser/.ansible/tmp
         chown -R HwHiAiUser:HwHiAiUser /home/HwHiAiUser/.ansible
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: check kmsagent
       shell: "{{ kmsagent_path }} -V"
@@ -114,6 +117,12 @@
     
     - name: create TlsCertPath and TlsBackupCertPath
       shell: mkdir -p /opt/cfs_tlscert /opt/cfs_tlscertbak /opt/aivault_tlscert /opt/aivault_tlscertbak
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+    
+    - name: set TlsCertPath and TlsBackupCertPath directory owner
+      shell: chown -R HwHiAiUser:HwHiAiUser /opt/cfs_tlscert /opt/cfs_tlscertbak /opt/aivault_tlscert /opt/aivault_tlscertbak
       when:
         - server is undefined
         - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
@@ -200,9 +209,9 @@
         src: "{{ hostvars.localhost.resources_dir }}/{{ hostvars[inventory_hostname]['inventory_hostname'] }}/opt/cfs_tlscert/tmp/kmsagent.pem"
         dest: /opt/cfs_tlscert/tmp
       when: server is undefined and ansible_connection != "local"
-
+    
     - name: set TlsCertPath and TlsBackupCertPath directory owner
-      shell: chown -R HwHiAiUser:HwHiAiUser /opt/cfs_tlscert /opt/cfs_tlscertbak
+      shell: chown -R HwHiAiUser:HwHiAiUser /opt/cfs_tlscert /opt/cfs_tlscertbak /opt/aivault_tlscert /opt/aivault_tlscertbak
       when:
         - server is undefined
         - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
@@ -254,7 +263,7 @@
       when: server is undefined and ansible_connection != "local"
     
     - name: set TlsCertPath and TlsBackupCertPath directory owner
-      shell: chown -R HwHiAiUser:HwHiAiUser /opt/aivault_tlscert /opt/aivault_tlscertbak
+      shell: chown -R HwHiAiUser:HwHiAiUser /opt/cfs_tlscert /opt/cfs_tlscertbak /opt/aivault_tlscert /opt/aivault_tlscertbak
       when:
         - server is undefined
         - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
