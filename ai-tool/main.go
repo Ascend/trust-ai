@@ -177,6 +177,7 @@ func main() {
 	case "enc":
 		if len(os.Args) == 2 {
 			whiteBoxEncrypt(&f)
+			return
 		}
 		if len(os.Args) < 4 {
 			fmt.Println("invalid command.")
