@@ -113,10 +113,10 @@ export default {
           { required: false, max :2, message: this.$t('PLACEHOLDER_CERT_COUNTRY'), trigger: 'blur' },
         ],
         StateOrProvinceName: [
-          { required: false,max :2, message: this.$t('PLACEHOLDER_CERT_PROVINCE'), trigger: 'blur' },
+          { required: false,max :64, message: this.$t('PLACEHOLDER_CERT_PROVINCE'), trigger: 'blur' },
         ],
         LocalityName: [
-          { required: false,max :2, message: this.$t('PLACEHOLDER_CERT_CITY'), trigger: 'blur' },
+          { required: false,max :64, message: this.$t('PLACEHOLDER_CERT_CITY'), trigger: 'blur' },
         ],
       },
     };
