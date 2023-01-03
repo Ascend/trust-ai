@@ -119,12 +119,9 @@ export default {
   },
   watch: {
     currPage(newVal, oldVal) {
-      let formName = this.currPage === 'mk' ? 'mkForm' : 'pskForm'
-      if (this.$refs[formName]) {
         this.$nextTick(()=>{
-          this.$refs[formName].resetFields();
+          this.$refs.certForm.resetFields();
         })
-      }
     }
   },
   methods: {
@@ -176,7 +173,7 @@ export default {
     },
     handleCancel(formName) {
       this.$nextTick(()=>{
-        this.$refs[formName].resetFields();
+        this.$refs.certForm.resetFields();
         this.$emit('handleCancelAdd')
       })
     },
