@@ -183,7 +183,7 @@ class DelUserView(BaseView):
             if mk_res.status_code != 200:
                 RUN_LOG.log(*self.err_msg(status_code.REQUEST_ERROR, "Can not get data from ai-vault"))
                 return False, status_code.REQUEST_ERROR
-            if json.loads(mk_res.content)["data"]["totalCount"] != 0:
+            if json.loads(mk_res.content)["data"] is not None:
                 RUN_LOG.log(*self.err_msg(status_code.MK_EXIST, f"Can not del {user_name}"))
                 return False, status_code.MK_EXIST
         except requests.exceptions.ConnectionError:
