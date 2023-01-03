@@ -136,7 +136,6 @@ export default {
         }
 
         return {
-            abortController:new AbortController(),
             useramount: 0,
             userData: [],
             userPagination: {
@@ -184,9 +183,6 @@ export default {
     },
     mounted() {
       this.fetchUserList()
-    },
-    beforeDestroy() {
-      this.abortController.abort()
     },
     methods: {
         fetchUserList() {
