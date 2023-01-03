@@ -13,7 +13,7 @@
         <div style="margin-left: 8px">{{ $t('ADD_CERT_TIP')}}</div>
       </div>
 
-      <el-form :model="certForm" :rules="certRules" ref="certForm" key="certKey">
+      <el-form :model="certForm" :rules="certRules" ref="certForm" :key="+new Date()">
         <el-form-item :label="$t('CERT_COMMONNAME')" prop="commonName" :label-width="formLabelWidth">
           <el-tooltip :content="$t('TIP_COMMON')" placement="right">
             <el-input v-model="certForm.CommonName" class="inp-add" :placeholder="$t('PLACEHOLDER_CERT_COMMONNAME')" autocomplete="off"></el-input>
@@ -117,6 +117,16 @@ export default {
   },
   mounted() {
   },
+  watch: {
+    currPage(newVal, oldVal) {
+      let formName = this.currPage === 'mk' ? 'mkForm' : 'pskForm'
+      if (this.$refs[formName]) {
+        this.$nextTick(()=>{
+          this.$refs[formName].resetFields();
+        })
+      }
+    }
+  },
   methods: {
     handleSubmitAdd(formName) {
       this.$refs[formName].validate((valid) => {
@@ -163,7 +173,6 @@ export default {
           return false
         }
       })
-      this.$refs[formName].resetFields()
     },
     handleCancel(formName) {
       this.$nextTick(()=>{
