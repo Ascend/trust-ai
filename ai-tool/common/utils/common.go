@@ -63,9 +63,6 @@ func SensitiveInfoClear(s []byte) {
 
 // GetCommand get cfs command
 func GetCommand(arg []string) []string {
-	if len(arg) < 3 {
-		fmt.Println("please input cfs command follow the run")
-	}
 	argArray := make([]string, len(arg)-3)
 	for i := 3; i < len(arg); i++ {
 		argArray[i-3] = arg[i]
@@ -101,6 +98,15 @@ func ClearStringMemory(s string) {
 func CheckPasswd(p []byte) error {
 	if len(p) == 0 {
 		return fmt.Errorf("password can not be empty")
+	}
+	return nil
+}
+
+// CheckFileisExist check whether file exits
+func CheckFileisExist(path string) error {
+	_, err := os.Stat(path)
+	if err != nil {
+		return err
 	}
 	return nil
 }
