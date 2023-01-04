@@ -84,6 +84,9 @@ func whiteBoxDecrypt(cfsPath string, para []string, f *embed.FS) {
 	var ch chan bool
 	ch = make(chan bool, 1)
 
+	if utils.CheckFile(cfsPath) != nil {
+		return
+	}
 	PskPwdText, CertPwdText, err := readCipherText(f)
 	if err != nil {
 		fmt.Printf("func readCipherText failed with err: %v", err.Error())
@@ -194,7 +197,17 @@ func main() {
 			encryptPassword(p, &f)
 		}
 	case "run":
+		if len(os.Args) < 3 {
+			fmt.Println("please input cfs command follow the run")
+			utils.PrintHelp()
+			return
+		}
 		commands := utils.GetCommand(os.Args)
+		if len(commands) == 0 {
+			fmt.Println("invalid cfs command")
+			utils.PrintHelp()
+			return
+		}
 		whiteBoxDecrypt(os.Args[2], commands, &f)
 	case "dec":
 		if len(os.Args) == 3 {
