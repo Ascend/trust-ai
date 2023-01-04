@@ -28,7 +28,7 @@
                     </el-tooltip>
                 </el-form-item>
                 <el-form-item :label="$t('USER_PASSWORD')" prop="Password" :label-width="formLabelWidth">
-                    <el-tooltip :content="$t('TIP_KEY_PASSWORD')" placement="right">
+                    <el-tooltip :content="$t('TIP_KEY_PASSWORD')" placement="bottom-start">
                         <el-input v-model="mkForm.Password" type="password" show-password class="inp-add" :placeholder="$t('PLACEHOLDER_MK_PASSWORD')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
