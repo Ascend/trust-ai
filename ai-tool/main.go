@@ -85,6 +85,8 @@ func whiteBoxDecrypt(cfsPath string, para []string, f *embed.FS) {
 	ch = make(chan bool, 1)
 
 	if utils.CheckFileisExist(cfsPath) != nil {
+		fmt.Println("invalid cfs file path")
+		utils.PrintHelp()
 		return
 	}
 	PskPwdText, CertPwdText, err := readCipherText(f)
