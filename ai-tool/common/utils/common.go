@@ -102,8 +102,8 @@ func CheckPasswd(p []byte) error {
 	return nil
 }
 
-// CheckFile check whether file exits
-func CheckFile(path string) error {
+// CheckFileisExist check whether file exits
+func CheckFileisExist(path string) error {
 	_, err := os.Stat(path)
 	if err != nil {
 		fmt.Println("invalid cfs file path")
