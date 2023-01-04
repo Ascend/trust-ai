@@ -170,6 +170,12 @@ func decryptPassword(path string, f *embed.FS) {
 var f embed.FS
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+			utils.PrintHelp()
+		}
+	}()
 	if len(os.Args) < 2 {
 		fmt.Println("please input command.")
 		utils.PrintHelp()
@@ -203,11 +209,6 @@ func main() {
 			return
 		}
 		commands := utils.GetCommand(os.Args)
-		if len(commands) == 0 {
-			fmt.Println("invalid cfs command")
-			utils.PrintHelp()
-			return
-		}
 		whiteBoxDecrypt(os.Args[2], commands, &f)
 	case "dec":
 		if len(os.Args) == 3 {
@@ -222,5 +223,4 @@ func main() {
 		fmt.Println("only support enc dec h or run command.")
 		utils.PrintHelp()
 	}
-
 }
