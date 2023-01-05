@@ -93,12 +93,12 @@
         >
             <el-form v-if="indexOperation === 'resetPWD'" :model="resetPswForm" :rules="resetPswRules" ref="resetPswForm">
                 <el-form-item :label="$t('NEW_PSW')" prop="NewPassword" :label-width="formLabelWidth">
-                    <el-tooltip :content="$t('TIP_PASSWORD')" placement="right">
+                    <el-tooltip :content="$t('TIP_PASSWORD')" placement="bottom">
                         <el-input v-model="resetPswForm.NewPassword" type="password" class="input-psw" :placeholder="$t('PLACEHOLDER_NEW_PASSWORD')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
                 <el-form-item :label="$t('CONFIRM_PSW')" prop="NewPasswordConfirm" :label-width="formLabelWidth">
-                    <el-tooltip :content="$t('TIP_PASSWORD')" placement="right">
+                    <el-tooltip :content="$t('TIP_PASSWORD')" placement="bottom">
                         <el-input v-model="resetPswForm.NewPasswordConfirm" @keyup.enter.native="handleSubmitResetPassword()" type="password" class="input-psw" :placeholder="$t('PLACEHOLDER_CONFIRM_PASSWORD')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>

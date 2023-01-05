@@ -18,22 +18,22 @@
             </div>
             <el-form v-if="currPage === 'mk'" :model="mkForm" :rules="mkRules" ref="mkForm" key="MKKey">
                 <el-form-item :label="$t('KEY_NAME')" prop="MKName" :label-width="formLabelWidth">
-                    <el-tooltip :content="$t('TIP_KEY_NAME')" placement="right">
+                    <el-tooltip :content="$t('TIP_KEY_NAME')" placement="bottom">
                         <el-input v-model="mkForm.MKName" class="inp-add" :placeholder="$t('PLACEHOLDER_KEY_NAME')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
                 <el-form-item prop="MKUsage" :label="$t('KEY_USAGE')" :label-width="formLabelWidth">
-                    <el-tooltip :content="$t('TIP_KEY_USAGE')" placement="right">
+                    <el-tooltip :content="$t('TIP_KEY_USAGE')" placement="bottom">
                         <el-input v-model="mkForm.MKUsage" class="inp-add" :placeholder="$t('PLACEHOLDER_KEY_USAGE')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
                 <el-form-item :label="$t('USER_PASSWORD')" prop="Password" :label-width="formLabelWidth">
-                    <el-tooltip :content="$t('TIP_KEY_PASSWORD')" placement="bottom-start">
+                    <el-tooltip :content="$t('TIP_KEY_PASSWORD')" placement="bottom">
                         <el-input v-model="mkForm.Password" type="password" show-password class="inp-add" :placeholder="$t('PLACEHOLDER_MK_PASSWORD')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
                 <el-form-item :label="$t('COMMENT')" prop="MKRemarks" :label-width="formLabelWidth">
-                    <el-tooltip :content="$t('TIP_REMARKS')" placement="right">
+                    <el-tooltip :content="$t('TIP_REMARKS')" placement="bottom">
                         <el-input v-model="mkForm.MKRemarks" type="textarea" show-word-limit maxlength="256" class="inp-add" :placeholder="$t('PLACEHOLDER_COMMENT')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
@@ -41,22 +41,22 @@
 
             <el-form v-else :model="pskForm" :rules="pskRules" ref="pskForm" key="PSKKey">
                 <el-form-item :label="$t('PSK_NAME')" prop="PSKName" :label-width="formLabelWidth">
-                    <el-tooltip :content="$t('TIP_KEY_NAME')" placement="right">
+                    <el-tooltip :content="$t('TIP_KEY_NAME')" placement="bottom">
                         <el-input v-model="pskForm.PSKName" class="inp-add" :placeholder="$t('PLACEHOLDER_PSK_NAME')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
                 <el-form-item :label="$t('MK_NAME')" prop="MKName" :label-width="formLabelWidth">
-                    <el-tooltip :content="$t('TIP_KEY_NAME')" placement="right">
+                    <el-tooltip :content="$t('TIP_KEY_NAME')" placement="bottom">
                         <el-input v-model="pskForm.MKName" class="inp-add" :placeholder="$t('PLACEHOLDER_MK_NAME')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
                 <el-form-item :label="$t('USER_PASSWORD')" prop="Password" :label-width="formLabelWidth">
-                    <el-tooltip :content="$t('TIP_KEY_PASSWORD')" placement="right">
+                    <el-tooltip :content="$t('TIP_KEY_PASSWORD')" placement="bottom">
                         <el-input v-model="pskForm.Password" type="password" show-password class="inp-add" :placeholder="$t('PLACEHOLDER_KEY_PASSWORD')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
                 <el-form-item :label="$t('COMMENT')" prop="PSKRemarks" :label-width="formLabelWidth">
-                    <el-tooltip :content="$t('TIP_REMARKS')" placement="right">
+                    <el-tooltip :content="$t('TIP_REMARKS')" placement="bottom">
                         <el-input v-model="pskForm.PSKRemarks" type="textarea" show-word-limit maxlength="256" class="inp-add" :placeholder="$t('PLACEHOLDER_COMMENT')" autocomplete="off"></el-input>
                     </el-tooltip>
                 </el-form-item>
