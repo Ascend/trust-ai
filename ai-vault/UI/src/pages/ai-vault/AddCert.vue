@@ -15,22 +15,22 @@
 
       <el-form :model="certForm" :rules="certRules" ref="certForm" key="CertKey">
         <el-form-item :label="$t('CERT_COMMONNAME')" prop="CommonName" :label-width="formLabelWidth">
-          <el-tooltip :content="$t('TIP_COMMON')" placement="right">
+          <el-tooltip :content="$t('TIP_COMMON')" placement="bottom">
             <el-input v-model="certForm.CommonName" class="inp-add" :placeholder="$t('PLACEHOLDER_CERT_COMMONNAME')" autocomplete="off"></el-input>
           </el-tooltip>
         </el-form-item>
         <el-form-item :label="$t('CFS_PASSWORD')" prop="CfsPassword" :label-width="formLabelWidth">
-          <el-tooltip :content="$t('TIP_KEY_PASSWORD')" placement="right">
+          <el-tooltip :content="$t('TIP_KEY_PASSWORD')" placement="bottom">
             <el-input v-model="certForm.CfsPassword" type="password" show-password class="inp-add" :placeholder="$t('PLACEHOLDER_CERT_KEYWORD')" autocomplete="off"></el-input>
           </el-tooltip>
         </el-form-item>
         <el-form-item :label="$t('CERT_ORGANIZATION_NAME')" prop="OrganizationName"  :label-width="formLabelWidth">
-          <el-tooltip :content="$t('TIP_COMMON')" placement="right">
+          <el-tooltip :content="$t('TIP_COMMON')" placement="bottom">
             <el-input v-model="certForm.OrganizationName" class="inp-add" :placeholder="$t('PLACEHOLDER_CERT_ORGANIZATION')" autocomplete="off"></el-input>
           </el-tooltip>
         </el-form-item>
         <el-form-item :label="$t('CERT_UNIT_NAME')" prop="OrganizationalUnitName"  :label-width="formLabelWidth">
-          <el-tooltip :content="$t('TIP_COMMON')" placement="right">
+          <el-tooltip :content="$t('TIP_COMMON')" placement="bottom">
             <el-input v-model="certForm.OrganizationalUnitName" class="inp-add" :placeholder="$t('PLACEHOLDER_CERT_UNIT')" autocomplete="off"></el-input>
           </el-tooltip>
         </el-form-item>
@@ -38,7 +38,7 @@
           <el-form-item :label="$t('CERT_LOCATION')"  :label-width="formLabelWidth" >
             <el-col :span="7">
               <el-form-item prop="CountryName">
-                <el-tooltip :content="$t('TIP_LOCATION')" placement="right">
+                <el-tooltip :content="$t('TIP_LOCATION')" placement="bottom">
                   <el-input v-model="certForm.CountryName" class="inp-add" :placeholder="$t('PLACEHOLDER_CERT_COUNTRY')"
                             autocomplete="off"></el-input>
                 </el-tooltip>
@@ -47,7 +47,7 @@
             <el-col class="line" :span="1">-</el-col>
             <el-col :span="7">
               <el-form-item prop="StateOrProvinceName">
-                <el-tooltip :content="$t('TIP_COMMON')" placement="right">
+                <el-tooltip :content="$t('TIP_COMMON')" placement="bottom">
                   <el-input v-model="certForm.StateOrProvinceName" class="inp-add" :placeholder="$t('PLACEHOLDER_CERT_PROVINCE')"
                             autocomplete="off"></el-input>
                 </el-tooltip>
@@ -56,7 +56,7 @@
             <el-col class="line" :span="1">-</el-col>
             <el-col :span="7">
               <el-form-item prop="LocalityName">
-                <el-tooltip :content="$t('TIP_COMMON')" placement="right">
+                <el-tooltip :content="$t('TIP_COMMON')" placement="bottom">
                   <el-input v-model="certForm.LocalityName" class="inp-add" :placeholder="$t('PLACEHOLDER_CERT_CITY')"
                             autocomplete="off"></el-input>
                 </el-tooltip>
