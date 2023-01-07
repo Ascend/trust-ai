@@ -289,7 +289,7 @@ function process_deploy() {
         return ${check_inventory_file_and_openssl_status}
     fi
 
-    if [ "${offline}" = n ]; then
+    if [ "${online}" = y ]; then
         if ! download_haveged; then
             return 1
         fi
@@ -307,6 +307,15 @@ function process_deploy() {
         if ! check_rpm_exists; then
             return 1
         fi
+    fi
+    if [ -f "${BASE_DIR}"/resources/aivault_x86_64.tar ] || [ -f "${BASE_DIR}"/resources/aivault_aarch64.tar ]; then
+        if [ -f "${BASE_DIR}"/resources/aivault.tar ]; then
+            rm -f "${BASE_DIR}"/resources/aivault.tar
+        fi
+        pushd "${BASE_DIR}"/resources >/dev/null || exit
+        echo "The system is busy compressing the aivault image file, please wait for a moment..."
+        tar -zcf aivault.tar aivault*.tar
+        popd >/dev/null || exit
     fi
     local tmp_deploy_play
     tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
@@ -334,7 +343,7 @@ function print_usage() {
     echo "--maxKMSAgent           max number of KMSAgent link, default is 128"
     echo "--maxLinkPerKMSAgent    the max of the link of per KMSAgent, default is 32"
     echo "--maxMkNum              the max of the mk number, default is 10"
-    echo "--offline               offline mode, haveged will not be downloaded"
+    echo "--online                online mode"
     echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.9"
     echo "                        example: /usr/local/python3.7.9 or /usr/local/python3.7.9/"
     echo "--all                   all nodes perform configuration tasks,default only remote nodes"
@@ -348,7 +357,7 @@ python_dir="/usr/local/python3.7.9"
 svc_port=5001
 mgmt_port=9000
 cfs_port=1024
-offline=n
+online=n
 all=n
 include_cert=n
 update_cert=n
@@ -417,8 +426,8 @@ function parse_script_args() {
             all=y
             shift
             ;;
-        --offline)
-            offline=y
+        --online)
+            online=y
             shift
             ;;
         --exists-cert)

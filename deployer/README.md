@@ -1,10 +1,12 @@
-# 简介
+## 简介
 
 ## 功能描述
 
 批量部署工具，用于部署aivault服务及批量安装haveged、批量部署KMSAgent服务。
 
-## 环境要求
+
+## 容器场景
+### 环境要求
 
 1. 所有节点
    - 仅支持root用户使用。
@@ -36,14 +38,13 @@
 
 本工具运行前请确认系统中未安装paramiko（ansible在某些情况下会使用paramiko，其配置不当容易引起安全问题）。EulerOS等很多操作系统默认禁止root用户远程连接，所以需提前配置/etc/ssh/sshd_config中PermitRootLogin为yes（个别OS配置方法或许不同，请参考OS官方说明）。批量部署任务依赖master节点，请不要删除或注释掉master节点的配置。可使用基于密钥认证的ssh连接和账户密码的ssh连接方式，参考如下1-2步骤（使用其中一种方式即可，推荐基于密钥认证的ssh连接方式）。
 
-1. 基于密钥认证的ssh连接，编辑inventory_file文件，配置其他设备的ip地址，其中aivault服务所在节点最多有一个，该节点不会进行KMSAgent部署，仅安装haveged、导入aivault镜像并启动aivault服务，该节点须配置变量server='aivault'。inventory_file文件格式如下：
+1. 基于密钥认证的ssh连接，编辑inventory_file文件，配置其他节点的ip地址，其中aivault服务所在节点最多有一个，该节点不会进行KMSAgent部署，仅安装haveged、导入aivault镜像并启动aivault服务，该节点须配置变量server='aivault'。inventory_file文件格式如下：
 
    ```text
    [ascend]
-   localhost ansible_connection='local'
-   ip_address_1 server='aivault'  # aivault服务所在节点
-   ip_address_2
-   ip_address_3
+   localhost ansible_connection='local' server='aivault' # aivault服务所在节点
+   node_ip_2
+   node_ip_3
    ```
 
    设置密钥认证的参考操作如下，请用户注意ssh密钥和密钥密码在使用和保管过程中的风险，特别是密钥未加密时的风险，用户应按照所在组织的安全策略进行相关配置，包括并不局限于软件版本、口令复杂度要求、安全配置（协议、加密套件、密钥长度等，特别是/etc/ssh下和~/.ssh下的配置）：
@@ -53,14 +54,13 @@
    ssh-copy-id -i ~/.ssh/id_rsa.pub <user>@<ip>   # 将管理节点的公钥拷贝到所有节点的机器上，<user>@<ip>替换成要拷贝到的对应节点的账户和ip。
    ```
 
-2. 基于账号密码认证的ssh连接（**请确保所有远程节点配置的密码是正确的，否则程序会报错终止**），编辑trust-ai/deployer/config/ansible.cfg文件，将**host_key_checking**的值改成False。然后编辑inventory_file文件，配置其他设备的ip地址，其中aivault服务所在节点最多有一个，该节点不会进行KMSAgent部署，仅安装haveged和导入aivault镜像并启动aivault服务，该节点须配置变量server='aivault'。inventory_file文件格式如下：
+2. 基于账号密码认证的ssh连接（**请确保所有远程节点配置的密码是正确的，否则程序会报错终止**），编辑trust-ai/deployer/config/ansible.cfg文件，将**host_key_checking**的值改成False。然后编辑inventory_file文件，配置其他节点的ip地址，其中aivault服务所在节点最多有一个，该节点不会进行KMSAgent部署，仅安装haveged和导入aivault镜像并启动aivault服务，该节点须配置变量server='aivault'。inventory_file文件格式如下：
 
    ```text
    [ascend]
-   localhost ansible_connection='local'
-   ip_address_1 ansible_ssh_pass='password' server='aivault'  # aivault服务所在节点
-   ip_address_2 ansible_ssh_pass='password'
-   ip_address_3 ansible_ssh_pass='password'
+   localhost ansible_connection='local' server='aivault'  # aivault服务所在节点
+   node2_ip ansible_ssh_pass='password'
+   node3_ip ansible_ssh_pass='password'
    ```
 
    **注意事项**：
