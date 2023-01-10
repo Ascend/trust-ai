@@ -183,10 +183,6 @@ func main() {
 		utils.PrintHelp()
 		return
 	}
-	if err := os.Unsetenv("LD_PRELOAD"); err != nil {
-		fmt.Printf("unset LD_PRELOAD failed: %s\n", err)
-		return
-	}
 	act := os.Args[1]
 	switch act {
 	case "enc":
