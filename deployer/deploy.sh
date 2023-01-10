@@ -228,7 +228,7 @@ function check_inventory_file_and_openssl() {
         log_error "The value of host_key_checking should be False"
         return 1
     fi
-    if [ "${count_ssh_pass_node}" -eq 0 ] && [ "$(grep host_key_checking "${BASE_DIR}"/config/ansible.cfg | cut -d'=' -f2)" != 'True' ]; then
+    if [ "${count_ssh_pass_node}" -eq 0 ] && [ "$(grep host_key_checking "${BASE_DIR}"/config/ansible.cfg | cut -d'=' -f2)" != 'True' ] && [ "${have_other_node}" -ne 0 ]; then
         log_error "The value of host_key_checking should be True"
         return 1
     fi
