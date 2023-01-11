@@ -1,7 +1,7 @@
 #!/bin/bash
 function install_docker() {
     tar -xf docker*.tgz
-    cp docker/* /usr/bin
+    cp -n docker/* /usr/bin
     rm -rf docker
     cp docker.service /etc/systemd/system
     systemctl enable docker >/dev/null
@@ -10,10 +10,10 @@ function install_docker() {
 }
 
 function run_deployer() {
-    mkdir -p deploy
-    rm -rf deploy/*
-    tar -xf deployer.tar -C deploy
-    image_name=$(docker load <deploy/deployer.tar | awk '{print $3}')
+    arch=$(arch)
+    tar -xf deployer.tar
+    image_name=$(docker load <deployer_"$arch".tar | awk '{print $3}')
+    rm -f deployer_"$arch".tar
     docker run -it --rm -v "$PWD"/inventory_file:/root/trust-ai/deployer/inventory_file "$image_name" bash
 }
 

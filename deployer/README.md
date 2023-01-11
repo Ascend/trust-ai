@@ -13,21 +13,16 @@
 
 ### 容器场景环境要求
 
-1. 除工具所在节点外的带部署节点已安装docker，且版本>=18.09。
-2. 部署工具所在节点需要校准到正确的UTC时间。
+1. 除工具所在节点外的待部署节点已安装docker，且版本>=18.09。
+2. 工具所在节点需要校准到正确的UTC时间。
 3. 边缘节点已安装驱动、固件，且版本>=22.0.0。
 4. 确保边缘节点根目录的剩余磁盘空间在1G以上，工具所在节点和aivault节点的根目录的剩余磁盘空间在5G以上。
 
 ### 容器场景批量部署
 
-节点之间支持基于密钥认证的ssh连接和基于账号密码认证的ssh连接两种方式，从步骤3和4中任选一种进行配置。
-
 1. 获取容器部署的zip包文件。
-2. 将zip包传到待部署环境上，执行`unzip deployer.zip`解压zip包。
-3. 基于账号密码认证的ssh连接（**请确保所有远程节点配置的密码是正确的，否则程序会报错终止**）。编辑inventory_file文件，配置其他节点的ip地址，其中aivault服务所在节点最多有一个，该节点不会进行KMSAgent部署，仅安装haveged和导入aivault镜像并启动aivault服务，该节点须配置变量server='aivault'。inventory_file文件格式如下：
-
-4. 进入解压后的目录，配置**inventory_file**文件。如果节点的IP后配置了变量**server='aivault'**，该节点被视为aivault服务所在节点。
-   **密码认证方式**配置inventory_file文件格式如下：
+2. 将zip包传到待部署环境上，执行`unzip deployer.zip`解压zip包到当前目录或执行`unzip deployer.zip -d exdir`解压zip到指定目录（将exdir替换为实际的目录）。
+3. 进入解压后的目录，编辑**inventory_file**文件，配置待部署节点的ip地址，如果节点的IP后配置了变量**server='aivault'**，该节点被视为aivault服务节点,aivault服务节点最多有一个，该节点不会进行KMSAgent部署，仅安装haveged和导入aivault镜像并启动aivault服务。使用基于账号密码认证的ssh连接（**请确保所有远程节点配置的密码是正确的，否则程序会报错终止**），inventory_file文件格式如下：
 
    ```text
    [ascend]
@@ -42,9 +37,9 @@
    **注意事项**：
    - localhost是容器环境请不要有任何改动，从localhost下一行开始配置待部署节点。
    - node_ip替换为实际部署节点的物理机ip地址，password替换为对应的root用户登录密码。
-   - 密码认证方式请确保待部署节点允许密码登录。如果不允许，可将/etc/ssh/sshd_config文件里的PasswordAuthentication字段配置为yes并重启sshd服务，用完本工具后再禁止密码登录即可。
+   - 请确保待部署节点允许密码登录。如果不允许，可将/etc/ssh/sshd_config文件里的PasswordAuthentication字段配置为yes并重启sshd服务，用完本工具后再禁止密码登录即可。
 
-5. 执行`./start_service.sh`导入deployer镜像，并用deployer镜像启动容器，如果start_service.sh所在环境没有安装docker，会自动安装docker。
+4. 执行`./start_service.sh`导入deployer镜像，并用deployer镜像启动容器，如果start_service.sh所在环境没有安装docker，会自动安装docker。
 
 ## 物理机场景
 
@@ -106,29 +101,29 @@
 3. 默认50个并发数，最高并发数为255，如果待部署环境数量大于50（包含工具所在节点），可以修改trust-ai/deployer/config/ansible.cfg文件中的forks值，改成待部署的节点总数以加快部署速度（可选）。
 4. 执行`./deploy.sh --aivault-ip={ip} --python-dir={python_dir}`进行批量部署。该步骤会生成CA证书(请确保生成ca.key时的密钥符合组织的安全要求），会要求用户输入ca.key的密码（长度不能小于6位，且不能大于64位），并进行第二次确认。程序启动后会对各节点的时间进行检测，如果有不满足条件的节点，会打印出来，并要求用户输入[y]es/[n]o进行确认，如果输入“y“或"yes”程序会修改不满足条件的节点的时间，如果输入“n”或“no”会终止程序。
 5. 批量部署操作完成后，请删除inventory_file文件，避免安全风险。
-6. 重新部署aivault节点时，请先停止aivault服务对应的容器。重新部署时，可以使用之前的证书（工具部署后resources/cert目录会有ca.key和ca.pem两个文件）进行部署。使用之前的证书进行部署时，须将之前部署生成的ca.key和ca.pem放入工具的resources/cert目录，且须额外指定`--exists-cert`参数。使用之前的证书进行批量部署时需确保部署工具节点的当前时间在ca.pem证书的有效期内，且要求输入密码时，须输入之前生成ca.key时的密码。（步骤6可选）。
+6. 重新部署时，可以使用之前的证书（工具部署后resources/cert目录会有ca.key和ca.pem两个文件）进行部署。使用之前的证书进行部署时，须将之前部署生成的ca.key和ca.pem放入工具的resources/cert目录，且须额外指定`--exists-cert`参数。使用之前的证书进行批量部署时需确保部署工具节点的当前时间在ca.pem证书的有效期内，且要求输入密码时，须输入之前生成ca.key时的密码。（步骤6可选）。
 
 ## 参数说明
 
 用户根据实际需要选择对应参数完成批量部署，命令为`./deploy.sh [options]`。
 参数说明请参见下表，表中各参数的可选参数范围可通过执行`./deploy.sh --help`查看。
 
-| 参数                  | 说明                                                                                                                                |
-| :-------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| --help  -h            | 可选，查询帮助信息。                                                                                                                |
-| --aivault-ip          | 必选，指定aivault服务的ip地址。                                                                                                     |
-| --svc-port            | 可选，指定aivault服务的端口，默认5001。                                                                                             |
-| --mgmt-port           | 可选，指定管理aivault服务的服务器端口，默认9000。                                                                                   |
-| --cfs-port            | 可选，指定cfs服务的端口，默认是1024。                                                                                               |
-| --offline             | 可选，离线模式，不会下载haveged，工具所在的环境没有网络时须指定。                                                                   |
-| --python-dir          | 可选，指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.9` 或 `/usr/local/python3.7.9/`,默认是`/usr/local/python3.7.9`。 |
-| --all                 | 可选，所有节点执行kmsagent批量部署任务，默认master节点不进行部署。                                                                  |
-| --exists-cert         | 可选，证书存在时跳过证书生成。                                                                                                      |
-| --update-cert         | 可选，更新证书。                                                                                                                    |
-| --certExpireAlarmDays | 可选，证书到期提醒天数[7-180](默认值90)。                                                                                           |
-| --checkPeriodDays     | 可选，检查证书周期天数，范围为1到证书到期告警天数（默认值7）。                                                                      |
-| --maxKMSAgent         | 可选，连接KMSAgent的最大值（默认128）。                                                                                             |
-| --maxLinkPerKMSAgent  | 可选，每个KMSAgent的链接最大值（默认值32）。                                                                                        |
-| --maxMkNum            | 可选，mk编号的最大值（默认值10）。                                                                                                  |
-| --dbBackup            | 可选，ai-vault数据库备份文件保存地址。                                                                                              |
-| --certBackup          | 可选，导入证书备份保存地址。                                                                                                        |
+| 参数                  | 说明                                                                                                                                                      |
+| :-------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| --help  -h            | 可选，查询帮助信息。                                                                                                                                      |
+| --aivault-ip          | 必选，指定aivault服务的ip地址。                                                                                                                           |
+| --svc-port            | 可选，指定aivault服务的端口，默认5001。                                                                                                                   |
+| --mgmt-port           | 可选，指定管理aivault服务的服务器端口，默认9000。                                                                                                         |
+| --cfs-port            | 可选，指定cfs服务的端口，默认是1024。                                                                                                                     |
+| --online              | 可选，在线模式，默认离线模式。工具所在的环境有网络时指定可下载依赖，容器场景忽略该选项。                                                                  |
+| --python-dir          | 可选，指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.9` 或 `/usr/local/python3.7.9/`,默认是`/usr/local/python3.7.9`。容器场景忽略该选项。 |
+| --all                 | 可选，所有节点执行kmsagent批量部署任务，默认master节点不进行kmsagent部署。                                                                                |
+| --exists-cert         | 可选，证书存在时跳过证书生成。                                                                                                                            |
+| --update-cert         | 可选，更新证书。                                                                                                                                          |
+| --certExpireAlarmDays | 可选，证书到期提醒天数\[7-180](默认值90)。                                                                                                                |
+| --checkPeriodDays     | 可选，检查证书周期天数，范围为1到证书到期告警天数（默认值7）。                                                                                            |
+| --maxKMSAgent         | 可选，连接KMSAgent的最大值（默认128）。                                                                                                                   |
+| --maxLinkPerKMSAgent  | 可选，每个KMSAgent的链接最大值（默认值32）。                                                                                                              |
+| --maxMkNum            | 可选，mk编号的最大值（默认值10）。                                                                                                                        |
+| --dbBackup            | 可选，ai-vault数据库备份文件保存地址。                                                                                                                    |
+| --certBackup          | 可选，导入证书备份保存地址。                                                                                                                              |
