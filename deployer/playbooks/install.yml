@@ -105,7 +105,10 @@
     - server is defined
 
 - name: docker load aivault image
-  shell: docker load < {{ resources_dir }}/aivault_{{ ansible_architecture }}.tar
+  shell: |
+    [ $(docker ps -a | grep ai-vault-svc | wc -l) -ne 0 ] && docker rm -f $(docker ps -a | grep ai-vault-svc | awk '{print $1}') &>/dev/null
+    [ $(docker images | grep ai-vault | wc -l) -ne 0 ] && docker rmi -f $(docker images | grep ai-vault | awk '{print $3}') &>/dev/null
+    docker load < {{ resources_dir }}/aivault_{{ ansible_architecture }}.tar
   register: load_result
   failed_when: load_result.rc != 0
   when:
@@ -120,7 +123,7 @@
     - server is defined and not aivault_image.stat.exists
 
 - name: get aivault image name
-  shell: echo {{ load_result.stdout }} | cut -d ' ' -f3
+  shell: echo {{ load_result.stdout }} | awk '{print $3}'
   register: image_name
   when: server is defined
 

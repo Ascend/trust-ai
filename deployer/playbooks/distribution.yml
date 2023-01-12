@@ -15,7 +15,7 @@
       when: not (host_count == "1" and first_host == "localhost")
     
     - name: make tar package for aivault server
-      shell: tar -zcf ~/aivault.tar ../resources/*.tar
+      shell: cp ../resources/aivault.tar ~
       when:
         - not (host_count == "1" and first_host == "localhost")
         - aivault_check_result.stdout == "1"
@@ -41,6 +41,10 @@
         path: ~/resources.tar
       when: ansible_connection != "local"
 
+    - name: clean remote aivault resources
+      shell: rm -f ~/aivault*.tar
+      when: server is defined and ansible_connection != "local"
+
     - name: copy to remote hosts
       copy:
         src: ~/resources.tar
@@ -63,6 +67,6 @@
     - name: uncompress on aivault server
       unarchive:
         src: ~/aivault.tar
-        dest: ~/
+        dest: ~/resources
         copy: no
       when: server is defined and ansible_connection != "local"
