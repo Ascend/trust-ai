@@ -35,11 +35,26 @@
    ```
 
    **注意事项**：
-   - localhost是容器环境请不要有任何改动，从localhost下一行开始配置待部署节点。
+   - localhost是容器环境请不要有任何改动，从localhost下一行开始配置待部署节点，一个节点仅配置一行。
    - node_ip替换为实际部署节点的物理机ip地址，password替换为对应的root用户登录密码。
    - 请确保待部署节点允许密码登录。如果不允许，可将/etc/ssh/sshd_config文件里的PasswordAuthentication字段配置为yes并重启sshd服务，用完本工具后再禁止密码登录即可。
 
 4. 执行`./start_service.sh`导入deployer镜像，并用deployer镜像启动容器，如果start_service.sh所在环境没有安装docker，会自动安装docker。
+5. 执行`./deploy.sh --aivault-ip={ip}`进行批量部署,如果配置aivault节点，可省去指定aivault-ip。
+
+### 容器部署的zip包构建流程
+
+**该流程仅用于说明如何构建容器部署的zip包，如果使用做好的zip包，请忽略该流程**。
+
+1. 以root身份登录Linux环境，将trust-ai工具上传到Linux环境的/root目录下进行解压。请确保该环境已安装docker，版本>=18.09，且环境上网络可用。
+2. 进入trust-ai/deployer/tools目录，将trust-ai/deployer/inventory_file文件放入trust-ai/deployer/tools目录。
+3. 从[docker下载网站](https://mirrors.huaweicloud.com/docker-ce/linux/static/stable/)下载和Linux环境相同架构的docker-20.10.21.tgz（推荐的docker版本），将下载的docker包放入trust-ai/deployer/tools目录。
+4. 从[昇腾镜像仓库](https://ascendhub.huawei.com/#/detail/ai-vault)拉取两种架构的aivault镜像，从[昇腾镜像仓库](https://ascendhub.huawei.com/#/detail/deployer)拉取和Linux环境相同架构的deployer镜像。
+5. 镜像拉完后，执行`docker save ascendhub.huawei.com/public-ascendhub/ai-vault:{version} > aivault_aarch64.tar`保存arm架构的aivault镜像，x86架构的镜像保存为aivault_x86_64.tar。执行`docker save ascendhub.huawei.com/public-ascendhub/deployer:{version} > deployer_aarch64.tar`保存arm架构的deployer镜像，x86架构的镜像保存为deployer_x86_64.tar。
+6. 执行`tar -zcf aivault.tar aivault_*.tar`将两个架构的aivault镜像tar包压缩成一个aivault.tar包，执行`tar -zcf deployer.tar deployer_*.tar`将deployer_{arch}.tar包压缩成deployer.tar包，arch为架构类型。
+7. 执行`rm -f aivault_*.tar deployer_*.tar && zip deployer_{arch}.zip *`命令获得容器部署的zip包。
+
+**构建deployer镜像方法**：进入trust-ai/deployer/docker_image目录，将上述的aivault.tar放入当前目录，执行`DOCKER_BUILDKIT=1 docker build -t ascendhub.huawei.com/public-ascendhub/deployer:{version} .`，其中version与aivault的版本一样。
 
 ## 物理机场景
 
@@ -97,6 +112,7 @@
    **注意事项**：
    - 密码认证方式请确保待部署节点允许密码登录。如果不允许，可将/etc/ssh/sshd_config文件里的PasswordAuthentication字段配置为yes并重启sshd服务，用完本工具后再禁止密码登录即可。
    - 密码认证方式时请删除部署工具节点/root/.ssh目录里的内容。
+   - 一个节点仅配置一行。
 
 3. 默认50个并发数，最高并发数为255，如果待部署环境数量大于50（包含工具所在节点），可以修改trust-ai/deployer/config/ansible.cfg文件中的forks值，改成待部署的节点总数以加快部署速度（可选）。
 4. 执行`./deploy.sh --aivault-ip={ip} --python-dir={python_dir}`进行批量部署。该步骤会生成CA证书(请确保生成ca.key时的密钥符合组织的安全要求），会要求用户输入ca.key的密码（长度不能小于6位，且不能大于64位），并进行第二次确认。程序启动后会对各节点的时间进行检测，如果有不满足条件的节点，会打印出来，并要求用户输入[y]es/[n]o进行确认，如果输入“y“或"yes”程序会修改不满足条件的节点的时间，如果输入“n”或“no”会终止程序。
@@ -111,7 +127,7 @@
 | 参数                  | 说明                                                                                                                                                      |
 | :-------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | --help  -h            | 可选，查询帮助信息。                                                                                                                                      |
-| --aivault-ip          | 必选，指定aivault服务的ip地址。                                                                                                                           |
+| --aivault-ip          | 可选，指定aivault服务的ip地址，未配置aivault节点时必须指定。                                                                                              |
 | --svc-port            | 可选，指定aivault服务的端口，默认5001。                                                                                                                   |
 | --mgmt-port           | 可选，指定管理aivault服务的服务器端口，默认9000。                                                                                                         |
 | --cfs-port            | 可选，指定cfs服务的端口，默认是1024。                                                                                                                     |

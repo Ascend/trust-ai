@@ -366,7 +366,7 @@ function print_usage() {
     echo ""
     echo "options:"
     echo "-h, --help              show this help message and exit"
-    echo "--aivault-ip            specify the IP address of aivault"
+    echo "--aivault-ip            specify the IP address of the aivault service, which must be specified if the aivault node is not configured"
     echo "--svc-port              specify the port of aivault, default is 5001"
     echo "--mgmt-port             specify the server port to manage the aivault service, default is 9000"
     echo "--cfs-port              specify the port of cfs, default is 1024"
