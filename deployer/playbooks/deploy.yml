@@ -38,9 +38,12 @@
       shell: |
         mkdir -p /home/HwHiAiUser/.ansible/tmp
         chown -R HwHiAiUser:HwHiAiUser /home/HwHiAiUser/.ansible
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: check kmsagent
-      shell: "{{ kmsagent_path }} -V"
+      shell: cd && {{ kmsagent_path }} -V
       register: kmsagent_status
       failed_when: false
       environment:
@@ -117,6 +120,12 @@
       when:
         - server is undefined
         - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+    
+    - name: set TlsCertPath and TlsBackupCertPath directory owner
+      shell: chown -R HwHiAiUser:HwHiAiUser /opt/cfs_tlscert /opt/cfs_tlscertbak /opt/aivault_tlscert /opt/aivault_tlscertbak
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
     - name: Check whether the docker network aiguard exists
       shell: docker network ls | grep aiguard | wc -l
@@ -140,6 +149,7 @@
     
     - name: Configuring the cfs service
       shell: |
+        cd
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s SERVER_FOR_CFS -n IP -v {{ cfsip.stdout }}
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s SERVER_FOR_CFS -n Port -v {{ cfs_port }}
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s SERVER_FOR_CFS -n TlsCertPath -v /opt/cfs_tlscert
@@ -155,6 +165,7 @@
     
     - name: Configuring the aivault service
       shell: |
+        cd
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s CLIENT_FOR_AIVAULT -n ConnectIP -v {{ aivault_ip }}
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s CLIENT_FOR_AIVAULT -n ConnectPort -v {{ svc_port }}
         {{ kmsagent_path }} -c /var/kmsagentd/kmsagent.conf -k /var/kmsagentd/kmsconf.ksf -s CLIENT_FOR_AIVAULT -n TlsCertPath -v /opt/aivault_tlscert
@@ -176,7 +187,7 @@
     
     - name: Generate csr certificate request for cfs
       shell: |
-        {{ kmsagent_path }} tls-cfs get-csr "rsa:4096:sha256" "CN|sichuan|chengdu|Ascend|CFS" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
+        cd && {{ kmsagent_path }} tls-cfs get-csr "rsa:4096:sha256" "CN|sichuan|chengdu|Ascend|CFS" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
       environment:
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
       become: yes
@@ -200,16 +211,16 @@
         src: "{{ hostvars.localhost.resources_dir }}/{{ hostvars[inventory_hostname]['inventory_hostname'] }}/opt/cfs_tlscert/tmp/kmsagent.pem"
         dest: /opt/cfs_tlscert/tmp
       when: server is undefined and ansible_connection != "local"
-
+    
     - name: set TlsCertPath and TlsBackupCertPath directory owner
-      shell: chown -R HwHiAiUser:HwHiAiUser /opt/cfs_tlscert /opt/cfs_tlscertbak
+      shell: chown -R HwHiAiUser:HwHiAiUser /opt/cfs_tlscert /opt/cfs_tlscertbak /opt/aivault_tlscert /opt/aivault_tlscertbak
       when:
         - server is undefined
         - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
     
     - name: Import cfs certificate
       shell: |
-        {{ kmsagent_path }} tls-cfs set-cert "/opt/cfs_tlscert/tmp/kmsagent.pem /opt/cert/ca.pem" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
+        cd && {{ kmsagent_path }} tls-cfs set-cert "/opt/cfs_tlscert/tmp/kmsagent.pem /opt/cert/ca.pem" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
       environment:
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
       become: yes
@@ -228,7 +239,7 @@
     
     - name: Generate kmsagent.csr
       shell: |
-        {{ kmsagent_path }} tls-client get-csr "rsa:4096:sha256" "CN|sichuan|chengdu|Ascend|KMSAgent" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
+        cd && {{ kmsagent_path }} tls-client get-csr "rsa:4096:sha256" "CN|sichuan|chengdu|Ascend|KMSAgent" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
       environment:
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
       become: yes
@@ -254,14 +265,14 @@
       when: server is undefined and ansible_connection != "local"
     
     - name: set TlsCertPath and TlsBackupCertPath directory owner
-      shell: chown -R HwHiAiUser:HwHiAiUser /opt/aivault_tlscert /opt/aivault_tlscertbak
+      shell: chown -R HwHiAiUser:HwHiAiUser /opt/cfs_tlscert /opt/cfs_tlscertbak /opt/aivault_tlscert /opt/aivault_tlscertbak
       when:
         - server is undefined
         - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
     - name: Import kmsagent certificate
       shell: |
-        {{ kmsagent_path }} tls-client set-cert "/opt/aivault_tlscert/tmp/kmsagent.pem /opt/cert/ca.pem" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
+        cd && {{ kmsagent_path }} tls-client set-cert "/opt/aivault_tlscert/tmp/kmsagent.pem /opt/cert/ca.pem" /var/kmsagentd/kmsagent.conf /var/kmsagentd/kmsconf.ksf
       environment:
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
       become: yes

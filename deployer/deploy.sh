@@ -29,6 +29,9 @@ function log_error() {
     USER_N=$(whoami)
     local IP_N
     IP_N=$(who am i | awk '{print $NF}' | sed 's/[()]//g')
+    if [ -z "$IP_N" ]; then
+        IP_N='localhost'
+    fi
     echo "[ERROR] $*"
     echo "${DATE_N} ${USER_N}@${IP_N} [ERROR] $*" >>"${BASE_DIR}"/deploy.log
 }
@@ -40,6 +43,9 @@ function log_warning() {
     USER_N=$(whoami)
     local IP_N
     IP_N=$(who am i | awk '{print $NF}' | sed 's/[()]//g')
+    if [ -z "$IP_N" ]; then
+        IP_N='localhost'
+    fi
     echo "[WARNING] $*"
     echo "${DATE_N} ${USER_N}@${IP_N} [WARNING] $*" >>"${BASE_DIR}"/deploy.log
 }
@@ -51,6 +57,9 @@ function operation_log_info() {
     USER_N=$(whoami)
     local IP_N
     IP_N=$(who am i | awk '{print $NF}' | sed 's/[()]//g')
+    if [ -z "$IP_N" ]; then
+        IP_N='localhost'
+    fi
     echo "${DATE_N} ${USER_N}@${IP_N} [INFO] $*" >>"${BASE_DIR}"/deploy_operation.log
 }
 
@@ -105,7 +114,7 @@ function bootstrap() {
 
 function check_passout() {
     if [ "${#passout}" -lt 6 ] || [ "${#passout}" -gt 64 ]; then
-        log_error "The CA certificate is generated failed"
+        log_error "The pass phrase of ca.key is too simple or too long"
         return 1
     fi
 
@@ -199,6 +208,11 @@ function check_inventory_file_and_openssl() {
             fi
             if [ "$(echo "${line}" | grep -c server)" -eq 1 ]; then
                 ((count_server++))
+                if [[ ${line} =~ 'localhost' ]]; then
+                    aivault_ip=$(env | grep SSH_CONNECTION | awk '{print $3}')
+                else
+                    aivault_ip=$(echo "${line}" | awk '{print $1}')
+                fi
             fi
             if [ "$(echo "${line}" | grep -c ansible_ssh_pass)" -eq 1 ]; then
                 ((count_ssh_pass_node++))
@@ -207,6 +221,19 @@ function check_inventory_file_and_openssl() {
     done <inventory_file
     if [ "${count_server}" -gt 1 ]; then
         log_error "Only one aivault server node can be set"
+        return 1
+    fi
+    if [ -n "${aivault_ip}" ] && [ -n "${aivault_ip_set}" ]; then
+        if [ "${aivault_ip}" != "${aivault_ip_set}" ]; then
+            log_error "[aivault-ip] is inconsistent with the configured ip of the aivault node"
+            return 1
+        fi
+    fi
+    if [ -z "${aivault_ip}" ] && [ -n "${aivault_ip_set}" ]; then
+        aivault_ip=$aivault_ip_set
+    fi
+    if [ -z "${aivault_ip}" ]; then
+        log_error "Parameter aivault-ip needs to be specified"
         return 1
     fi
     if [ "$(find "${BASE_DIR}"/resources/ -name "aivault*.tar" | wc -l)" == 0 ] && [ "${count_server}" -eq 1 ]; then
@@ -228,7 +255,7 @@ function check_inventory_file_and_openssl() {
         log_error "The value of host_key_checking should be False"
         return 1
     fi
-    if [ "${count_ssh_pass_node}" -eq 0 ] && [ "$(grep host_key_checking "${BASE_DIR}"/config/ansible.cfg | cut -d'=' -f2)" != 'True' ]; then
+    if [ "${count_ssh_pass_node}" -eq 0 ] && [ "$(grep host_key_checking "${BASE_DIR}"/config/ansible.cfg | cut -d'=' -f2)" != 'True' ] && [ "${have_other_node}" -ne 0 ]; then
         log_error "The value of host_key_checking should be True"
         return 1
     fi
@@ -289,7 +316,7 @@ function process_deploy() {
         return ${check_inventory_file_and_openssl_status}
     fi
 
-    if [ "${offline}" = n ]; then
+    if [ "${online}" = y ]; then
         if ! download_haveged; then
             return 1
         fi
@@ -301,12 +328,28 @@ function process_deploy() {
             return 1
         fi
     else
-        read -srp "Enter pass phrase for ca.key:" passout2
+        read -srp "Enter pass phrase for ca.key:" passout
+        echo ""
+        read -srp "Verifying - Enter pass phrase for ca.key:" passout2
+        echo ""
+        if [ "${passout}" != "${passout2}" ]; then
+            log_error "The two inputs are different"
+            return 1
+        fi
     fi
     if [ "${count_ssh_pass_node}" -ne 0 ]; then
         if ! check_rpm_exists; then
             return 1
         fi
+    fi
+    if [ -f "${BASE_DIR}"/resources/aivault_x86_64.tar ] || [ -f "${BASE_DIR}"/resources/aivault_aarch64.tar ]; then
+        if [ -f "${BASE_DIR}"/resources/aivault.tar ]; then
+            rm -f "${BASE_DIR}"/resources/aivault.tar
+        fi
+        pushd "${BASE_DIR}"/resources >/dev/null || exit
+        echo "The system is busy compressing the aivault image file, please wait for a moment..."
+        tar -zcf aivault.tar aivault*.tar
+        popd >/dev/null || exit
     fi
     local tmp_deploy_play
     tmp_deploy_play=${BASE_DIR}/playbooks/tmp_deploy.yml
@@ -323,7 +366,7 @@ function print_usage() {
     echo ""
     echo "options:"
     echo "-h, --help              show this help message and exit"
-    echo "--aivault-ip            specify the IP address of aivault"
+    echo "--aivault-ip            specify the IP address of the aivault service, which must be specified if the aivault node is not configured"
     echo "--svc-port              specify the port of aivault, default is 5001"
     echo "--mgmt-port             specify the server port to manage the aivault service, default is 9000"
     echo "--cfs-port              specify the port of cfs, default is 1024"
@@ -334,7 +377,7 @@ function print_usage() {
     echo "--maxKMSAgent           max number of KMSAgent link, default is 128"
     echo "--maxLinkPerKMSAgent    the max of the link of per KMSAgent, default is 32"
     echo "--maxMkNum              the max of the mk number, default is 10"
-    echo "--offline               offline mode, haveged will not be downloaded"
+    echo "--online                online mode"
     echo "--python-dir            specify the python directory where ansible is installed, default is /usr/local/python3.7.9"
     echo "                        example: /usr/local/python3.7.9 or /usr/local/python3.7.9/"
     echo "--all                   all nodes perform configuration tasks,default only remote nodes"
@@ -348,16 +391,12 @@ python_dir="/usr/local/python3.7.9"
 svc_port=5001
 mgmt_port=9000
 cfs_port=1024
-offline=n
+online=n
 all=n
 include_cert=n
 update_cert=n
 
 function parse_script_args() {
-    if [ $# = 0 ]; then
-        print_usage
-        return 6
-    fi
     local all_para_len
     all_para_len="$*"
     if [[ ${#all_para_len} -gt 1024 ]]; then
@@ -371,8 +410,8 @@ function parse_script_args() {
             return 6
             ;;
         --aivault-ip=*)
-            aivault_ip=$(echo "$1" | cut -d"=" -f2)
-            if [ "$(echo "${aivault_ip}" | grep -cEv '^[0-9.]*$')" -ne 0 ] || [ "$(echo "${aivault_ip}" | grep -cE '^*\.$')" -ne 0 ] || [ "$(echo "${aivault_ip}" | grep -cvE '^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?){4}$')" -ne 0 ]; then
+            aivault_ip_set=$(echo "$1" | cut -d"=" -f2)
+            if [ "$(echo "${aivault_ip_set}" | grep -cEv '^[0-9.]*$')" -ne 0 ] || [ "$(echo "${aivault_ip_set}" | grep -cE '^*\.$')" -ne 0 ] || [ "$(echo "${aivault_ip_set}" | grep -cvE '^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?){4}$')" -ne 0 ]; then
                 log_error "The input vaule of [aivault-ip] is invalid, and value needs valid IPv4 address."
                 print_usage
                 return 1
@@ -417,8 +456,8 @@ function parse_script_args() {
             all=y
             shift
             ;;
-        --offline)
-            offline=y
+        --online)
+            online=y
             shift
             ;;
         --exists-cert)
@@ -511,11 +550,6 @@ function parse_script_args() {
             ;;
         esac
     done
-
-    if [ -z "${aivault_ip}" ]; then
-        log_error "Parameter aivault-ip needs to be specified"
-        return 1
-    fi
 }
 
 main() {
@@ -532,12 +566,10 @@ main() {
     if [ ${bootstrap_status} != 0 ]; then
         return ${bootstrap_status}
     fi
-    if [ -n "${aivault_ip}" ]; then
-        process_deploy
-        local process_deploy_status=$?
-        if [ ${process_deploy_status} != 0 ]; then
-            return ${process_deploy_status}
-        fi
+    process_deploy
+    local process_deploy_status=$?
+    if [ ${process_deploy_status} != 0 ]; then
+        return ${process_deploy_status}
     fi
 }
 

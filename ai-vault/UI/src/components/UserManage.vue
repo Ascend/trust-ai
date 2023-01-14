@@ -105,7 +105,7 @@ export default {
             formLabelWidth: '100px',
             addUserRules: {
                 UserName: [
-                    { required: true, message: this.$t('PLACEHOLDER_USERNAME'), trigger: 'blur' },
+                  {required: true, max: 32, message: this.$t('PLACEHOLDER_USERNAME'), trigger: 'blur'},
                 ],
                 Password: [
                     { required: true, message: this.$t('PLACEHOLDER_CURRENT_PASSWORD'), trigger: 'blur' },
