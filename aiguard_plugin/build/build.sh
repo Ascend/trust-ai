@@ -8,7 +8,6 @@ TOP_DIR=$(realpath "${CUR_DIR}"/..)
 
 output_name="aiguard-plugin"
 os_type=$(arch)
-build_type=build
 
 export GO111MODULE="on"
 export GONOSUMDB="*"
@@ -34,19 +33,19 @@ function build_plugin() {
 }
 
 function mv_file() {
-    mv "$TOP_DIR/dev_plugin/src/plugin/cmd/aiguardplugin/${output_name}"   "${TOP_DIR}"/output
+    cp -a "$TOP_DIR/dev_plugin/src/plugin/cmd/aiguardplugin/${output_name}"   "${TOP_DIR}"/output
     mkdir "$TOP_DIR"/aiguard_plugin
     mkdir "$TOP_DIR"/aiguard_plugin/aiguard-plugin
-    mv "${TOP_DIR}"/output/${output_name} "$TOP_DIR"/aiguard_plugin/aiguard-plugin
+    cp -a "${TOP_DIR}"/output/${output_name} "$TOP_DIR"/aiguard_plugin/aiguard-plugin
     mkdir "$TOP_DIR"/aiguard_plugin/edge_om
     mkdir "$TOP_DIR"/aiguard_plugin/edge_om/config
-    mv "$TOP_DIR/edge_user.json"   "${TOP_DIR}"/aiguard_plugin/edge_om/config
+    cp -a "$TOP_DIR/edge_user.json"   "${TOP_DIR}"/aiguard_plugin/edge_om/config
     mkdir "$TOP_DIR"/aiguard_plugin/limit_file
-    mv "$TOP_DIR/cfs_profile"   "${TOP_DIR}"/aiguard_plugin/limit_file
-    mv "$TOP_DIR/seccomp_profile.json"   "${TOP_DIR}"/aiguard_plugin/limit_file
+    cp -a "$TOP_DIR/cfs_profile"   "${TOP_DIR}"/aiguard_plugin/limit_file
+    cp -a "$TOP_DIR/seccomp_profile.json"   "${TOP_DIR}"/aiguard_plugin/limit_file
     mkdir "$TOP_DIR"/aiguard_plugin/service
-    mv "$TOP_DIR/aiguard_plugin.service"   "${TOP_DIR}"/aiguard_plugin/service
-    mv "$TOP_DIR/install.sh" "$TOP_DIR"/aiguard_plugin
+    cp -a "$TOP_DIR/aiguard_plugin.service"   "${TOP_DIR}"/aiguard_plugin/service
+    cp -a "$TOP_DIR/install.sh" "$TOP_DIR"/aiguard_plugin
 }
 
 function change_mod() {
@@ -57,15 +56,20 @@ function change_mod() {
 
 function zip_dir(){
     cd "${TOP_DIR}"/
-    zip -r "${TOP_DIR}"/output/Ascend-mindxdl-aiguard_plugin.zip aiguard_plugin/
+    zip -r "${TOP_DIR}"/output/Ascend-mindxdl-aiguard_plugin_linux-"${os_type}".zip aiguard_plugin/
 }
 
 function main() {
+  clean
   build_plugin
   mv_file
   change_mod
   zip_dir
 }
 
+function clean() {
+    rm -rf "${TOP_DIR}/aiguard_plugin"
+    rm -rf "${TOP_DIR}/output"
+}
 main
 
