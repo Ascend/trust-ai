@@ -159,9 +159,19 @@
         LD_LIBRARY_PATH: "/usr/local/Ascend/driver/lib64/inner/:/usr/local/Ascend/develop/lib64/"
       become: yes
       become_user: HwHiAiUser
+      register: config_result
+      failed_when: false
       when:
         - server is undefined
         - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+    
+    - name: message
+      fail:
+        msg: "{{ config_result.split('\n')[0] }}"
+      when:
+        - server is undefined
+        - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+        - config_result.rc != 0
     
     - name: Configuring the aivault service
       shell: |
