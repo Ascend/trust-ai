@@ -167,7 +167,7 @@
     
     - name: message
       fail:
-        msg: "{{ config_result.split('\n')[0] }}"
+        msg: "{{ config_result.stdout.split('\n')[0] }}"
       when:
         - server is undefined
         - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
