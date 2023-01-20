@@ -1,7 +1,39 @@
 - name: deploy for all hosts
   hosts: '{{ hosts_name }}'
   gather_facts: false
+  any_errors_fatal: true
   tasks:
+    - name: check avail space for non-aivault node
+      shell: |
+        avail_space=$(df -k / | awk '{print $4}' | tail -1)
+        [ ${avail_space} -lt 5242880 ] && echo $avail_space
+      register: check_result
+      failed_when: false
+      when: server is undefined
+    
+    - name: message
+      fail:
+        msg: "The remaining space of the root directory is less than 5G"
+      when:
+        - server is undefined
+        - check_result.stdout != ""
+    
+    - name: check avail space for aivault node
+      shell: |
+        aivault_avail_space=$(df -k / | awk '{print $4}' | tail -1)
+        [ ${aivault_avail_space} -lt 1048576 ] && echo $aivault_avail_space
+      register: check_aivault_result
+      failed_when: false
+      when: server is defined
+    
+    - name: message
+      fail:
+        msg: "The remaining space of the root directory is less than 1G"
+      when:
+        - server is defined
+        - check_aivault_result.stdout != ""
+      run_once: true
+
     - name: get local time
       shell: echo $(($(date +%s)-1))
       register: local_time

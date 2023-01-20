@@ -133,7 +133,7 @@
 | --cfs-port            | 可选，指定cfs服务的端口，默认是1024。                                                                                                                     |
 | --online              | 可选，在线模式，默认离线模式。工具所在的环境有网络时指定可下载依赖，容器场景忽略该选项。                                                                  |
 | --python-dir          | 可选，指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.9` 或 `/usr/local/python3.7.9/`,默认是`/usr/local/python3.7.9`。容器场景忽略该选项。 |
-| --all                 | 可选，所有节点执行kmsagent批量部署任务，默认master节点不进行kmsagent部署。                                                                                |
+| --all                 | 可选，所有节点执行kmsagent批量部署任务，默认master节点不进行kmsagent部署，容器场景忽略该选项。                                                            |
 | --exists-cert         | 可选，证书存在时跳过证书生成。                                                                                                                            |
 | --update-cert         | 可选，更新证书。                                                                                                                                          |
 | --certExpireAlarmDays | 可选，证书到期提醒天数\[7-180](默认值90)。                                                                                                                |
