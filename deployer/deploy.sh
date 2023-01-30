@@ -168,7 +168,7 @@ function generate_ca_cert() {
         echo "The CA certificate is generated successfully"
         rm -f "${BASE_DIR}"/ca.csr
     else
-        log_error "The CA certificate is generated failed"
+        log_error "The two inputs are different"
         return 1
     fi
 }
@@ -268,9 +268,7 @@ function check_inventory_file_and_openssl() {
 function get_os_name() {
     local os_id
     os_id=$(grep -oP "^ID=\"?\K\w+" /etc/os-release)
-    local os_name
-    os_name=${OS_MAP[$os_id]}
-    echo "${os_name}"
+    echo "${os_id}"
 }
 
 function check_rpm_exists() {
@@ -286,10 +284,10 @@ function check_rpm_exists() {
     local have_rpm
     case ${g_os_name} in
     centos | euleros | sles | kylin | openEuler)
-        local have_rpm=1
+        have_rpm=1
         ;;
     ubuntu)
-        local have_rpm=0
+        have_rpm=0
         ;;
     *)
         have_rpm=$test_rpm
@@ -297,10 +295,10 @@ function check_rpm_exists() {
     esac
     log_warning "no sshpass, install sshpass package"
     if [ "${have_rpm}" -eq 1 ]; then
-        rpm -i --force --nodeps "${BASE_DIR}"/resources/rpm_"$(arch)"/sshpass*.rpm >/dev/null
+        rpm -i --force --nodeps "${BASE_DIR}"/resources/rpm_"$(arch)"/sshpass*.rpm &>/dev/null
     else
         export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical
-        dpkg --force-all -i "${BASE_DIR}"/resources/dpkg_"$(arch)"/sshpass*.deb >/dev/null
+        dpkg --force-all -i "${BASE_DIR}"/resources/dpkg_"$(arch)"/sshpass*.deb &>/dev/null
     fi
     local install_result_status=$?
     if [[ "${install_result_status}" != 0 ]]; then
