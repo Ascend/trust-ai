@@ -4,60 +4,59 @@
   changed_when: false
   failed_when: false
   ignore_errors: yes
-  when: ansible_connection != "local" or (ansible_connection == "local" and all == "y")
+
+- name: get os name
+  shell: grep -oP "^ID=\"?\K\w+" /etc/os-release
+  register: os_name
+  when: haveged_status.stdout != "active"
+
+- name: check rpm exists
+  shell: command -v rpm | wc -l
+  register: rpm_exists
+  when: haveged_status.stdout != "active"
 
 - name: yum install haveged
   shell: rpm -ivh --force --nodeps --replacepkgs {{ resources_dir }}/rpm_{{ ansible_architecture }}/haveged*.rpm
   register: sys_result
   when:
-    - ansible_pkg_mgr == "yum" or ansible_pkg_mgr == "dnf" or ansible_pkg_mgr == "zypper"
-    - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
-    - haveged_status.stdout is defined and haveged_status.stdout != "active"
+    - haveged_status.stdout != "active"
+    - rpm_exists.stdout is defined and rpm_exists.stdout == "1" and os_name.stdout not in ['ubuntu', 'debian', 'Linx', 'UOS', 'uos']
 
 - name: message
   debug: var=sys_result
   when:
     - sys_result.changed
-    - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
-    - haveged_status.stdout is defined and haveged_status.stdout != "active"
+    - haveged_status.stdout != "active"
 
 - name: apt install haveged
   shell: export DEBIAN_FRONTEND=noninteractive && export DEBIAN_PRIORITY=critical; dpkg --force-all -i {{ resources_dir }}/dpkg_{{ ansible_architecture }}/haveged*.deb {{ resources_dir }}/dpkg_{{ ansible_architecture }}/libhavege1*.deb
   register: sys_result
   when:
-    - ansible_pkg_mgr == "apt"
-    - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
-    - haveged_status.stdout is defined and haveged_status.stdout != "active"
+    - haveged_status.stdout != "active"
+    - rpm_exists.stdout == "0" or os_name.stdout in ['ubuntu', 'debian', 'Linx', 'UOS', 'uos']
 
 - name: message
   debug: var=sys_result
   when:
     - sys_result.changed
-    - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
-    - haveged_status.stdout is defined and haveged_status.stdout != "active"
+    - haveged_status.stdout != "active"
 
 - name: enable haveged
   shell: systemctl enable haveged
-  when:
-    - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
-    - haveged_status.stdout is defined and haveged_status.stdout != "active"
+  when: haveged_status.stdout != "active"
 
 - name: start haveged
   shell: systemctl start haveged
-  when:
-    - ansible_connection != "local" or (ansible_connection == "local" and all == "y")
-    - haveged_status.stdout is defined and haveged_status.stdout != "active"
+  when: haveged_status.stdout != "active"
 
 - name: check haveged status again
   shell: systemctl is-active haveged
   register: haveged_again_status
-  when: ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
 - name: message
   debug:
     msg:
       - "haveged status is {{ haveged_again_status.stdout }}"
-  when: ansible_connection != "local" or (ansible_connection == "local" and all == "y")
 
 - name: find docker command
   shell: command -v docker | wc -l
