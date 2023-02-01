@@ -106,6 +106,8 @@ fi
 if [ -d "/home/AiVault/.ai-vault/cert" ] && [ "${update_cert}" == "y" ]; then
   export LD_LIBRARY_PATH=/home/AiVault/lib:$LD_LIBRARY_PATH
   passwd=$1
+  cp -af "$cur_dir"/.ai-vault /home/AiVault/
+  chown AiVault -R /home/AiVault
   update_certificate "/home/AiVault"
   run_docker
 fi
