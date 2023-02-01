@@ -160,6 +160,8 @@ printf "\n"
 # 非首次安装，更新证书
 if [ -d "/home/AiVault/.ai-vault/cert" ] && [ "${update_cert}" == "y" ]; then
   export LD_LIBRARY_PATH=/home/AiVault/lib:$LD_LIBRARY_PATH
+  cp -af "$cur_dir"/.ai-vault /home/AiVault/
+  chown AiVault -R /home/AiVault
   update_certificate "/home/AiVault"
   run_docker
 fi
