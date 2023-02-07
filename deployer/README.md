@@ -68,9 +68,9 @@
 | --svc-port            | 可选，指定aivault服务的端口，默认5001。                                                                                                                       |
 | --mgmt-port           | 可选，指定管理aivault服务的服务器端口，默认9000。                                                                                                             |
 | --cfs-port            | 可选，指定cfs服务的端口，默认是1024。                                                                                                                         |
-| --online              | 可选，在线模式，默认离线模式。指定后会下载依赖，容器场景已内置依赖，不用指定该选项。                                                                          |
-| --python-dir          | 可选，指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.9` 或 `/usr/local/python3.7.9/`,默认是`/usr/local/python3.7.9`。容器场景请勿指定该选项。 |
-| --all                 | 可选，所有节点执行kmsagent批量部署任务，默认master节点不进行kmsagent部署，容器场景请勿指定该选项。                                                            |
+| --online              | 可选，在线模式，默认离线模式。指定后会下载依赖，建议保持默认值。                                                                          |
+| --python-dir          | 可选，指定安装了ansible的python路径，参考格式：`/usr/local/python3.7.9` 或 `/usr/local/python3.7.9/`,默认是`/usr/local/python3.7.9`。建议保持默认值。 |
+| --all                 | 可选，所有节点执行kmsagent批量部署任务，默认master节点不进行kmsagent部署，建议保持默认值。                                                            |
 | --exists-cert         | 可选，证书存在时跳过证书生成，使用已有证书部署时须指定。                                                                                                      |
 | --update-cert         | 可选，更新证书。                                                                                                                                              |
 | --certExpireAlarmDays | 可选，证书到期提醒天数\[7-180](默认值90)。                                                                                                                    |
