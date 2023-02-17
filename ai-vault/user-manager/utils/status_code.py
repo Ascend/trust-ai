@@ -23,6 +23,8 @@ PERMISSION_ERROR = "21000007"
 ADMIN_DEL_FORBIDDEN = "21000008"
 # exist in-use MKs
 MK_EXIST = "21000009"
+# the new password is the same as the old password
+PASSWD_SAME = "21000010"
 
 ERROR_MSG_MAP = {
     SUCCESS: "Success Operation",
@@ -35,5 +37,6 @@ ERROR_MSG_MAP = {
     PERMISSION_ERROR: "User is not allowed to do this operation",
     ADMIN_DEL_FORBIDDEN: "Cannot delete an administrator account",
     MK_EXIST: "User has in-use MKs",
-    MAX_USER_ERROR: "The maximum number of users exceeding the limit(500)"
+    MAX_USER_ERROR: "The maximum number of users exceeding the limit(500)",
+    PASSWD_SAME: "the new password is the same as the old password"
 }

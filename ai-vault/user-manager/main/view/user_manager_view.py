@@ -262,6 +262,8 @@ class UpdatePasswordView(BaseView):
             return https_ret(status_code.PARAM_ERROR)
         passwd = self.get_with_log(data, "Password")
         new_passwd = self.get_with_log(data, "NewPassword")
+        if passwd == new_passwd:
+            return https_ret(status_code.PASSWD_SAME)
         if passwd is None or new_passwd is None:
             return https_ret(status_code.PARAM_ERROR)
         if new_passwd != self.get_with_log(data, "NewPasswordConfirm"):
