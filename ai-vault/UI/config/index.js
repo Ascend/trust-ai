@@ -12,42 +12,42 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/api': {
-          target: 'https://42.192.48.100:9000',
-          changeOrigin: true,
-          pathRewrite: {
-              '^/api': '/api'
-          },
-          secure: false,
-      },
-      '/AIVAULT/v1': {
-          target: 'https://42.192.48.100:9000',
-          changeOrigin: true,
-          pathRewrite: {
-              '^/AIVAULT/v1': '/AIVAULT/v1'
-          },
-          secure: false,
-      },
-      '/usermanager/v1': {
-        target: 'https://42.192.48.100:9000',
+        target: 'https://xxx.xxx.xxx.xxx:xxxx',
         changeOrigin: true,
         pathRewrite: {
-            '^/usermanager/v1': '/usermanager/v1'
+          '^/api': '/api'
+        },
+        secure: false,
+      },
+      '/AIVAULT/v1': {
+        target: 'https://xxx.xxx.xxx.xxx:xxxx',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/AIVAULT/v1': '/AIVAULT/v1'
+        },
+        secure: false,
+      },
+      '/usermanager/v1': {
+        target: 'https://xxx.xxx.xxx.xxx:xxxx',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/usermanager/v1': '/usermanager/v1'
         },
         secure: false,
       },
       '/datamanager/v1': {
-        target: 'https://42.192.48.100:9000',
+        target: 'https://xxx.xxx.xxx.xxx:xxxx',
         changeOrigin: true,
         pathRewrite: {
-            '^/datamanager/v1': '/datamanager/v1'
+          '^/datamanager/v1': '/datamanager/v1'
         },
         secure: false,
       },
       '/certmanager/v1': {
-        target: 'https://42.192.48.100:9000',
+        target: 'https://xxx.xxx.xxx.xxx:xxxx',
         changeOrigin: true,
         pathRewrite: {
-            '^/certmanager/v1': '/certmanager/v1'
+          '^/certmanager/v1': '/certmanager/v1'
         },
         secure: false,
       },
