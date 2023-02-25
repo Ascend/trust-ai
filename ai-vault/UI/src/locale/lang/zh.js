@@ -64,7 +64,7 @@ export default {
   PLACEHOLDER_MK_PASSWORD: '请输入口令',
   PLACEHOLDER_KEY_PASSWORD: '请输入用户持有的口令',
   PLACEHOLDER_CERT_COMMONNAME:'请输入公共名字',
-  PLACEHOLDER_CERT_KEYWORD:'请输入加密私钥密码',
+  PLACEHOLDER_CERT_KEYWORD:'请输入满足长度的加密私钥密码',
   PLACEHOLDER_CERT_ORGANIZATION:'请输入组织',
   PLACEHOLDER_CERT_UNIT:'请输入二级组织名',
   PLACEHOLDER_CERT_COUNTRY:'请输入国家',
@@ -156,7 +156,7 @@ export default {
   TIP_KEY_USAGE: '长度为[1, 128]，仅支持数字、字母、空格、下划线和”-“字符，不支持全空格。',
   TIP_KEY_PASSWORD: '长度为[40, 64]，仅支持数字、字母、英文特殊字符（至少包含两种），且不能与密钥名称或反转密钥名称相同。',
   TIP_REMARKS: '仅支持数字、字母、空格、下划线和和”-“字符。',
-  TIP_LOCATION:'长度在2以下，仅支持字母',
-  TIP_COMMON:'长度在64以下，仅支持字母',
+  TIP_LOCATION:'长度在2以下',
+  TIP_COMMON:'长度在64以下',
 
 };
