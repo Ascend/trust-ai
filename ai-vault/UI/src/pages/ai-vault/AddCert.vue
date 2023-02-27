@@ -101,7 +101,7 @@ export default {
           { required: true, message: this.$t('PLACEHOLDER_CERT_COMMONNAME'), trigger: 'blur' },
         ],
         CfsPassword: [
-          { required: true,min: 40, max :64,message: this.$t('PLACEHOLDER_CERT_KEYWORD'), trigger: 'blur' },
+          { required: true,min: 40, max :64,message: this.$t('ERR_CERT_KEYWORD'), trigger: 'blur' },
         ],
         OrganizationName: [
           { required: false,max:64, message: this.$t('PLACEHOLDER_CERT_ORGANIZATION'), trigger: 'blur' },

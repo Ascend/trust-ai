@@ -82,6 +82,7 @@ export default {
   CONFIRM_PSW: '确认密码',
   ERR_SAME_CURRENT_PASSWORD: '不能与当前密码相同',
   ERR_CANNOT_CONFIRM_NEW_PASSWORD: '两次输入的密码不一致',
+  ERR_CERT_KEYWORD: '请输入满足规则的加密私钥密码',
   KEY_NAME: '密钥名称',
   KEY_USAGE: '密钥用途',
   PSK_NAME: '预共享密钥名',
@@ -156,7 +157,7 @@ export default {
   TIP_KEY_USAGE: '长度为[1, 128]，仅支持数字、字母、空格、下划线和”-“字符，不支持全空格。',
   TIP_KEY_PASSWORD: '长度为[40, 64]，仅支持数字、字母、英文特殊字符（至少包含两种），且不能与密钥名称或反转密钥名称相同。',
   TIP_REMARKS: '仅支持数字、字母、空格、下划线和和”-“字符。',
-  TIP_LOCATION:'长度在2以下，仅支持字母',
-  TIP_COMMON:'长度在64以下，仅支持字母',
+  TIP_LOCATION:'长度为2',
+  TIP_COMMON:'长度在64以下',
 
 };

@@ -40,7 +40,7 @@ class SSLKey:
         _special_character_reg = r'[!"#$%&\'()*+,-./:;<=>?@\[\]^_~{}|\\]{1,}'
 
         _passwd_complexity = [_lower_character_reg, _upper_character_reg, _number_reg, _special_character_reg]
-        _passwd_reg = r'^[a-zA-Z0-9!"#$%&\'()*+,-./:;<=>?@\[\]^_~{}|\\]{40,60}$'
+        _passwd_reg = r'^[a-zA-Z0-9!"#$%&\'()*+,-./:;<=>?@\[\]^_~{}|\\]{40,64}$'
 
         if re.match(_passwd_reg, password) is None:
             return False
