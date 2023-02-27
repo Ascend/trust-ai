@@ -62,6 +62,7 @@ export default {
     CONFIRM_PSW: 'Confirm password',
     ERR_SAME_CURRENT_PASSWORD: 'The new password should not be same as the current password, please enter the correct password.',
     ERR_CANNOT_CONFIRM_NEW_PASSWORD: 'The password and confirm password are different, please enter the correct password.',
+    ERR_CERT_KEYWORD: 'Please input a cert password that satisfies the rules',
     KEY_NAME: "Key's name",
     KEY_USAGE: "Key's usage",
     PSK_NAME: "Pre-shared key's name",
