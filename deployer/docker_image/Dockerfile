@@ -30,8 +30,8 @@ ENV PATH=/usr/local/python3.7.9/bin:$PATH \
 RUN --mount=type=cache,target=/tmp,from=buildtemp,source=/tmp \
     tar -xf Python*.tgz && cd Python*/ && ./configure --prefix=/usr/local/python3.7.9 --enable-shared && \
     make -j 20 && make install && cd .. && \
-    pip3 config set global.index-url http://pypi.doubanio.com/simple/ && \
-    pip3 config set global.trusted-host pypi.doubanio.com && \
+    pip3 config set global.index-url http://mirrors.aliyun.com/pypi/simple/ && \
+    pip3 config set global.trusted-host mirrors.aliyun.com && \
     pip3 install -U pip setuptools==65.6.0 cryptography==3.3.2 ansible-core==2.11.9 && \
     rm -rf /root/.cache && \
     cp -r /tmp/trust-ai /root && \
