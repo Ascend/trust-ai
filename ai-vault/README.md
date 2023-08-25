@@ -11,9 +11,26 @@
 2. 安装环境需安装haveged工具增熵
 
 ## 安装教程
-1. 将build/install.sh上传到待安装环境。
-
-2. 将一键配置证书中生成的ca.pem、ca.key以及ai-tool二进制白盒加密后的口令文件encrypted_password上传到install.sh同级目录的.ai-vault目录中。目录结构如下。
+1. 将trust-ai/ai-vault/build/install.sh上传到待安装环境。
+2. 参考trust-ai/ai-tool获取ai-tool文件，生成加密后的口令文件encrypted_password，参考命令如下:
+```
+ai-tool_aarch64 enc -p ${passwd} > encrypted_password
+```
+3.编辑openssl.cnf文件，文件内容如下:
+```
+[v3_ca]
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer
+basicConstraints = critical,CA:true
+keyUsage = cRLSign, keyCertSign
+```
+生成ca.pem、ca.key, 命令如下:
+```
+openssl genrsa -passout pass:${passwd} -aes256 -out ca.key 4096 2>/dev/null
+openssl req -new -key ca.key -subj "/CN=Aiguard Root CA" -out ca.csr -passin pass:${passwd}
+openssl x509 -req -in ca.csr -signkey ca.key -days 3650 -extfile openssl.cnf -extensions v3_ca -out ca.pem -passin pass:${passwd} 2>/dev/null
+```
+4. 将上述生成的ca.pem、ca.key以及ai-tool二进制白盒加密后的口令文件encrypted_password上传到install.sh同级目录的.ai-vault目录中。目录结构如下。
 ```
 ├─install.sh                # 安装脚本
 └─.ai-vault
@@ -21,8 +38,8 @@
    ├─ca.key                 # CA私钥
    └─encrypted_password     # 加密后的口令文件
 ```
-3. 执行安装命令
-`bash install.sh --option=[option]`，安装脚本可接收多个参数，例如`bash install.sh --image=ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64 --svc-port=5001 --mgmt-port=9000 --update_cert`。参数说明如下表。
+5. 执行安装命令
+`bash install.sh --option=[option]`，安装脚本可接收多个参数，例如`bash install.sh --image=ascendhub.huawei.com/public-ascendhub/ai-vault:0.0.1-arm64 --svc-port=5001 --mgmt-port=9000`。参数说明如下表。
 ```
 | 参数                  | 说明                                                           
 | :------------         | ------------------------------------------------------------ |
